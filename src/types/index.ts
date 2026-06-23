@@ -1,64 +1,68 @@
 // ─── Product Types ────────────────────────────────────────────────
+// CATEGORY TAXONOMY — updated to match the verified Drive-folder
+// mapping from the ported frontend, replacing the original 20-value
+// catalogue-page taxonomy. These 8 values are now the single source
+// of truth across data, filtering, and the database.
 export type ProductCategory =
-  // ─── Kitchen ──────────────────────────────
-  | "pantry-units"
-  | "corner-units"
-  | "bottle-pullouts"
-  | "tall-units"
-  | "rolling-shutters"
-  | "dish-rack"
-  | "drawer-organizers"
-  | "waste-bins"
-  | "wicker-baskets"
-  // ─── Wardrobe ─────────────────────────────
-  | "wardrobe-accessories-mocha"
-  | "wardrobe-accessories-grey"
-  // ─── Hardware ─────────────────────────────
-  | "hinges"
-  | "channels-quadro"
-  | "sliding-fittings"
-  | "slim-box"
-  | "tandem"
-  | "lift-up-mechanism"
-  | "skirting-legs"
-  | "bed-fittings"
-  | "cabinet-accessories";
+  | "Basket"
+  | "Glass Pull Down"
+  | "GTPT"
+  | "Hinges"
+  | "Rolling Shutter"
+  | "S Corner"
+  | "Trouser Rack";
 
+// ProductLine is retained for now as a broader grouping (kitchen vs
+// wardrobe vs hardware) since the 7 categories above span all three —
+// e.g. "Trouser Rack" is wardrobe, "GTPT" is kitchen, "Hinges" is
+// hardware. This mapping is needed wherever we want to group by line
+// (nav structure, mega-menu sections) without losing the fine-grained
+// category for filtering/display.
 export type ProductLine = "kitchen" | "wardrobe" | "hardware";
 
+export const CATEGORY_TO_LINE: Record<ProductCategory, ProductLine> = {
+  Basket: "kitchen",
+  "Glass Pull Down": "kitchen",
+  GTPT: "kitchen",
+  "Rolling Shutter": "kitchen",
+  Hinges: "hardware",
+  "S Corner": "hardware",
+  "Trouser Rack": "wardrobe",
+};
+
 export type ProductFinish =
-  | "golden"
-  | "chrome"
-  | "dark-grey"
-  | "glass"
-  | "satin"
-  | "wooden"
-  | "black"
-  | "white"
-  | "stainless-steel";
+  | "Golden"
+  | "Chrome"
+  | "Dark Grey"
+  | "Glass"
+  | "Satin"
+  | "Wooden"
+  | "Mocha"
+  | "Grey"
+  | "Steel";
 
 export interface Product {
   id: string;
-  item_code: string;
+  item_code: string; // matches `code` in catalogue-data.ts
+  catalogue_sno: number | null;
   name: string;
   description: string | null;
+  series: string | null;
+  material: string | null;
   category: ProductCategory;
   product_line: ProductLine;
   finish: ProductFinish | null;
+  weight_capacity_kg: number | null;
   width_mm: number | null;
   depth_mm: number | null;
   height_mm: number | null;
   dimension_notes: string | null;
-  mrp: number;
+  mrp: number | null; // FLAG 2 FIX — see note below, was `number`
   is_featured: boolean;
   is_active: boolean;
   image_url: string | null;
   created_at: string;
   updated_at: string;
-  catalogue_sno: number | null;
-  series: string | null;
-  material: string | null;
-  weight_capacity_kg: number | null;
 }
 
 // ─── Enquiry Types ─────────────────────────────────────────────────

@@ -1,4 +1,5 @@
 import { NavLink } from "@/types";
+import { CATALOG_CATEGORIES } from "@/lib/catalogue-data";
 
 export const SITE_CONFIG = {
   name: "Eryx Hardware",
@@ -13,7 +14,7 @@ export const SITE_CONFIG = {
 
 export const NAV_LINKS: NavLink[] = [
   { label: "Home", href: "/" },
-  { label: "About Us", href: "/about-us" },
+  { label: "About Us", href: "/about" },
   { label: "Kitchen Solutions", href: "/kitchen" },
   { label: "Wardrobe Solutions", href: "/wardrobe", comingSoon: true },
   { label: "Deals & Offers", href: "/deals", comingSoon: true },
@@ -23,138 +24,20 @@ export const NAV_LINKS: NavLink[] = [
 export const UTILITY_NAV_LINKS: NavLink[] = [
   { label: "Dealer Enquiry", href: "/dealer-enquiry" },
   { label: "Experience Centre", href: "/experience-centre", comingSoon: true },
-//   { label: "Track Order", href: "/track-order", comingSoon: true },
 ];
 
-export const PRODUCT_CATEGORIES = [
-  // ─── Kitchen ──────────────────────────────────────────────────
-  {
-    label: "Pantry Units",
-    value: "pantry-units",
-    icon: "Package",
-    line: "kitchen",
-  },
-  {
-    label: "Corner Units",
-    value: "corner-units",
-    icon: "LayoutGrid",
-    line: "kitchen",
-  },
-  {
-    label: "Bottle Pull-Outs",
-    value: "bottle-pullouts",
-    icon: "Columns",
-    line: "kitchen",
-  },
-  {
-    label: "Tall Units",
-    value: "tall-units",
-    icon: "AlignJustify",
-    line: "kitchen",
-  },
-  {
-    label: "Rolling Shutters",
-    value: "rolling-shutters",
-    icon: "PanelRight",
-    line: "kitchen",
-  },
-  {
-    label: "Dish Rack",
-    value: "dish-rack",
-    icon: "UtensilsCrossed",
-    line: "kitchen",
-  },
-  {
-    label: "Drawer Organizers",
-    value: "drawer-organizers",
-    icon: "Layers",
-    line: "kitchen",
-  },
-  {
-    label: "Waste Bins",
-    value: "waste-bins",
-    icon: "Trash2",
-    line: "kitchen",
-  },
-  {
-    label: "Wicker Baskets",
-    value: "wicker-baskets",
-    icon: "ShoppingBasket",
-    line: "kitchen",
-  },
-  // ─── Wardrobe ─────────────────────────────────────────────────
-  {
-    label: "Wardrobe Accessories Mocha",
-    value: "wardrobe-accessories-mocha",
-    icon: "Shirt",
-    line: "wardrobe",
-  },
-  {
-    label: "Wardrobe Accessories Grey",
-    value: "wardrobe-accessories-grey",
-    icon: "Shirt",
-    line: "wardrobe",
-  },
-  // ─── Hardware ─────────────────────────────────────────────────
-  {
-    label: "Hinges",
-    value: "hinges",
-    icon: "Settings2",
-    line: "hardware",
-  },
-  {
-    label: "Channels & Quadro",
-    value: "channels-quadro",
-    icon: "SlidersHorizontal",
-    line: "hardware",
-  },
-  {
-    label: "Sliding Fittings",
-    value: "sliding-fittings",
-    icon: "MoveHorizontal",
-    line: "hardware",
-  },
-  {
-    label: "Slim Box",
-    value: "slim-box",
-    icon: "Square",
-    line: "hardware",
-  },
-  {
-    label: "Tandem",
-    value: "tandem",
-    icon: "Layers",
-    line: "hardware",
-  },
-  {
-    label: "Lift Up Mechanism",
-    value: "lift-up-mechanism",
-    icon: "ArrowUpFromLine",
-    line: "hardware",
-  },
-  {
-    label: "Skirting & Legs",
-    value: "skirting-legs",
-    icon: "AlignVerticalJustifyStart",
-    line: "hardware",
-  },
-  {
-    label: "Bed Fittings",
-    value: "bed-fittings",
-    icon: "BedDouble",
-    line: "hardware",
-  },
-  {
-    label: "Cabinet Accessories",
-    value: "cabinet-accessories",
-    icon: "Box",
-    line: "hardware",
-  },
-] as const;
+// ─── PRODUCT CATEGORIES ──────────────────────────────────────────────
+// NOTE: This used to be a separately maintained array here in
+// constants/index.ts (the old 20-value catalogue-page taxonomy).
+// It has been retired per project decision — CATALOG_CATEGORIES in
+// catalogue-data.ts is now the single source of truth for categories,
+// since it's directly tied to the verified product image mapping.
+// Re-exporting it here so existing imports of `PRODUCT_CATEGORIES`
+// from "@/constants" continue to work without touching every call site.
+export const PRODUCT_CATEGORIES = CATALOG_CATEGORIES;
 
-export type CategoryEntry = (typeof PRODUCT_CATEGORIES)[number];
-export type CategoryValue = CategoryEntry["value"];
-export type CategoryLine = CategoryEntry["line"];
+export type CategoryEntry = (typeof CATALOG_CATEGORIES)[number];
+export type CategoryValue = CategoryEntry["slug"];
 
 export const BRAND_HIGHLIGHTS = [
   {
