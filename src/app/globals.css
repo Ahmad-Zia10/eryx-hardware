@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+/* ─── Tailwind v4 theme configuration ──────────────────────────────
+   In Tailwind v3 this lived in tailwind.config.js. In v4, theme
+   tokens and custom variants are declared directly in CSS instead —
+   there is no separate config file in this project, by design. */
+
+@theme {
+  --font-serif: "Cormorant Garamond", serif;
+  --font-sans: "Inter", sans-serif;
+}
+
+/* Tailwind v4 needs an explicit custom variant for class-based dark
+   mode (v3's `darkMode: 'class'` equivalent). Without this, `dark:`
+   utilities fall back to the `prefers-color-scheme` media query
+   instead of responding to the `.dark` class our ThemeContext /
+   no-flash script toggle on <html>. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Font loading handled via next/font/google in layout.tsx — no @import
+   needed here. Next.js self-hosts the font files at build time, which
+   avoids the extra external request and prevents layout shift on load. */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* hide scrollbar for horizontal scroll strips */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* range slider thumb color */
+input[type="range"] {
+  accent-color: #d4a017;
+}
+
+input[type="checkbox"] {
+  accent-color: #d4a017;
+}
