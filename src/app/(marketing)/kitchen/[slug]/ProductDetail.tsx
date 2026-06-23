@@ -8,19 +8,23 @@ import ProductImage from "@/components/ui/ProductImage";
 import ProductCard from "@/components/sections/ProductCard";
 import { useCart } from "@/context/CartContext";
 import { useUI } from "@/context/UIContext";
-import { formatPrice, getProductBySlug, getProductsByCategory } from "@/lib/catalogue-data";
+import { formatPrice } from "@/lib/catalogue-data";
+import type { CatalogueProduct } from "@/lib/catalogue-data";
 
 interface ProductDetailProps {
-  slug: string;
+  // Both fetched server-side by page.tsx now (getProductBySlug and
+  // getProductsByCategory are async Supabase calls) and passed down
+  // as plain props — this component no longer does any data fetching
+  // of its own, same pattern as Kitchen.tsx.
+  product: CatalogueProduct | null;
+  relatedProducts: CatalogueProduct[];
 }
 
-export default function ProductDetail({ slug }: ProductDetailProps) {
+export default function ProductDetail({ product, relatedProducts }: ProductDetailProps) {
   const router = useRouter();
   const { addItem } = useCart();
   const { showToast, openEnquiryModal } = useUI();
   const [quantity, setQuantity] = useState(1);
-
-  const product = getProductBySlug(slug);
   const [selectedImage, setSelectedImage] = useState(
     product?.gallery?.[0] || product?.image
   );
@@ -38,10 +42,6 @@ export default function ProductDetail({ slug }: ProductDetailProps) {
       </div>
     );
   }
-
-  const relatedProducts = getProductsByCategory(product.category)
-    .filter((p) => p.slug !== product.slug)
-    .slice(0, 4);
 
   const handleAddToCart = () => {
     addItem(product, quantity);
