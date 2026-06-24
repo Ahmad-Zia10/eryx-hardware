@@ -1,11 +1,10 @@
-"use client";
-
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Shield, Globe, Award, Phone } from "lucide-react";
 import ProductImage from "@/components/ui/ProductImage";
 import ProductCard from "@/components/sections/ProductCard";
-import { CATALOG_CATEGORIES, IMAGES, getTopPicks } from "@/lib/catalogue-data";
+import HeroActions from "@/components/sections/HeroActions";
+import { CATALOG_CATEGORIES, IMAGES } from "@/lib/catalogue-data";
+import { getTopPicks } from "@/lib/db/products";
 
 const FOCUS_CARDS = [
   {
@@ -31,9 +30,6 @@ const FOCUS_CARDS = [
   },
   {
     label: "Hinges",
-    // FIX: source had "Hinges New", a category name retired when we
-    // merged "Hinges New" + "Hinges Old" into one "Hinges" category.
-    // Updated to match the current taxonomy in catalogue-data.ts.
     href: "/kitchen?category=Hinges",
     image: "/products/hinges-new/hinges-new-1.jpg",
   },
@@ -46,9 +42,13 @@ const TRUST_ITEMS = [
   { icon: Phone, title: "Expert Support", subtitle: "70111 84853" },
 ];
 
-export default function Home() {
-  const router = useRouter();
-  const topPicks = getTopPicks();
+// Server Component — no "use client" here. This now fetches real data
+// directly from Supabase at render time, on the server, before any
+// HTML reaches the browser. The only interactivity on this page (the
+// two hero buttons) lives in the separate HeroActions client island
+// imported above — everything else here is static markup + server data.
+export default async function Home() {
+  const topPicks = await getTopPicks();
 
   return (
     <div>
@@ -79,20 +79,9 @@ export default function Home() {
               Hinges, fittings, sliding systems, baskets, pull-downs, shutters, and
               wardrobe hardware engineered for modern Indian homes.
             </p>
-            <div className="flex flex-wrap gap-4 mt-2">
-              <button
-                onClick={() => router.push("/kitchen")}
-                className="bg-[#D4A017] hover:bg-[#E8B820] text-[#0A0A0A] font-semibold px-8 py-4 transition duration-200 ease-in-out"
-              >
-                Explore Products
-              </button>
-              <button
-                onClick={() => router.push("/kitchen?category=Basket")}
-                className="border border-[#0A0A0A] dark:border-[#F5F5F5] text-[#0A0A0A] dark:text-[#F5F5F5] hover:border-[#D4A017] hover:text-[#D4A017] font-semibold px-8 py-4 transition duration-200 ease-in-out"
-              >
-                Kitchen Solutions
-              </button>
-            </div>
+
+            <HeroActions />
+
             <div className="flex flex-wrap items-center gap-6 mt-6">
               {["8 Core Categories", "Real Product Photos", "Pan India"].map(
                 (stat, index) => (
@@ -214,15 +203,21 @@ export default function Home() {
         <h2 className="text-3xl font-bold text-[#0A0A0A] dark:text-[#F5F5F5] mb-8">
           Top Picks
         </h2>
-        <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
-          {topPicks.map((product) => (
-            <ProductCard
-              key={product.slug}
-              product={product}
-              className="min-w-65 sm:min-w-70 w-65 sm:w-70 shrink-0"
-            />
-          ))}
-        </div>
+        {topPicks.length === 0 ? (
+          <p className="text-[#555555] dark:text-[#9A9A9A]">
+            Featured products coming soon.
+          </p>
+        ) : (
+          <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
+            {topPicks.map((product) => (
+              <ProductCard
+                key={product.slug}
+                product={product}
+                className="min-w-65 sm:min-w-70 w-65 sm:w-70 shrink-0"
+              />
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

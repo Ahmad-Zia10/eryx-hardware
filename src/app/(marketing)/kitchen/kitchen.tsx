@@ -6,11 +6,20 @@ import { ChevronLeft, SlidersHorizontal, X } from "lucide-react";
 import ProductImage from "@/components/ui/ProductImage";
 import ProductCard from "@/components/sections/ProductCard";
 import { useUI } from "@/context/UIContext";
-import { ALL_PRODUCTS, CATEGORIES, FINISHES, IMAGES } from "@/lib/catalogue-data";
+import { CATEGORIES, FINISHES, IMAGES } from "@/lib/catalogue-data";
+import type { CatalogueProduct } from "@/lib/catalogue-data";
 
 const MAX_PRICE = 35000;
 
-export default function Kitchen() {
+interface KitchenProps {
+  // Fetched server-side by page.tsx and passed down — this component
+  // no longer imports ALL_PRODUCTS directly. All filtering still
+  // happens client-side against this prop, same as it did against the
+  // static array before; only the data source changed.
+  products: CatalogueProduct[];
+}
+
+export default function Kitchen({ products }: KitchenProps) {
   const router = useRouter();
   // next/navigation's useSearchParams is READ-ONLY — unlike react-router's
   // version, you can't call .set()/.delete() on it directly. To change the
@@ -41,17 +50,15 @@ export default function Kitchen() {
     );
   };
 
-  const allKitchenProducts = useMemo(() => ALL_PRODUCTS, []);
-
   const filteredProducts = useMemo(() => {
-    return allKitchenProducts.filter((p) => {
+    return products.filter((p) => {
       const matchesCategory = activeTab === "All" || p.category === activeTab;
       const matchesFinish =
         selectedFinishes.length === 0 || selectedFinishes.includes(p.finish);
       const matchesPrice = typeof p.mrp !== "number" || p.mrp <= priceRange;
       return matchesCategory && matchesFinish && matchesPrice;
     });
-  }, [allKitchenProducts, activeTab, selectedFinishes, priceRange]);
+  }, [products, activeTab, selectedFinishes, priceRange]);
 
   const filterSidebarContent = (
     <div className="flex flex-col gap-8">
