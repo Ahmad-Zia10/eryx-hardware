@@ -14,15 +14,9 @@ export default function CartDrawer() {
 
   if (!cartDrawerOpen) return null;
 
-  const handleProceedToEnquiry = () => {
-    const summary = items
-      .map((item) => `${item.product.name} (Qty: ${item.quantity})`)
-      .join(", ");
+  const handleProceedToCheckout = () => {
     closeCartDrawer();
-    openEnquiryModal({
-      heading: "Send Enquiry",
-      prefilledMessage: `I'm interested in the following items: ${summary}.`,
-    });
+    router.push("/checkout");
   };
 
   return (
@@ -122,16 +116,16 @@ export default function CartDrawer() {
         {items.length > 0 && (
           <div className="border-t border-[#D4D4D4] dark:border-[#2A2A2A] p-4 flex flex-col gap-3">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-[#555555] dark:text-[#9A9A9A]">Subtotal</span>
+               <span className="text-[#555555] dark:text-[#9A9A9A]">Subtotal</span>
               <span className="text-[#D4A017] font-bold text-lg">
                 {formatPrice(cartTotal)}
               </span>
             </div>
             <button
-              onClick={handleProceedToEnquiry}
+              onClick={handleProceedToCheckout}
               className="bg-[#D4A017] hover:bg-[#E8B820] text-[#0A0A0A] font-semibold py-3 transition duration-200 ease-in-out"
             >
-              Proceed to Enquiry
+              Proceed to Checkout
             </button>
             <button
               onClick={closeCartDrawer}

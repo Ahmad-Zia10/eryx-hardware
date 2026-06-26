@@ -15,8 +15,8 @@ export const SITE_CONFIG = {
 export const NAV_LINKS: NavLink[] = [
   { label: "Home", href: "/" },
   { label: "About Us", href: "/about" },
-  { label: "Kitchen Solutions", href: "/kitchen" },
-  { label: "Wardrobe Solutions", href: "/wardrobe", comingSoon: true },
+  { label: "Kitchen Accessories", href: "/kitchen" },
+  { label: "Wardrobe Accessories", href: "/wardrobe", comingSoon: true },
   { label: "Deals & Offers", href: "/deals", comingSoon: true },
   { label: "Contact Us", href: "/contact" },
 ];

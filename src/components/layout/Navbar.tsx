@@ -19,8 +19,8 @@ import { useUI } from "@/context/UIContext";
 import { CATALOG_CATEGORIES } from "@/lib/catalogue-data";
 
 const NAV_LINKS = [
-  { label: "Kitchen Solutions", href: "/kitchen" },
-  { label: "Wardrobe Solutions", href: "/coming-soon/wardrobe" },
+  { label: "Kitchen Accessories", href: "/kitchen" },
+  { label: "Wardrobe Accessories", href: "/coming-soon/wardrobe" },
   { label: "Deals & Offers", href: "/coming-soon/deals" },
 ];
 
@@ -89,10 +89,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 shrink-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/eryx-logo.png" alt="" className="h-9 w-9 object-contain" />
-          <span className="font-bold text-2xl tracking-widest text-[#0A0A0A] dark:text-[#F5F5F5]">
-            ERYX
-          </span>
+          <img src="/eryx-logo.png" alt="ERYX" className="h-9 object-contain" />
         </Link>
 
         <div className="hidden lg:flex items-center gap-8">
