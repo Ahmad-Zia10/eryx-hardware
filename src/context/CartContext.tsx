@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useReducer, ReactNode } from "react";
+import { createContext, useContext, useReducer, ReactNode, useEffect, useState } from "react";
 import { CatalogueProduct } from "@/lib/catalogue-data";
 
 export interface CartItem {
@@ -16,7 +16,8 @@ type CartAction =
   | { type: "ADD_ITEM"; payload: { product: CatalogueProduct; quantity?: number } }
   | { type: "REMOVE_ITEM"; payload: { slug: string } }
   | { type: "UPDATE_QUANTITY"; payload: { slug: string; quantity: number } }
-  | { type: "CLEAR_CART" };
+  | { type: "CLEAR_CART" }
+  | { type: "LOAD_CART"; payload: CartState };
 
 interface CartContextValue {
   items: CartItem[];
@@ -69,6 +70,8 @@ function cartReducer(state: CartState, action: CartAction): CartState {
     }
     case "CLEAR_CART":
       return { ...state, items: [] };
+    case "LOAD_CART":
+      return action.payload;
     default:
       return state;
   }
@@ -76,6 +79,26 @@ function cartReducer(state: CartState, action: CartAction): CartState {
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, { items: [] });
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("eryx_cart");
+      if (saved) {
+        dispatch({ type: "LOAD_CART", payload: JSON.parse(saved) });
+      }
+    } catch (e) {
+      console.error("Failed to parse cart from local storage", e);
+    } finally {
+      setIsInitialized(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isInitialized) {
+      localStorage.setItem("eryx_cart", JSON.stringify(state));
+    }
+  }, [state, isInitialized]);
 
   const addItem = (product: CatalogueProduct, quantity = 1) =>
     dispatch({ type: "ADD_ITEM", payload: { product, quantity } });
