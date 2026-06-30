@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import {
@@ -12,7 +12,10 @@ import {
   ShoppingCart,
   Menu,
   X,
+  LogOut,
+  ShieldAlert
 } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 import { useTheme } from "@/context/ThemeContext";
 import { useCart } from "@/context/CartContext";
 import { useUI } from "@/context/UIContext";
@@ -65,6 +68,43 @@ export default function Navbar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [productsOpen, setProductsOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const supabase = createClient();
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUser(user);
+        const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+        if (profile?.role === 'admin') setIsAdmin(true);
+      }
+    };
+    checkUser();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN') {
+         setUser(session?.user || null);
+         const { data: profile } = await supabase.from('profiles').select('role').eq('id', session?.user?.id).single();
+         if (profile?.role === 'admin') setIsAdmin(true);
+      } else if (event === 'SIGNED_OUT') {
+         setUser(null);
+         setIsAdmin(false);
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [supabase]);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setUserDropdownOpen(false);
+    router.refresh();
+  };
 
   const closeMenus = () => {
     setMobileOpen(false);
@@ -142,12 +182,50 @@ export default function Navbar() {
           >
             {isDark ? <Moon size={20} /> : <Sun size={20} />}
           </button>
-          <button
-            className="hidden sm:block text-[#555555] dark:text-[#9A9A9A] hover:text-[#D4A017] transition duration-200 ease-in-out"
-            aria-label="Account"
-          >
-            <User size={20} />
-          </button>
+          <div className="relative">
+            {user ? (
+              <button
+                onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                className="hidden sm:block text-[#555555] dark:text-[#9A9A9A] hover:text-[#D4A017] transition duration-200 ease-in-out"
+                aria-label="Account"
+              >
+                <User size={20} />
+              </button>
+            ) : (
+              <Link
+                href="/login"
+                className="hidden sm:block text-sm font-medium text-[#555555] dark:text-[#9A9A9A] hover:text-[#D4A017] transition duration-200 ease-in-out"
+              >
+                Sign In
+              </Link>
+            )}
+
+            {userDropdownOpen && user && (
+              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#111111] border border-[#D4D4D4] dark:border-[#2A2A2A] shadow-xl rounded-md py-1 z-50">
+                <div className="px-4 py-2 border-b border-[#D4D4D4] dark:border-[#2A2A2A]">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{user.user_metadata?.full_name || user.email}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
+                </div>
+                {isAdmin && (
+                  <Link
+                    href="/admin"
+                    onClick={() => setUserDropdownOpen(false)}
+                    className="flex items-center px-4 py-2 text-sm text-[#D4A017] hover:bg-[#F5F5F5] dark:hover:bg-[#1F1F1F]"
+                  >
+                    <ShieldAlert size={14} className="mr-2" />
+                    Admin Panel
+                  </Link>
+                )}
+                <button
+                  onClick={handleSignOut}
+                  className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-[#F5F5F5] dark:hover:bg-[#1F1F1F]"
+                >
+                  <LogOut size={14} className="mr-2" />
+                  Sign Out
+                </button>
+              </div>
+            )}
+          </div>
           <button
             onClick={openCartDrawer}
             className="relative text-[#555555] dark:text-[#9A9A9A] hover:text-[#D4A017] transition duration-200 ease-in-out"
