@@ -1,6 +1,8 @@
 import { supabaseAdmin } from '@/lib/supabase/server';
 import Link from 'next/link';
 
+import { Package, MessageSquare, Clock, AlertTriangle, TrendingUp } from 'lucide-react';
+
 export default async function AdminDashboard() {
   const [
     { count: productCount },
@@ -26,13 +28,19 @@ export default async function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="bg-white overflow-hidden shadow rounded-xl p-6 border border-gray-100">
-          <dt className="text-sm font-medium text-gray-500 truncate">Active Products</dt>
+        <div className="bg-white overflow-hidden shadow rounded-xl p-6 border border-gray-100 hover:-translate-y-1 hover:shadow-md transition-all duration-200">
+          <div className="flex items-center justify-between">
+            <dt className="text-sm font-medium text-gray-500 truncate">Active Products</dt>
+            <Package className="h-5 w-5 text-gray-400" />
+          </div>
           <dd className="mt-2 text-3xl font-semibold text-gray-900">{productCount || 0}</dd>
         </div>
 
-        <div className={`bg-white overflow-hidden shadow rounded-xl p-6 border ${newEnquiryCount && newEnquiryCount > 0 ? 'border-[#D4A017] ring-1 ring-[#D4A017]' : 'border-gray-100'}`}>
-          <dt className="text-sm font-medium text-gray-500 truncate">New Enquiries</dt>
+        <div className={`bg-white overflow-hidden shadow rounded-xl p-6 border hover:-translate-y-1 hover:shadow-md transition-all duration-200 ${newEnquiryCount && newEnquiryCount > 0 ? 'border-[#D4A017] ring-1 ring-[#D4A017]' : 'border-gray-100'}`}>
+          <div className="flex items-center justify-between">
+            <dt className="text-sm font-medium text-gray-500 truncate">New Enquiries</dt>
+            <MessageSquare className={`h-5 w-5 ${newEnquiryCount && newEnquiryCount > 0 ? 'text-[#D4A017]' : 'text-gray-400'}`} />
+          </div>
           <dd className="mt-2 flex items-baseline">
             <span className={`text-3xl font-semibold ${newEnquiryCount && newEnquiryCount > 0 ? 'text-[#D4A017]' : 'text-gray-900'}`}>
               {newEnquiryCount || 0}
@@ -40,21 +48,30 @@ export default async function AdminDashboard() {
           </dd>
         </div>
 
-        <div className="bg-white overflow-hidden shadow rounded-xl p-6 border border-gray-100">
-          <dt className="text-sm font-medium text-gray-500 truncate">Pending Orders</dt>
+        <div className="bg-white overflow-hidden shadow rounded-xl p-6 border border-gray-100 hover:-translate-y-1 hover:shadow-md transition-all duration-200">
+          <div className="flex items-center justify-between">
+            <dt className="text-sm font-medium text-gray-500 truncate">Pending Orders</dt>
+            <Clock className="h-5 w-5 text-gray-400" />
+          </div>
           <dd className="mt-2 text-3xl font-semibold text-gray-900">{pendingOrderCount || 0}</dd>
         </div>
 
-        <div className={`bg-white overflow-hidden shadow rounded-xl p-6 border ${needsReviewCount && needsReviewCount > 0 ? 'border-red-500 ring-1 ring-red-500' : 'border-gray-100'}`}>
-          <dt className="text-sm font-medium text-gray-500 truncate">Orders Needing Review</dt>
+        <div className={`bg-white overflow-hidden shadow rounded-xl p-6 border hover:-translate-y-1 hover:shadow-md transition-all duration-200 ${needsReviewCount && needsReviewCount > 0 ? 'border-red-500 ring-1 ring-red-500 bg-red-50' : 'border-gray-100'}`}>
+          <div className="flex items-center justify-between">
+            <dt className="text-sm font-medium text-gray-500 truncate">Orders Needing Review</dt>
+            <AlertTriangle className={`h-5 w-5 ${needsReviewCount && needsReviewCount > 0 ? 'text-red-500' : 'text-gray-400'}`} />
+          </div>
           <dd className="mt-2 text-3xl font-semibold text-red-600">{needsReviewCount || 0}</dd>
         </div>
 
-        <div className="bg-white overflow-hidden shadow rounded-xl p-6 border border-gray-100 sm:col-span-2 lg:col-span-4">
-           <dt className="text-sm font-medium text-gray-500 truncate">Total Revenue (Paid)</dt>
-           <dd className="mt-2 text-3xl font-semibold text-green-600">
-             ₹{totalRevenue.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
-           </dd>
+        <div className="bg-white overflow-hidden shadow rounded-xl p-6 border border-gray-100 sm:col-span-2 lg:col-span-4 hover:-translate-y-1 hover:shadow-md transition-all duration-200">
+          <div className="flex items-center justify-between">
+            <dt className="text-sm font-medium text-gray-500 truncate">Total Revenue (Paid)</dt>
+            <TrendingUp className="h-5 w-5 text-green-500" />
+          </div>
+          <dd className="mt-2 text-3xl font-semibold text-green-600">
+            ₹{totalRevenue.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+          </dd>
         </div>
       </div>
 
