@@ -5,6 +5,7 @@ import { updateEnquiryStatus } from '@/app/admin/actions';
 
 export default function EnquiriesTable({ enquiries }: { enquiries: any[] }) {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'all' | 'new' | 'contacted' | 'resolved'>('all');
 
   const handleStatusChange = async (id: string, newStatus: string) => {
     setUpdatingId(id);
@@ -18,67 +19,124 @@ export default function EnquiriesTable({ enquiries }: { enquiries: any[] }) {
     }
   };
 
+  const counts = {
+    all: enquiries.length,
+    new: enquiries.filter(e => e.status === 'new').length,
+    contacted: enquiries.filter(e => e.status === 'contacted').length,
+    resolved: enquiries.filter(e => e.status === 'resolved').length,
+  };
+
+  const filteredEnquiries = activeTab === 'all' 
+    ? enquiries 
+    : enquiries.filter(e => e.status === activeTab);
+
+  const getStatusBadgeColor = (status: string) => {
+    switch(status) {
+      case 'new': return 'bg-blue-100 text-blue-700';
+      case 'contacted': return 'bg-yellow-100 text-yellow-800';
+      case 'resolved': return 'bg-emerald-100 text-emerald-800';
+      case 'closed': return 'bg-gray-100 text-gray-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   return (
-    <div className="bg-white rounded-xl shadow overflow-hidden border border-gray-200">
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product / Type</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Message</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {enquiries.map((enq) => {
-              const isNew = enq.status === 'new';
-              return (
-                <tr key={enq.id} className={`hover:bg-gray-50 ${isNew ? 'bg-[#FFFAF0] border-l-4 border-l-[#D4A017]' : 'border-l-4 border-l-transparent'}`}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(enq.created_at).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{enq.name}</div>
-                    <div className="text-sm text-gray-500">{enq.phone}</div>
-                    <div className="text-sm text-gray-500">{enq.email}</div>
-                    <div className="text-xs text-gray-400">{enq.city}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{enq.product_name || 'N/A'}</div>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
-                      {enq.enquiry_type}
+    <div className="space-y-6">
+      <div className="flex text-sm font-medium border-b border-gray-200">
+        <button 
+          onClick={() => setActiveTab('all')}
+          className={`px-4 py-2 border-b-2 transition-colors ${activeTab === 'all' ? 'border-[#D4A017] text-gray-900 bg-gray-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+        >
+          All ({counts.all})
+        </button>
+        <button 
+          onClick={() => setActiveTab('new')}
+          className={`px-4 py-2 border-b-2 transition-colors ${activeTab === 'new' ? 'border-[#D4A017] text-gray-900 bg-gray-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+        >
+          New ({counts.new})
+        </button>
+        <button 
+          onClick={() => setActiveTab('contacted')}
+          className={`px-4 py-2 border-b-2 transition-colors ${activeTab === 'contacted' ? 'border-[#D4A017] text-gray-900 bg-gray-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+        >
+          Contacted ({counts.contacted})
+        </button>
+        <button 
+          onClick={() => setActiveTab('resolved')}
+          className={`px-4 py-2 border-b-2 transition-colors ${activeTab === 'resolved' ? 'border-[#D4A017] text-gray-900 bg-gray-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+        >
+          Resolved ({counts.resolved})
+        </button>
+      </div>
+
+      <div className="space-y-4">
+        {filteredEnquiries.map((enq) => {
+          const isNew = enq.status === 'new';
+          return (
+            <div key={enq.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+              <div className={`p-6 ${isNew ? 'border-l-4 border-l-[#D4A017]' : 'border-l-4 border-l-transparent'}`}>
+                
+                {/* Header Row */}
+                <div className="flex justify-between items-start mb-2">
+                  <div className="flex items-center gap-3">
+                    <h3 className="text-lg font-bold text-gray-900">{enq.name}</h3>
+                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${getStatusBadgeColor(enq.status)} capitalize`}>
+                      {enq.status}
                     </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-xs group relative">
-                    <div className="truncate group-hover:whitespace-normal group-hover:break-words group-hover:absolute group-hover:z-10 group-hover:bg-white group-hover:p-4 group-hover:shadow-lg group-hover:border group-hover:rounded-md">
-                      {enq.message}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  </div>
+                  <div>
                     <select
                       value={enq.status}
                       onChange={(e) => handleStatusChange(enq.id, e.target.value)}
                       disabled={updatingId === enq.id}
-                      className={`block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#D4A017] focus:border-[#D4A017] sm:text-sm rounded-md ${updatingId === enq.id ? 'opacity-50' : ''}`}
+                      className={`block w-36 pl-3 pr-8 py-1.5 text-sm border border-gray-300 bg-gray-50 hover:bg-gray-100 cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#D4A017] focus:border-[#D4A017] rounded-md ${updatingId === enq.id ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       <option value="new">New</option>
                       <option value="contacted">Contacted</option>
                       <option value="resolved">Resolved</option>
                       <option value="closed">Closed</option>
                     </select>
-                  </td>
-                </tr>
-              );
-            })}
-            {enquiries.length === 0 && (
-              <tr>
-                <td colSpan={5} className="px-6 py-8 text-center text-gray-500">No enquiries found.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                  </div>
+                </div>
+
+                {/* Subheader Data */}
+                <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
+                  <span>{enq.phone}</span>
+                  <span>{enq.email}</span>
+                  <span className="text-gray-400">{new Date(enq.created_at).toLocaleDateString()}</span>
+                  {enq.city && <span className="text-gray-400">· {enq.city}</span>}
+                </div>
+
+                {/* Product Interest */}
+                {enq.product_name && (
+                  <div className="mb-2 text-sm font-medium text-[#D4A017]">
+                    Interested in: {enq.product_name}
+                  </div>
+                )}
+
+                {/* Message Body */}
+                <div className="text-gray-700 text-sm mb-6">
+                  {enq.message}
+                </div>
+
+                {/* Footer Actions */}
+                <div className="flex items-center gap-4 pt-4 border-t border-gray-100">
+                  <a href={`tel:${enq.phone}`} className="text-sm font-medium text-[#D4A017] hover:text-[#B38712] transition-colors">
+                    Call
+                  </a>
+                  <a href={`mailto:${enq.email}`} className="text-sm font-medium text-[#D4A017] hover:text-[#B38712] transition-colors">
+                    Email
+                  </a>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+        {filteredEnquiries.length === 0 && (
+          <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
+            <p className="text-gray-500">No enquiries found in this category.</p>
+          </div>
+        )}
       </div>
     </div>
   );
