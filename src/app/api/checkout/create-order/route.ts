@@ -32,12 +32,10 @@ export async function POST(req: Request) {
       if (!catalogProduct || typeof catalogProduct.mrp !== 'number') {
         return NextResponse.json({ error: `Invalid product: ${item.code}` }, { status: 400 });
       }
-      
+
       const price = catalogProduct.mrp;
       total += price * item.quantity;
 
-      // We'll link product_id later or leave it null as schema allows,
-      // but we store product_name and item_code explicitly.
       orderItemsForDb.push({
         item_code: catalogProduct.code,
         product_name: catalogProduct.name,
@@ -46,7 +44,6 @@ export async function POST(req: Request) {
       });
     }
 
-    // Razorpay amount is in paise
     const amountInPaise = Math.round(total * 100);
 
     // 2. Create Razorpay order
@@ -57,8 +54,6 @@ export async function POST(req: Request) {
     });
 
     // 3. Store in Supabase
-    // We use the authenticated client so the customer_id matches auth.uid() automatically by RLS
-    // Wait, the RLS requires auth.uid() = customer_id. So we must pass it explicitly.
     const { data: order, error: orderError } = await supabase.from('orders').insert({
       customer_id: user.id,
       customer_name: shippingDetails.name,
@@ -84,9 +79,11 @@ export async function POST(req: Request) {
       order_id: order.id,
     }));
 
-    // We can also try to look up real product_id from DB using admin client to keep it clean
-    const { data: realProducts } = await supabaseAdmin.from('products').select('id, item_code').in('item_code', itemsToInsert.map(i => i.item_code));
-    
+    const { data: realProducts } = await supabaseAdmin
+      .from('products')
+      .select('id, item_code')
+      .in('item_code', itemsToInsert.map(i => i.item_code));
+
     if (realProducts) {
       itemsToInsert.forEach(item => {
         const match = realProducts.find(p => p.item_code === item.item_code);
@@ -99,8 +96,27 @@ export async function POST(req: Request) {
     const { error: itemsError } = await supabase.from('order_items').insert(itemsToInsert);
 
     if (itemsError) {
-      console.error('Order items error:', itemsError);
-      // We don't fail the whole request because order is created, but it's bad.
+      // CHANGED: this used to be a console.error with a comment
+      // admitting it was "bad" but not fixing it. The customer can
+      // still pay for this order (the Razorpay order already exists,
+      // and blocking payment here would strand them mid-checkout for
+      // a problem that isn't their fault) — but now this failure is
+      // recorded durably on the order itself via needs_review, using
+      // supabaseAdmin since this write needs to succeed regardless of
+      // RLS and regardless of whatever caused the order_items failure.
+      console.error('CRITICAL: order_items insert failed for order', order.id, itemsError);
+
+      await supabaseAdmin
+        .from('orders')
+        .update({
+          needs_review: true,
+          review_note: `order_items insert failed: ${itemsError.message}`,
+        })
+        .eq('id', order.id);
+
+      // Deliberately still returning success below — see comment above.
+      // The admin panel's order list should surface needs_review=true
+      // orders prominently so this doesn't silently go unnoticed.
     }
 
     return NextResponse.json({
