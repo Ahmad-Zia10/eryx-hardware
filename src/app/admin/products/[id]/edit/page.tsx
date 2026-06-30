@@ -4,11 +4,12 @@ import { notFound } from 'next/navigation';
 
 export const revalidate = 0;
 
-export default async function ProductEditPage({ params }: { params: { id: string } }) {
+export default async function ProductEditPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
   const { data: product } = await supabaseAdmin
     .from('products')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', resolvedParams.id)
     .single();
 
   if (!product) {
