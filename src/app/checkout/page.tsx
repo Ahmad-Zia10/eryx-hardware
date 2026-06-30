@@ -122,7 +122,7 @@ export default function CheckoutPage() {
               {items.map((item) => (
                 <div key={item.product.slug} className="flex justify-between text-sm">
                   <div className="flex gap-4">
-                    <div className="w-16 h-16 bg-neutral-100 dark:bg-neutral-800 rounded flex-shrink-0 overflow-hidden">
+                    <div className="w-16 h-16 bg-neutral-100 dark:bg-neutral-800 rounded shrink-0 overflow-hidden">
                       <img src={item.product.image} alt={item.product.name} className="w-full h-full object-cover" />
                     </div>
                     <div>
