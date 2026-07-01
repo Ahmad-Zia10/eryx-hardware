@@ -2,18 +2,28 @@
 
 import { useState } from 'react';
 import { updateEnquiryStatus } from '@/app/admin/actions';
+import { useRouter } from 'next/navigation';
 
-export default function EnquiriesTable({ enquiries }: { enquiries: any[] }) {
+export default function EnquiriesTable({ enquiries: initialEnquiries }: { enquiries: any[] }) {
+  const router = useRouter();
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'all' | 'new' | 'contacted' | 'resolved'>('all');
+  const [enquiries, setEnquiries] = useState(initialEnquiries);
 
   const handleStatusChange = async (id: string, newStatus: string) => {
+    // Optimistic update
+    setEnquiries(prev => 
+      prev.map(enq => enq.id === id ? { ...enq, status: newStatus } : enq)
+    );
     setUpdatingId(id);
+
     try {
       await updateEnquiryStatus(id, newStatus);
+      router.refresh();
     } catch (err) {
       console.error('Failed to update status:', err);
       alert('Failed to update status');
+      router.refresh(); // revert optimistic update on failure
     } finally {
       setUpdatingId(null);
     }
@@ -31,56 +41,45 @@ export default function EnquiriesTable({ enquiries }: { enquiries: any[] }) {
     : enquiries.filter(e => e.status === activeTab);
 
   const getStatusBadgeColor = (status: string) => {
-    switch(status) {
-      case 'new': return 'bg-blue-100 text-blue-700';
-      case 'contacted': return 'bg-yellow-100 text-yellow-800';
-      case 'resolved': return 'bg-emerald-100 text-emerald-800';
-      case 'closed': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+    switch(status.toLowerCase()) {
+      case 'new': return 'bg-[#D4A017]/10 text-[#D4A017] border border-[#D4A017]/30';
+      case 'contacted':
+      case 'resolved':
+      case 'closed':
+      default: return 'bg-[#1A1A1A] text-[#9A9A9A] border border-[#2A2A2A]';
     }
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex text-sm font-medium border-b border-gray-200">
-        <button 
-          onClick={() => setActiveTab('all')}
-          className={`px-4 py-2 border-b-2 transition-colors ${activeTab === 'all' ? 'border-[#D4A017] text-gray-900 bg-gray-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-        >
-          All ({counts.all})
-        </button>
-        <button 
-          onClick={() => setActiveTab('new')}
-          className={`px-4 py-2 border-b-2 transition-colors ${activeTab === 'new' ? 'border-[#D4A017] text-gray-900 bg-gray-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-        >
-          New ({counts.new})
-        </button>
-        <button 
-          onClick={() => setActiveTab('contacted')}
-          className={`px-4 py-2 border-b-2 transition-colors ${activeTab === 'contacted' ? 'border-[#D4A017] text-gray-900 bg-gray-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-        >
-          Contacted ({counts.contacted})
-        </button>
-        <button 
-          onClick={() => setActiveTab('resolved')}
-          className={`px-4 py-2 border-b-2 transition-colors ${activeTab === 'resolved' ? 'border-[#D4A017] text-gray-900 bg-gray-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-        >
-          Resolved ({counts.resolved})
-        </button>
+      <div className="flex text-sm font-medium border-b border-[#2A2A2A]">
+        {(['all', 'new', 'contacted', 'resolved'] as const).map(tab => (
+          <button 
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`px-4 py-2 border-b-2 transition-colors capitalize ${
+              activeTab === tab 
+                ? 'border-[#D4A017] text-[#D4A017] bg-[#141414]' 
+                : 'border-transparent text-[#9A9A9A] hover:text-[#F5F5F5] hover:bg-[#141414]'
+            }`}
+          >
+            {tab} ({counts[tab]})
+          </button>
+        ))}
       </div>
 
       <div className="space-y-4">
         {filteredEnquiries.map((enq) => {
           const isNew = enq.status === 'new';
           return (
-            <div key={enq.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+            <div key={enq.id} className="bg-[#141414] rounded-sm border border-[#2A2A2A] overflow-hidden hover:shadow-lg transition-shadow">
               <div className={`p-6 ${isNew ? 'border-l-4 border-l-[#D4A017]' : 'border-l-4 border-l-transparent'}`}>
                 
                 {/* Header Row */}
                 <div className="flex justify-between items-start mb-2">
                   <div className="flex items-center gap-3">
-                    <h3 className="text-lg font-bold text-gray-900">{enq.name}</h3>
-                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${getStatusBadgeColor(enq.status)} capitalize`}>
+                    <h3 className="text-lg font-serif font-bold text-[#F5F5F5]">{enq.name}</h3>
+                    <span className={`px-2.5 py-0.5 rounded-sm text-xs font-semibold ${getStatusBadgeColor(enq.status)} capitalize`}>
                       {enq.status}
                     </span>
                   </div>
@@ -89,7 +88,7 @@ export default function EnquiriesTable({ enquiries }: { enquiries: any[] }) {
                       value={enq.status}
                       onChange={(e) => handleStatusChange(enq.id, e.target.value)}
                       disabled={updatingId === enq.id}
-                      className={`block w-36 pl-3 pr-8 py-1.5 text-sm text-gray-900 border border-gray-300 bg-gray-50 hover:bg-gray-100 cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#D4A017] focus:border-[#D4A017] rounded-md ${updatingId === enq.id ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      className={`block w-36 pl-3 pr-8 py-1.5 text-sm text-[#F5F5F5] border border-[#2A2A2A] bg-[#1A1A1A] hover:bg-[#222] cursor-pointer focus:outline-none focus:border-[#D4A017] rounded-sm transition duration-200 ease-in-out ${updatingId === enq.id ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       <option value="new">New</option>
                       <option value="contacted">Contacted</option>
@@ -100,11 +99,11 @@ export default function EnquiriesTable({ enquiries }: { enquiries: any[] }) {
                 </div>
 
                 {/* Subheader Data */}
-                <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
+                <div className="flex items-center gap-4 text-xs text-[#9A9A9A] mb-4">
                   <span>{enq.phone}</span>
                   <span>{enq.email}</span>
-                  <span className="text-gray-400">{new Date(enq.created_at).toLocaleDateString()}</span>
-                  {enq.city && <span className="text-gray-400">· {enq.city}</span>}
+                  <span>{new Date(enq.created_at).toLocaleDateString()}</span>
+                  {enq.city && <span>· {enq.city}</span>}
                 </div>
 
                 {/* Product Interest */}
@@ -115,16 +114,16 @@ export default function EnquiriesTable({ enquiries }: { enquiries: any[] }) {
                 )}
 
                 {/* Message Body */}
-                <div className="text-gray-700 text-sm mb-6">
+                <div className="text-[#F5F5F5] text-sm mb-6">
                   {enq.message}
                 </div>
 
                 {/* Footer Actions */}
-                <div className="flex items-center gap-4 pt-4 border-t border-gray-100">
-                  <a href={`tel:${enq.phone}`} className="text-sm font-medium text-[#D4A017] hover:text-[#B38712] transition-colors">
+                <div className="flex items-center gap-4 pt-4 border-t border-[#2A2A2A]">
+                  <a href={`tel:${enq.phone}`} className="text-sm font-medium text-[#D4A017] hover:text-[#E8B820] transition-colors">
                     Call
                   </a>
-                  <a href={`mailto:${enq.email}`} className="text-sm font-medium text-[#D4A017] hover:text-[#B38712] transition-colors">
+                  <a href={`mailto:${enq.email}`} className="text-sm font-medium text-[#D4A017] hover:text-[#E8B820] transition-colors">
                     Email
                   </a>
                 </div>
@@ -133,8 +132,8 @@ export default function EnquiriesTable({ enquiries }: { enquiries: any[] }) {
           );
         })}
         {filteredEnquiries.length === 0 && (
-          <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
-            <p className="text-gray-500">No enquiries found in this category.</p>
+          <div className="text-center py-12 bg-[#141414] rounded-sm border border-[#2A2A2A]">
+            <p className="text-[#9A9A9A]">No enquiries found in this category.</p>
           </div>
         )}
       </div>

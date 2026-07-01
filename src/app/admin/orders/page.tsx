@@ -12,9 +12,11 @@ export default async function AdminOrdersPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Orders</h1>
-        <p className="mt-2 text-sm text-gray-600">Track and manage customer orders.</p>
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="font-serif text-2xl text-[#F5F5F5]">Orders</h1>
+          <p className="text-sm text-[#9A9A9A] mt-1">Track and manage customer orders.</p>
+        </div>
       </div>
 
       <OrdersTable orders={orders || []} />

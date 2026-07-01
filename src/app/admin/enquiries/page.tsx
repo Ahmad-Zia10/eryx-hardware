@@ -11,9 +11,11 @@ export default async function AdminEnquiriesPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Enquiries</h1>
-        <p className="mt-2 text-sm text-gray-600">Manage customer contact requests and product enquiries.</p>
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="font-serif text-2xl text-[#F5F5F5]">Enquiries</h1>
+          <p className="text-sm text-[#9A9A9A] mt-1">Manage customer requests and product enquiries.</p>
+        </div>
       </div>
 
       <EnquiriesTable enquiries={enquiries || []} />
