@@ -89,7 +89,7 @@ export default function EnquiriesTable({ enquiries }: { enquiries: any[] }) {
                       value={enq.status}
                       onChange={(e) => handleStatusChange(enq.id, e.target.value)}
                       disabled={updatingId === enq.id}
-                      className={`block w-36 pl-3 pr-8 py-1.5 text-sm border border-gray-300 bg-gray-50 hover:bg-gray-100 cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#D4A017] focus:border-[#D4A017] rounded-md ${updatingId === enq.id ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      className={`block w-36 pl-3 pr-8 py-1.5 text-sm text-gray-900 border border-gray-300 bg-gray-50 hover:bg-gray-100 cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#D4A017] focus:border-[#D4A017] rounded-md ${updatingId === enq.id ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       <option value="new">New</option>
                       <option value="contacted">Contacted</option>

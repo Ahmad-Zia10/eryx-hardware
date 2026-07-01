@@ -17,7 +17,7 @@ export default function ProductsTable({ products }: { products: any[] }) {
         <input
           type="text"
           placeholder="Search by name or item code..."
-          className="w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D4A017] focus:border-transparent outline-none"
+          className="w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-[#D4A017] focus:border-transparent outline-none"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />

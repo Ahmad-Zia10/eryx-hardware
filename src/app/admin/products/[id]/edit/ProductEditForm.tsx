@@ -51,7 +51,7 @@ export default function ProductEditForm({ product }: { product: any }) {
           type="number"
           required
           min="0"
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-[#D4A017] focus:outline-none focus:ring-[#D4A017] sm:text-sm"
+          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 focus:border-[#D4A017] focus:outline-none focus:ring-[#D4A017] sm:text-sm"
           value={formData.mrp}
           onChange={(e) => setFormData({ ...formData, mrp: e.target.value })}
         />
@@ -103,7 +103,7 @@ export default function ProductEditForm({ product }: { product: any }) {
             type="number"
             required={formData.is_on_sale}
             min="0"
-            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-[#D4A017] focus:outline-none focus:ring-[#D4A017] sm:text-sm"
+            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 focus:border-[#D4A017] focus:outline-none focus:ring-[#D4A017] sm:text-sm"
             value={formData.discount_price}
             onChange={(e) => setFormData({ ...formData, discount_price: e.target.value })}
           />
