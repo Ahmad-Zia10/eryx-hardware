@@ -27,11 +27,11 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="flex h-screen bg-[#F5F5F5]">
+    <div className="flex h-screen bg-[#0A0A0A]">
       {/* Sidebar */}
-      <aside className="w-64 bg-[#1A1A1A] text-white flex flex-col h-full shrink-0 shadow-xl z-10">
+      <aside className="w-64 bg-[#0A0A0A] border-r border-[#2A2A2A] flex flex-col h-full shrink-0 z-10">
         <div className="p-6">
-          <Link href="/admin" className="font-serif font-bold text-2xl tracking-widest text-white">
+          <Link href="/admin" className="font-serif font-bold text-2xl tracking-widest text-[#F5F5F5]">
             ERYX <span className="text-[#D4A017] text-sm tracking-normal uppercase ml-1">Admin</span>
           </Link>
         </div>
@@ -40,18 +40,18 @@ export default async function AdminLayout({
           <AdminNav />
         </div>
 
-        <div className="p-4 border-t border-[#333333] space-y-2">
+        <div className="p-4 border-t border-[#2A2A2A] space-y-2">
           <Link 
             href="/" 
             target="_blank" 
-            className="flex w-full px-4 py-3 text-sm text-[#A3A3A3] hover:text-white transition-colors"
+            className="flex w-full px-4 py-3 text-sm text-[#9A9A9A] hover:text-[#F5F5F5] transition-colors rounded-sm"
           >
             Back to Site ↗
           </Link>
           <form action={signOut}>
             <button 
               type="submit" 
-              className="w-full text-left px-4 py-3 text-sm text-[#A3A3A3] hover:text-red-400 transition-colors"
+              className="w-full text-left px-4 py-3 text-sm text-[#9A9A9A] hover:text-red-400 transition-colors rounded-sm"
             >
               Logout
             </button>
@@ -60,7 +60,7 @@ export default async function AdminLayout({
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto bg-[#F9F9F9]">
+      <main className="flex-1 overflow-y-auto bg-[#0A0A0A]">
         <div className="p-8 max-w-7xl mx-auto">
           {children}
         </div>

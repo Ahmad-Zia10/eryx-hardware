@@ -23,10 +23,10 @@ export default function AdminNav() {
           <Link
             key={link.name}
             href={link.href}
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors ${
+            className={`flex items-center gap-3 px-4 py-2.5 rounded-sm transition duration-150 ease-in-out text-sm ${
               isActive 
-                ? 'bg-[#2A2A2A] text-[#D4A017]' 
-                : 'text-[#A3A3A3] hover:bg-[#2A2A2A] hover:text-[#F5F5F5]'
+                ? 'bg-[#141414] text-[#D4A017] border-l-2 border-[#D4A017]' 
+                : 'text-[#9A9A9A] hover:bg-[#141414] hover:text-[#F5F5F5] border-l-2 border-transparent'
             }`}
           >
             <Icon size={20} />

@@ -22,81 +22,84 @@ export default async function AdminDashboard() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard Overview</h1>
-        <p className="mt-2 text-sm text-gray-600">High-level metrics for Eryx Hardware operations.</p>
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="font-serif text-2xl text-[#F5F5F5]">Dashboard Overview</h1>
+          <p className="text-sm text-[#9A9A9A] mt-1">High-level metrics for Eryx Hardware operations.</p>
+        </div>
+        <div className="flex gap-3"></div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="bg-white overflow-hidden shadow rounded-xl p-6 border border-gray-100 hover:-translate-y-1 hover:shadow-md transition-all duration-200">
+        <div className="bg-[#141414] border border-[#2A2A2A] rounded-sm p-6 hover:-translate-y-1 hover:shadow-md transition-all duration-200">
           <div className="flex items-center justify-between">
-            <dt className="text-sm font-medium text-gray-500 truncate">Active Products</dt>
-            <Package className="h-5 w-5 text-gray-400" />
+            <dt className="text-xs tracking-widest uppercase text-[#9A9A9A] mt-1">Active Products</dt>
+            <Package className="h-5 w-5 text-[#9A9A9A]" />
           </div>
-          <dd className="mt-2 text-3xl font-semibold text-gray-900">{productCount || 0}</dd>
+          <dd className="mt-2 text-3xl font-bold text-[#F5F5F5] font-serif">{productCount || 0}</dd>
         </div>
 
-        <div className={`bg-white overflow-hidden shadow rounded-xl p-6 border hover:-translate-y-1 hover:shadow-md transition-all duration-200 ${newEnquiryCount && newEnquiryCount > 0 ? 'border-[#D4A017] ring-1 ring-[#D4A017]' : 'border-gray-100'}`}>
+        <div className={`bg-[#141414] border rounded-sm p-6 hover:-translate-y-1 hover:shadow-md transition-all duration-200 ${newEnquiryCount && newEnquiryCount > 0 ? 'border-[#D4A017]' : 'border-[#2A2A2A]'}`}>
           <div className="flex items-center justify-between">
-            <dt className="text-sm font-medium text-gray-500 truncate">New Enquiries</dt>
-            <MessageSquare className={`h-5 w-5 ${newEnquiryCount && newEnquiryCount > 0 ? 'text-[#D4A017]' : 'text-gray-400'}`} />
+            <dt className="text-xs tracking-widest uppercase text-[#9A9A9A] mt-1">New Enquiries</dt>
+            <MessageSquare className={`h-5 w-5 ${newEnquiryCount && newEnquiryCount > 0 ? 'text-[#D4A017]' : 'text-[#9A9A9A]'}`} />
           </div>
           <dd className="mt-2 flex items-baseline">
-            <span className={`text-3xl font-semibold ${newEnquiryCount && newEnquiryCount > 0 ? 'text-[#D4A017]' : 'text-gray-900'}`}>
+            <span className={`text-3xl font-bold font-serif ${newEnquiryCount && newEnquiryCount > 0 ? 'text-[#D4A017]' : 'text-[#F5F5F5]'}`}>
               {newEnquiryCount || 0}
             </span>
           </dd>
         </div>
 
-        <div className="bg-white overflow-hidden shadow rounded-xl p-6 border border-gray-100 hover:-translate-y-1 hover:shadow-md transition-all duration-200">
+        <div className="bg-[#141414] border border-[#2A2A2A] rounded-sm p-6 hover:-translate-y-1 hover:shadow-md transition-all duration-200">
           <div className="flex items-center justify-between">
-            <dt className="text-sm font-medium text-gray-500 truncate">Pending Orders</dt>
-            <Clock className="h-5 w-5 text-gray-400" />
+            <dt className="text-xs tracking-widest uppercase text-[#9A9A9A] mt-1">Pending Orders</dt>
+            <Clock className="h-5 w-5 text-[#9A9A9A]" />
           </div>
-          <dd className="mt-2 text-3xl font-semibold text-gray-900">{pendingOrderCount || 0}</dd>
+          <dd className="mt-2 text-3xl font-bold text-[#F5F5F5] font-serif">{pendingOrderCount || 0}</dd>
         </div>
 
-        <div className={`bg-white overflow-hidden shadow rounded-xl p-6 border hover:-translate-y-1 hover:shadow-md transition-all duration-200 ${needsReviewCount && needsReviewCount > 0 ? 'border-red-500 ring-1 ring-red-500 bg-red-50' : 'border-gray-100'}`}>
+        <div className={`rounded-sm p-6 border hover:-translate-y-1 hover:shadow-md transition-all duration-200 ${needsReviewCount && needsReviewCount > 0 ? 'bg-red-500/5 border-red-500/30' : 'bg-[#141414] border-[#2A2A2A]'}`}>
           <div className="flex items-center justify-between">
-            <dt className="text-sm font-medium text-gray-500 truncate">Orders Needing Review</dt>
-            <AlertTriangle className={`h-5 w-5 ${needsReviewCount && needsReviewCount > 0 ? 'text-red-500' : 'text-gray-400'}`} />
+            <dt className="text-xs tracking-widest uppercase text-[#9A9A9A] mt-1">Orders Needing Review</dt>
+            <AlertTriangle className={`h-5 w-5 ${needsReviewCount && needsReviewCount > 0 ? 'text-red-400' : 'text-[#9A9A9A]'}`} />
           </div>
-          <dd className="mt-2 text-3xl font-semibold text-red-600">{needsReviewCount || 0}</dd>
+          <dd className={`mt-2 text-3xl font-bold font-serif ${needsReviewCount && needsReviewCount > 0 ? 'text-red-400' : 'text-[#F5F5F5]'}`}>{needsReviewCount || 0}</dd>
         </div>
 
-        <div className="bg-white overflow-hidden shadow rounded-xl p-6 border border-gray-100 sm:col-span-2 lg:col-span-4 hover:-translate-y-1 hover:shadow-md transition-all duration-200">
+        <div className="bg-[#141414] border border-[#2A2A2A] rounded-sm p-6 sm:col-span-2 lg:col-span-4 hover:-translate-y-1 hover:shadow-md transition-all duration-200">
           <div className="flex items-center justify-between">
-            <dt className="text-sm font-medium text-gray-500 truncate">Total Revenue (Paid)</dt>
-            <TrendingUp className="h-5 w-5 text-green-500" />
+            <dt className="text-xs tracking-widest uppercase text-[#9A9A9A] mt-1">Total Revenue (Paid)</dt>
+            <TrendingUp className="h-5 w-5 text-green-400" />
           </div>
-          <dd className="mt-2 text-3xl font-semibold text-green-600">
+          <dd className="mt-2 text-3xl font-bold text-[#F5F5F5] font-serif">
             ₹{totalRevenue.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
           </dd>
         </div>
       </div>
 
       <div>
-        <h2 className="text-lg font-medium text-gray-900">Quick Links</h2>
+        <h2 className="font-serif text-lg text-[#F5F5F5]">Quick Links</h2>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <Link href="/admin/products" className="relative flex items-center space-x-3 rounded-xl border border-gray-300 bg-white px-6 py-5 shadow-sm hover:border-[#D4A017] hover:ring-1 hover:ring-[#D4A017]">
+          <Link href="/admin/products" className="relative flex items-center space-x-3 rounded-sm border border-[#2A2A2A] bg-[#141414] px-6 py-5 hover:border-[#D4A017] transition-colors">
             <div className="min-w-0 flex-1">
               <span className="absolute inset-0" aria-hidden="true" />
-              <p className="text-sm font-medium text-gray-900">Manage Products</p>
-              <p className="text-sm text-gray-500 truncate">Update pricing and visibility</p>
+              <p className="text-sm font-medium text-[#F5F5F5]">Manage Products</p>
+              <p className="text-xs text-[#9A9A9A] truncate mt-1">Update pricing and visibility</p>
             </div>
           </Link>
-          <Link href="/admin/enquiries" className="relative flex items-center space-x-3 rounded-xl border border-gray-300 bg-white px-6 py-5 shadow-sm hover:border-[#D4A017] hover:ring-1 hover:ring-[#D4A017]">
+          <Link href="/admin/enquiries" className="relative flex items-center space-x-3 rounded-sm border border-[#2A2A2A] bg-[#141414] px-6 py-5 hover:border-[#D4A017] transition-colors">
             <div className="min-w-0 flex-1">
               <span className="absolute inset-0" aria-hidden="true" />
-              <p className="text-sm font-medium text-gray-900">View Enquiries</p>
-              <p className="text-sm text-gray-500 truncate">Respond to customer requests</p>
+              <p className="text-sm font-medium text-[#F5F5F5]">View Enquiries</p>
+              <p className="text-xs text-[#9A9A9A] truncate mt-1">Respond to customer requests</p>
             </div>
           </Link>
-          <Link href="/admin/orders" className="relative flex items-center space-x-3 rounded-xl border border-gray-300 bg-white px-6 py-5 shadow-sm hover:border-[#D4A017] hover:ring-1 hover:ring-[#D4A017]">
+          <Link href="/admin/orders" className="relative flex items-center space-x-3 rounded-sm border border-[#2A2A2A] bg-[#141414] px-6 py-5 hover:border-[#D4A017] transition-colors">
             <div className="min-w-0 flex-1">
               <span className="absolute inset-0" aria-hidden="true" />
-              <p className="text-sm font-medium text-gray-900">Process Orders</p>
-              <p className="text-sm text-gray-500 truncate">Fulfill and track shipments</p>
+              <p className="text-sm font-medium text-[#F5F5F5]">Process Orders</p>
+              <p className="text-xs text-[#9A9A9A] truncate mt-1">Fulfill and track shipments</p>
             </div>
           </Link>
         </div>
