@@ -11,9 +11,11 @@ export default async function AdminProductsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Products Management</h1>
-        <p className="mt-2 text-sm text-gray-600">Update pricing, visibility, and features for all catalogue items.</p>
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="font-serif text-2xl text-[#F5F5F5]">Products Management</h1>
+          <p className="text-sm text-[#9A9A9A] mt-1">Update pricing, visibility, and features for all catalogue items.</p>
+        </div>
       </div>
 
       <ProductsTable products={products || []} />
