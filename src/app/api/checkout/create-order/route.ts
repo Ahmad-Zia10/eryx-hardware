@@ -10,6 +10,7 @@ const razorpay = new Razorpay({
 
 export async function POST(req: Request) {
   try {
+    // 1. Verify authenticated session
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -23,111 +24,114 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Cart is empty' }, { status: 400 });
     }
 
-    // 1. Calculate total server-side
+    // 2. Validate products and calculate total server-side
+    // Never trust the client for pricing — re-derive from catalogue data
     let total = 0;
-    const orderItemsForDb = [];
+    const orderItems = [];
 
     for (const item of items) {
       const catalogProduct = ALL_PRODUCTS.find(p => p.code === item.code);
-      if (!catalogProduct || typeof catalogProduct.mrp !== 'number') {
-        return NextResponse.json({ error: `Invalid product: ${item.code}` }, { status: 400 });
+
+      if (!catalogProduct) {
+        return NextResponse.json(
+          { error: `Product not found: ${item.code}` },
+          { status: 400 }
+        );
       }
 
-      const price = catalogProduct.mrp;
-      total += price * item.quantity;
+      if (typeof catalogProduct.mrp !== 'number') {
+        return NextResponse.json(
+          { error: `${catalogProduct.name} does not have a listed price. Please enquire instead.` },
+          { status: 400 }
+        );
+      }
 
-      orderItemsForDb.push({
+      if (item.quantity < 1) {
+        return NextResponse.json(
+          { error: `Invalid quantity for ${catalogProduct.name}` },
+          { status: 400 }
+        );
+      }
+
+      total += catalogProduct.mrp * item.quantity;
+      orderItems.push({
         item_code: catalogProduct.code,
         product_name: catalogProduct.name,
         quantity: item.quantity,
-        price_at_purchase: price,
+        price_at_purchase: catalogProduct.mrp,
       });
     }
 
-    const amountInPaise = Math.round(total * 100);
-
-    // 2. Create Razorpay order
-    const rzpOrder = await razorpay.orders.create({
-      amount: amountInPaise,
-      currency: "INR",
-      receipt: `rcpt_${Date.now()}`
-    });
-
-    // 3. Store in Supabase
-    const { data: order, error: orderError } = await supabase.from('orders').insert({
-      customer_id: user.id,
-      customer_name: shippingDetails.name,
-      customer_email: shippingDetails.email,
-      customer_phone: shippingDetails.phone,
-      shipping_address: shippingDetails.address,
-      shipping_city: shippingDetails.city,
-      shipping_pincode: shippingDetails.pincode,
-      subtotal: total,
-      total: total,
-      status: 'pending',
-      razorpay_order_id: rzpOrder.id
-    }).select().single();
-
-    if (orderError || !order) {
-      console.error('Order creation error:', orderError);
-      return NextResponse.json({ error: 'Failed to create order in database' }, { status: 500 });
-    }
-
-    // Insert items
-    const itemsToInsert = orderItemsForDb.map(item => ({
-      ...item,
-      order_id: order.id,
-    }));
-
-    const { data: realProducts } = await supabaseAdmin
+    // 3. Optionally resolve real product UUIDs for foreign key linkage
+    // This is a best-effort enrichment — if a product isn't found in
+    // the DB (e.g., added via admin but not in catalogue-data.ts yet),
+    // we still proceed with product_id as null, which the schema allows.
+    const itemCodes = orderItems.map(i => i.item_code);
+    const { data: dbProducts } = await supabaseAdmin
       .from('products')
       .select('id, item_code')
-      .in('item_code', itemsToInsert.map(i => i.item_code));
+      .in('item_code', itemCodes);
 
-    if (realProducts) {
-      itemsToInsert.forEach(item => {
-        const match = realProducts.find(p => p.item_code === item.item_code);
-        if (match) {
-          (item as any).product_id = match.id;
-        }
+    const enrichedItems = orderItems.map(item => ({
+      ...item,
+      product_id: dbProducts?.find(p => p.item_code === item.item_code)?.id ?? null,
+    }));
+
+    // 4. Create Razorpay order (amount in paise)
+    const amountInPaise = Math.round(total * 100);
+
+    const rzpOrder = await razorpay.orders.create({
+      amount: amountInPaise,
+      currency: 'INR',
+      receipt: `rcpt_${Date.now()}`,
+    });
+
+    // 5. Atomically create the order + all line items in one transaction
+    // via a Postgres RPC function. If either the order or any item
+    // insert fails, the entire transaction rolls back — no orphaned
+    // order rows, no paid orders with zero line items.
+    // Uses supabaseAdmin (service role) since the RPC function is
+    // security definer and this bypasses the RLS timing issue described
+    // in the function's comment.
+    const { data: orderId, error: rpcError } = await supabaseAdmin
+      .rpc('create_order_with_items', {
+        p_customer_id: user.id,
+        p_customer_name: shippingDetails.name,
+        p_customer_email: shippingDetails.email,
+        p_customer_phone: shippingDetails.phone,
+        p_shipping_address: shippingDetails.address,
+        p_shipping_city: shippingDetails.city,
+        p_shipping_pincode: shippingDetails.pincode,
+        p_subtotal: total,
+        p_total: total,
+        p_razorpay_order_id: rzpOrder.id,
+        p_items: enrichedItems,
       });
+
+    if (rpcError || !orderId) {
+      console.error('Atomic order creation failed:', rpcError);
+      return NextResponse.json(
+        { error: 'Failed to create order. Please try again.' },
+        { status: 500 }
+      );
     }
 
-    const { error: itemsError } = await supabase.from('order_items').insert(itemsToInsert);
-
-    if (itemsError) {
-      // CHANGED: this used to be a console.error with a comment
-      // admitting it was "bad" but not fixing it. The customer can
-      // still pay for this order (the Razorpay order already exists,
-      // and blocking payment here would strand them mid-checkout for
-      // a problem that isn't their fault) — but now this failure is
-      // recorded durably on the order itself via needs_review, using
-      // supabaseAdmin since this write needs to succeed regardless of
-      // RLS and regardless of whatever caused the order_items failure.
-      console.error('CRITICAL: order_items insert failed for order', order.id, itemsError);
-
-      await supabaseAdmin
-        .from('orders')
-        .update({
-          needs_review: true,
-          review_note: `order_items insert failed: ${itemsError.message}`,
-        })
-        .eq('id', order.id);
-
-      // Deliberately still returning success below — see comment above.
-      // The admin panel's order list should surface needs_review=true
-      // orders prominently so this doesn't silently go unnoticed.
-    }
+    // 6. The needs_review flag logic from the previous version is no
+    // longer needed here — the atomic transaction either fully succeeds
+    // or fully rolls back. There is no partial success state to flag.
 
     return NextResponse.json({
-      orderId: order.id,
+      orderId,
       razorpayOrderId: rzpOrder.id,
       amount: amountInPaise,
-      currency: "INR"
+      currency: 'INR',
     });
 
   } catch (error: any) {
     console.error('Checkout error:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      { status: 500 }
+    );
   }
 }
