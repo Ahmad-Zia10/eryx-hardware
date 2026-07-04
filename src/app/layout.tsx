@@ -57,9 +57,23 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: noFlashThemeScript }} />
       </head>
-      <body className="font-sans antialiased">
+      <body className="min-h-screen bg-white dark:bg-[#0A0A0A] text-[#0A0A0A] dark:text-[#F5F5F5] font-sans transition-colors duration-200">
+        {/* Provider order matches the original AppContent exactly:
+            Theme > Cart > UI. None of the three depend on each other,
+            so this order isn't functionally required, but kept
+            consistent with the source rather than reordered arbitrarily. */}
         <ThemeProvider>
-          {children}
+          <CartProvider>
+            <UIProvider>
+              <AnnouncementBar />
+              <Navbar />
+              <main>{children}</main>
+              <Footer />
+              <CartDrawer />
+              <EnquiryModal />
+              <Toast />
+            </UIProvider>
+          </CartProvider>
         </ThemeProvider>
       </body>
     </html>
