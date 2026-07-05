@@ -136,7 +136,7 @@ export default async function Home() {
                 href={`/kitchen?category=${encodeURIComponent(category.name)}`}
                 className="flex flex-col items-center gap-2 min-w-28 shrink-0 group"
               >
-                <div className="w-20 h-20 rounded-full border border-[#D4D4D4] dark:border-[#2A2A2A] overflow-hidden bg-white dark:bg-[#1A1A1A] group-hover:border-[#D4A017] transition duration-200 ease-in-out">
+                <div className="w-20 h-20 rounded-full border border-[#D4D4D4] dark:border-[#2A2A2A] overflow-hidden bg-white dark:bg-[#1A1A1A] group-hover:border-[#D4A017] group-hover:shadow-[0_8px_30px_rgba(212,160,23,0.25)] transition duration-200 ease-in-out">
                   <ProductImage
                     src={category.image}
                     alt={category.name}
@@ -165,7 +165,7 @@ export default async function Home() {
             <Link
               key={card.label}
               href={card.href}
-              className={`relative overflow-hidden border border-[#D4D4D4] dark:border-[#2A2A2A] hover:border-[#D4A017] transition duration-200 ease-in-out cursor-pointer group min-h-55 ${
+              className={`relative overflow-hidden border border-[#D4D4D4] dark:border-[#2A2A2A] hover:border-[#D4A017] group-hover:shadow-[0_8px_40px_rgba(0,0,0,0.15)] dark:group-hover:shadow-[0_8px_40px_rgba(212,160,23,0.1)] transition duration-200 ease-in-out cursor-pointer group min-h-55 ${
                 card.large ? "lg:col-span-2 lg:row-span-2" : ""
               }`}
             >
