@@ -129,7 +129,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 shrink-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/eryx-logo.png" alt="ERYX" className="h-9 object-contain" />
+          <img src="/eryx-logo.png" alt="ERYX" className="h-12 object-contain" />
         </Link>
 
         <div className="hidden lg:flex items-center gap-8">
