@@ -63,7 +63,16 @@ export default async function Home() {
         `}</style>
         <div className="absolute inset-0 hidden dark:block hero-bg-dark" />
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center w-full">
+        <div className="absolute inset-0 overflow-hidden">
+          <ProductImage
+            src="/products/s-corner/s-corner-3-lifestyle-collage.jpg"
+            alt=""
+            className="w-full h-full opacity-10 dark:opacity-[0.07] blur-sm scale-105"
+            loading="eager"
+          />
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center w-full">
           <div className="flex flex-col gap-6">
             <span className="text-xs tracking-[0.3em] uppercase text-[#D4A017]">
               A Division of Modular India
