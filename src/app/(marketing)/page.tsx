@@ -73,7 +73,7 @@ export default async function Home() {
               <br />
               Hardware for
               <br />
-              <span className="text-[#D4A017]">Modular Spaces</span>
+              <span className="bg-gradient-to-r from-[#D4A017] to-[#E8B820] bg-clip-text text-transparent">Modular Spaces</span>
             </h1>
             <p className="text-lg text-[#555555] dark:text-[#9A9A9A] max-w-lg">
               Hinges, fittings, sliding systems, baskets, pull-downs, shutters, and
