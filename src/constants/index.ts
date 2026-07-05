@@ -10,6 +10,16 @@ export const SITE_CONFIG = {
   email: "Info@modularindia.com",
   website: "eryxhardware.com",
   division: "A Division of Modular India",
+  // NOTE: placeholder handles — real URLs to be updated once confirmed
+  socialLinks: {
+    instagram: { handle: "@eryxhardware", url: "https://instagram.com/eryxhardware" },
+    facebook: { handle: "@eryxhardware", url: "https://facebook.com/eryxhardware" },
+    youtube: { handle: "@eryxhardware", url: "https://youtube.com/@eryxhardware" },
+    linkedin: { handle: "@eryxhardware", url: "https://linkedin.com/company/eryxhardware" },
+    pinterest: { handle: "@eryxhardware", url: "https://pinterest.com/eryxhardware" },
+  } as const,
+  // Place the real PDF at public/catalogue/eryx-catalogue.pdf
+  catalogueUrl: "/catalogue/eryx-catalogue.pdf" as const,
 } as const;
 
 export const NAV_LINKS: NavLink[] = [

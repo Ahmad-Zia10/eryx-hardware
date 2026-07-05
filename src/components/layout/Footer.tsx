@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { AtSign, Share2, MessageCircle, Phone, Mail, Globe } from "lucide-react";
+import { Phone, Mail, Globe, Instagram, Facebook, Youtube, Linkedin, Download } from "lucide-react";
 import { CATEGORIES } from "@/lib/catalogue-data";
+import { SITE_CONFIG } from "@/constants";
 
 export default function Footer() {
   return (
@@ -42,25 +43,51 @@ export default function Footer() {
             </div>
             <div className="flex gap-4 mt-2">
               <a
-                href="#"
-                className="text-[#9A9A9A] hover:text-[#D4A017] transition duration-200 ease-in-out"
+                href={SITE_CONFIG.socialLinks.instagram.url}
+                target="_blank"
+                rel="noopener noreferrer"
                 aria-label="Instagram"
+                className="text-[#9A9A9A] hover:text-[#D4A017] transition duration-200 ease-in-out"
               >
-                <AtSign size={18} />
+                <Instagram size={18} />
               </a>
               <a
-                href="#"
-                className="text-[#9A9A9A] hover:text-[#D4A017] transition duration-200 ease-in-out"
+                href={SITE_CONFIG.socialLinks.facebook.url}
+                target="_blank"
+                rel="noopener noreferrer"
                 aria-label="Facebook"
+                className="text-[#9A9A9A] hover:text-[#D4A017] transition duration-200 ease-in-out"
               >
-                <Share2 size={18} />
+                <Facebook size={18} />
               </a>
               <a
-                href="#"
-                className="text-[#9A9A9A] hover:text-[#D4A017] transition duration-200 ease-in-out"
+                href={SITE_CONFIG.socialLinks.youtube.url}
+                target="_blank"
+                rel="noopener noreferrer"
                 aria-label="Youtube"
+                className="text-[#9A9A9A] hover:text-[#D4A017] transition duration-200 ease-in-out"
               >
-                <MessageCircle size={18} />
+                <Youtube size={18} />
+              </a>
+              <a
+                href={SITE_CONFIG.socialLinks.linkedin.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="LinkedIn"
+                className="text-[#9A9A9A] hover:text-[#D4A017] transition duration-200 ease-in-out"
+              >
+                <Linkedin size={18} />
+              </a>
+              <a
+                href={SITE_CONFIG.socialLinks.pinterest.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Pinterest"
+                className="text-[#9A9A9A] hover:text-[#D4A017] transition duration-200 ease-in-out"
+              >
+                <svg viewBox="0 0 24 24" className="w-[18px] h-[18px] fill-current">
+                  <path d="M12 0C5.373 0 0 5.373 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 0 1 .083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.632-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/>
+                </svg>
               </a>
             </div>
           </div>
@@ -161,11 +188,11 @@ export default function Footer() {
               Blog
             </a>
             <a
-              href="https://eryxhardware.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-[#9A9A9A] hover:text-[#F5F5F5] transition duration-200 ease-in-out"
+              href={SITE_CONFIG.catalogueUrl}
+              download="Eryx-Hardware-Catalogue.pdf"
+              className="text-sm text-[#9A9A9A] hover:text-[#F5F5F5] transition duration-200 ease-in-out flex items-center gap-1"
             >
+              <Download size={12} />
               Catalogues
             </a>
             <a
