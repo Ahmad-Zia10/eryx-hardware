@@ -84,6 +84,9 @@ export default function CheckoutPage() {
         theme: {
           color: "#D4A017",
         },
+        method: {
+          emi: true,
+        },
       };
 
       const rzp = new (window as any).Razorpay(options);
