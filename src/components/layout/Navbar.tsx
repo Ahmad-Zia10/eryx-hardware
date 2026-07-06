@@ -20,6 +20,7 @@ import { useTheme } from "@/context/ThemeContext";
 import { useCart } from "@/context/CartContext";
 import { useUI } from "@/context/UIContext";
 import { CATALOG_CATEGORIES } from "@/lib/catalogue-data";
+import SearchOverlay from "./SearchOverlay";
 
 const NAV_LINKS = [
   { label: "Kitchen Accessories", href: "/kitchen" },
@@ -69,6 +70,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [productsOpen, setProductsOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const supabase = createClient();
@@ -169,12 +171,14 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-4">
-          <button
-            className="hidden sm:block text-[#555555] dark:text-[#9A9A9A] hover:text-[#D4A017] transition duration-200 ease-in-out"
-            aria-label="Search"
-          >
-            <Search size={20} />
-          </button>
+            {/* Search */}
+            <button 
+              onClick={() => setSearchOpen(true)}
+              className="p-2 text-[#0A0A0A] dark:text-white hover:text-[#D4A017] transition duration-200" 
+              aria-label="Search"
+            >
+              <Search size={20} />
+            </button>
           <button
             onClick={toggleTheme}
             className="text-[#555555] dark:text-[#9A9A9A] hover:text-[#D4A017] transition duration-200 ease-in-out"
@@ -301,6 +305,9 @@ export default function Navbar() {
           </div>
         </div>
       )}
+
+      {/* Search Overlay */}
+      {searchOpen && <SearchOverlay onClose={() => setSearchOpen(false)} />}
     </nav>
   );
 }
