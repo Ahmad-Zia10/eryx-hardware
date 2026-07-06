@@ -11,15 +11,15 @@ import { useCart } from "@/context/CartContext";
 import { useUI } from "@/context/UIContext";
 import { createClient } from "@/lib/supabase/client";
 import { formatPrice } from "@/lib/catalogue-data";
-import type { CatalogueProduct } from "@/lib/catalogue-data";
+import type { DbProduct } from "@/lib/db/products";
 
 interface ProductDetailProps {
   // Both fetched server-side by page.tsx now (getProductBySlug and
   // getProductsByCategory are async Supabase calls) and passed down
   // as plain props — this component no longer does any data fetching
   // of its own, same pattern as Kitchen.tsx.
-  product: CatalogueProduct | null;
-  relatedProducts: CatalogueProduct[];
+  product: DbProduct | null;
+  relatedProducts: DbProduct[];
   reviews?: any[];
   ratingSummary?: { average: number; count: number };
 }
@@ -299,7 +299,6 @@ export default function ProductDetail({ product, relatedProducts, reviews = [], 
           </div>
         </div>
       )}
-    </div>
 
       {/* Customer Reviews */}
       <div className="mt-20 border-t border-[#E8E4DD] dark:border-[#2A2A2A] pt-12">

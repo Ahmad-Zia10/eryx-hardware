@@ -1,18 +1,21 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Star } from "lucide-react";
 import ProductImage from "@/components/ui/ProductImage";
 import { useCart } from "@/context/CartContext";
 import { useUI } from "@/context/UIContext";
-import { formatPrice, CatalogueProduct } from "@/lib/catalogue-data";
+import { formatPrice } from "@/lib/catalogue-data";
+import type { DbProduct } from "@/lib/db/products";
 
 interface ProductCardProps {
-  product: CatalogueProduct;
+  product: DbProduct | any;
   className?: string;
+  averageRating?: number;
+  reviewCount?: number;
 }
 
-export default function ProductCard({ product, className = "" }: ProductCardProps) {
+export default function ProductCard({ product, className = "", averageRating, reviewCount }: ProductCardProps) {
   const router = useRouter();
   const { addItem } = useCart();
   const { showToast, openEnquiryModal } = useUI();
@@ -54,6 +57,13 @@ export default function ProductCard({ product, className = "" }: ProductCardProp
         <h3 className="text-sm font-semibold text-[#0A0A0A] dark:text-[#F5F5F5] font-serif">
           {product.name}
         </h3>
+        {averageRating !== undefined && reviewCount !== undefined && reviewCount > 0 && (
+          <div className="flex items-center gap-1 mt-0.5">
+            <Star size={12} fill="currentColor" className="text-[#D4A017]" />
+            <span className="text-xs text-[#0A0A0A] dark:text-[#F5F5F5] font-semibold">{averageRating.toFixed(1)}</span>
+            <span className="text-xs text-[#555555] dark:text-[#9A9A9A]">({reviewCount})</span>
+          </div>
+        )}
         <span className="text-xs text-[#555555] dark:text-[#9A9A9A]">
           {product.dimensions}
         </span>
