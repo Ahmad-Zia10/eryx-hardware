@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient, supabaseAdmin } from '@/lib/supabase/server';
+import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 export async function signOut() {
@@ -146,6 +147,24 @@ export async function addPromoCode(data: {
     if (error.code === '23505') throw new Error('Promo code already exists');
     throw new Error('Failed to add promo code');
   }
+}
+
+export async function moderateReview(id: string, status: 'approved' | 'rejected') {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Unauthorized');
+
+  const { data: profile } = await supabaseAdmin
+    .from('profiles').select('role').eq('id', user.id).single();
+  if (profile?.role !== 'admin') throw new Error('Unauthorized');
+
+  const { error } = await supabaseAdmin
+    .from('product_reviews')
+    .update({ approval_status: status })
+    .eq('id', id);
+
+  if (error) throw new Error('Update failed');
+  revalidatePath('/admin/reviews');
 }
 
 export async function updatePromoCodeStatus(id: string, is_active: boolean) {
