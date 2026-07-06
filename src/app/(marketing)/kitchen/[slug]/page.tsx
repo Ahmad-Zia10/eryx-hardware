@@ -1,5 +1,10 @@
 import ProductDetail from "./ProductDetail";
-import { getProductBySlug, getProductsByCategory } from "@/lib/db/products";
+import { 
+  getProductBySlug, 
+  getProductsByCategory,
+  getProductReviews,
+  getProductRatingSummary 
+} from "@/lib/db/products";
 
 // Next.js App Router convention: a folder named [slug] makes `slug`
 // available as a prop here automatically. In Next.js 15+ (this project
@@ -21,5 +26,15 @@ export default async function ProductDetailPage({
       ).slice(0, 4)
     : [];
 
-  return <ProductDetail product={product} relatedProducts={relatedProducts} />;
+  const reviews = product ? await getProductReviews(product.id) : [];
+  const ratingSummary = product ? await getProductRatingSummary(product.id) : { average: 0, count: 0 };
+
+  return (
+    <ProductDetail 
+      product={product} 
+      relatedProducts={relatedProducts} 
+      reviews={reviews}
+      ratingSummary={ratingSummary}
+    />
+  );
 }

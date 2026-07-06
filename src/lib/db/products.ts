@@ -114,3 +114,52 @@ export async function getTopPicks(): Promise<DbProduct[]> {
 export function formatPrice(mrp: number | null): string {
   return typeof mrp === "number" ? `₹${mrp.toLocaleString("en-IN")}` : "Price on request";
 }
+
+export async function getProductReviews(productId: string) {
+  const { data, error } = await supabase
+    .from("product_reviews")
+    .select(`
+      *,
+      customer:profiles!customer_id(first_name, last_name)
+    `)
+    .eq("product_id", productId)
+    .order("created_at", { ascending: false })
+    .limit(20);
+
+  if (error) {
+    console.error("getProductReviews failed:", error.message);
+    return [];
+  }
+
+  // To match the UI requirement "first name + last initial":
+  return data.map((review) => {
+    let authorName = "Anonymous";
+    if (review.customer) {
+      const { first_name, last_name } = review.customer;
+      if (first_name) {
+        authorName = last_name ? `${first_name} ${last_name.charAt(0)}.` : first_name;
+      }
+    }
+    return {
+      ...review,
+      authorName,
+    };
+  });
+}
+
+export async function getProductRatingSummary(productId: string) {
+  const { data, error } = await supabase
+    .from("product_reviews")
+    .select("rating")
+    .eq("product_id", productId);
+
+  if (error || !data || data.length === 0) {
+    return { average: 0, count: 0 };
+  }
+
+  const sum = data.reduce((acc, curr) => acc + curr.rating, 0);
+  return {
+    average: Number((sum / data.length).toFixed(1)),
+    count: data.length,
+  };
+}

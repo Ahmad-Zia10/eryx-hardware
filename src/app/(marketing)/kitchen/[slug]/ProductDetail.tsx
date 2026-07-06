@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Minus, Plus, ShoppingCart, Truck, ShieldCheck, Award, ExternalLink } from "lucide-react";
+import { Minus, Plus, ShoppingCart, Truck, ShieldCheck, Award, ExternalLink, Star } from "lucide-react";
 import ProductImage from "@/components/ui/ProductImage";
 import ProductCard from "@/components/sections/ProductCard";
 import PincodeChecker from "@/components/ui/PincodeChecker";
 import { useCart } from "@/context/CartContext";
 import { useUI } from "@/context/UIContext";
+import { createClient } from "@/lib/supabase/client";
 import { formatPrice } from "@/lib/catalogue-data";
 import type { CatalogueProduct } from "@/lib/catalogue-data";
 
@@ -19,16 +20,70 @@ interface ProductDetailProps {
   // of its own, same pattern as Kitchen.tsx.
   product: CatalogueProduct | null;
   relatedProducts: CatalogueProduct[];
+  reviews?: any[];
+  ratingSummary?: { average: number; count: number };
 }
 
-export default function ProductDetail({ product, relatedProducts }: ProductDetailProps) {
+export default function ProductDetail({ product, relatedProducts, reviews = [], ratingSummary = { average: 0, count: 0 } }: ProductDetailProps) {
   const router = useRouter();
+  const supabase = createClient();
   const { addItem } = useCart();
   const { showToast, openEnquiryModal } = useUI();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(
     product?.gallery?.[0] || product?.image
   );
+  
+  const [user, setUser] = useState<any>(null);
+  const [localReviews, setLocalReviews] = useState(reviews);
+  const [reviewForm, setReviewForm] = useState({ rating: 5, text: "" });
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewError, setReviewError] = useState("");
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+  }, [supabase.auth]);
+
+  const handleReviewSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!product) return;
+    setReviewSubmitting(true);
+    setReviewError("");
+
+    try {
+      const res = await fetch("/api/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          product_id: product.id,
+          rating: reviewForm.rating,
+          review_text: reviewForm.text,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Failed to submit review");
+      }
+
+      const newReview = await res.json();
+      // Optimistically add to list. We mock authorName since API just returns raw row.
+      const enrichedReview = {
+        ...newReview,
+        authorName: user?.user_metadata?.first_name 
+          ? `${user.user_metadata.first_name} ${user.user_metadata.last_name?.charAt(0) || ""}.` 
+          : "You",
+      };
+      setLocalReviews([enrichedReview, ...localReviews]);
+      setReviewForm({ rating: 5, text: "" });
+    } catch (err: any) {
+      setReviewError(err.message);
+    } finally {
+      setReviewSubmitting(false);
+    }
+  };
 
   if (!product) {
     return (
@@ -113,6 +168,22 @@ export default function ProductDetail({ product, relatedProducts }: ProductDetai
           <span className="text-xs text-[#555555] dark:text-[#9A9A9A]">
             Item Code: {product.code}
           </span>
+          <div className="flex items-center gap-2 mt-[-8px]">
+            <div className="flex text-[#D4A017]">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Star
+                  key={star}
+                  size={14}
+                  fill={star <= Math.round(ratingSummary.average) ? "currentColor" : "none"}
+                  className={star <= Math.round(ratingSummary.average) ? "text-[#D4A017]" : "text-[#D4D4D4] dark:text-[#2A2A2A]"}
+                />
+              ))}
+            </div>
+            <span className="text-xs text-[#0A0A0A] dark:text-[#F5F5F5] font-semibold">{ratingSummary.average > 0 ? ratingSummary.average.toFixed(1) : ""}</span>
+            <span className="text-xs text-[#555555] dark:text-[#9A9A9A]">
+              {ratingSummary.count > 0 ? `(${ratingSummary.count})` : "Be the first to review"}
+            </span>
+          </div>
           <h1 className="text-4xl font-semibold text-[#0A0A0A] dark:text-[#F5F5F5]">
             {product.name}
           </h1>
@@ -228,6 +299,99 @@ export default function ProductDetail({ product, relatedProducts }: ProductDetai
           </div>
         </div>
       )}
+    </div>
+
+      {/* Customer Reviews */}
+      <div className="mt-20 border-t border-[#E8E4DD] dark:border-[#2A2A2A] pt-12">
+        <h2 className="text-2xl font-bold text-[#0A0A0A] dark:text-[#F5F5F5] mb-8">
+          Customer Reviews
+        </h2>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-12">
+          {/* Review Form */}
+          <div>
+            <h3 className="font-semibold text-lg text-[#0A0A0A] dark:text-[#F5F5F5] mb-4">Write a Review</h3>
+            {user ? (
+              <form onSubmit={handleReviewSubmit} className="flex flex-col gap-4 bg-[#F5F5F5] dark:bg-[#1A1A1A] p-6 border border-[#E8E4DD] dark:border-[#2A2A2A]">
+                <div>
+                  <label className="block text-sm text-[#555555] dark:text-[#9A9A9A] mb-2">Rating</label>
+                  <div className="flex gap-1 cursor-pointer">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        size={24}
+                        onClick={() => setReviewForm({ ...reviewForm, rating: star })}
+                        fill={star <= reviewForm.rating ? "currentColor" : "none"}
+                        className={star <= reviewForm.rating ? "text-[#D4A017]" : "text-[#D4D4D4] dark:text-[#2A2A2A]"}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm text-[#555555] dark:text-[#9A9A9A] mb-2">Review (Optional)</label>
+                  <textarea
+                    value={reviewForm.text}
+                    onChange={(e) => setReviewForm({ ...reviewForm, text: e.target.value })}
+                    rows={4}
+                    className="w-full bg-white dark:bg-[#111111] border border-[#D4D4D4] dark:border-[#2A2A2A] text-[#0A0A0A] dark:text-[#F5F5F5] p-3 text-sm focus:outline-none focus:border-[#D4A017] resize-none"
+                    placeholder="What did you like or dislike?"
+                  />
+                </div>
+                {reviewError && <p className="text-red-500 text-sm">{reviewError}</p>}
+                <button
+                  type="submit"
+                  disabled={reviewSubmitting}
+                  className="bg-[#0A0A0A] dark:bg-[#F5F5F5] text-white dark:text-[#0A0A0A] font-semibold py-3 hover:opacity-90 transition disabled:opacity-50"
+                >
+                  {reviewSubmitting ? "Submitting..." : "Submit Review"}
+                </button>
+              </form>
+            ) : (
+              <div className="bg-[#F5F5F5] dark:bg-[#1A1A1A] p-6 border border-[#E8E4DD] dark:border-[#2A2A2A] text-sm text-[#555555] dark:text-[#9A9A9A]">
+                Please <Link href="/login" className="text-[#D4A017] hover:underline">log in</Link> to write a review.
+              </div>
+            )}
+          </div>
+
+          {/* Reviews List */}
+          <div className="flex flex-col gap-6">
+            {localReviews.length === 0 ? (
+              <p className="text-[#555555] dark:text-[#9A9A9A]">No reviews yet.</p>
+            ) : (
+              localReviews.map((review) => (
+                <div key={review.id} className="border-b border-[#E8E4DD] dark:border-[#2A2A2A] pb-6 last:border-0 last:pb-0">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-3">
+                      <div className="flex text-[#D4A017]">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star
+                            key={star}
+                            size={14}
+                            fill={star <= review.rating ? "currentColor" : "none"}
+                            className={star <= review.rating ? "text-[#D4A017]" : "text-[#D4D4D4] dark:text-[#2A2A2A]"}
+                          />
+                        ))}
+                      </div>
+                      <span className="font-medium text-[#0A0A0A] dark:text-[#F5F5F5] text-sm">{review.authorName}</span>
+                      {review.is_verified_purchase && (
+                        <span className="text-[10px] uppercase tracking-wider text-green-600 dark:text-green-500 border border-green-600 dark:border-green-500 px-1.5 py-0.5 rounded-sm">
+                          Verified Purchase
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-xs text-[#555555] dark:text-[#9A9A9A]">
+                      {new Date(review.created_at).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
+                    </span>
+                  </div>
+                  {review.review_text && (
+                    <p className="text-sm text-[#555555] dark:text-[#F5F5F5] whitespace-pre-wrap">{review.review_text}</p>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
