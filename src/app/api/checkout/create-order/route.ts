@@ -18,7 +18,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { items, shippingDetails } = await req.json();
+    const { items, shippingDetails, promoCode } = await req.json();
 
     if (!items || items.length === 0) {
       return NextResponse.json({ error: 'Cart is empty' }, { status: 400 });
@@ -77,6 +77,34 @@ export async function POST(req: Request) {
       product_id: dbProducts?.find(p => p.item_code === item.item_code)?.id ?? null,
     }));
 
+    let subtotal = total;
+    let discountApplied = 0;
+    let promoCodeId = null;
+
+    if (promoCode) {
+      const { data: promo } = await supabaseAdmin
+        .from('promo_codes')
+        .select('*')
+        .ilike('code', promoCode)
+        .eq('is_active', true)
+        .single();
+
+      if (promo) {
+        if (!promo.expires_at || new Date(promo.expires_at) > new Date()) {
+          if (!promo.min_order_value || subtotal >= promo.min_order_value) {
+            promoCodeId = promo.id;
+            if (promo.discount_type === 'percentage') {
+              discountApplied = (subtotal * promo.discount_value) / 100;
+            } else if (promo.discount_type === 'fixed') {
+              discountApplied = promo.discount_value;
+            }
+            discountApplied = Math.min(discountApplied, subtotal);
+            total -= discountApplied;
+          }
+        }
+      }
+    }
+
     // 4. Create Razorpay order (amount in paise)
     const amountInPaise = Math.round(total * 100);
 
@@ -102,10 +130,12 @@ export async function POST(req: Request) {
         p_shipping_address: shippingDetails.address,
         p_shipping_city: shippingDetails.city,
         p_shipping_pincode: shippingDetails.pincode,
-        p_subtotal: total,
+        p_subtotal: subtotal,
         p_total: total,
         p_razorpay_order_id: rzpOrder.id,
         p_items: enrichedItems,
+        p_promo_code_id: promoCodeId,
+        p_discount_applied: discountApplied,
       });
 
     if (rpcError || !orderId) {

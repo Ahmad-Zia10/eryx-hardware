@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Package, MessageSquare, ShoppingBag } from 'lucide-react';
+import { LayoutDashboard, Package, MessageSquare, ShoppingBag, Tag } from 'lucide-react';
 
 export default function AdminNav() {
   const pathname = usePathname();
@@ -12,6 +12,7 @@ export default function AdminNav() {
     { name: 'Products', href: '/admin/products', icon: Package },
     { name: 'Enquiries', href: '/admin/enquiries', icon: MessageSquare },
     { name: 'Orders', href: '/admin/orders', icon: ShoppingBag },
+    { name: 'Promo Codes', href: '/admin/promo-codes', icon: Tag },
   ];
 
   return (

@@ -11,6 +11,11 @@ export default function CheckoutPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState<any>(null);
 
+  const [promoCode, setPromoCode] = useState('');
+  const [appliedPromo, setAppliedPromo] = useState<any>(null);
+  const [promoError, setPromoError] = useState('');
+  const [promoLoading, setPromoLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -41,6 +46,26 @@ export default function CheckoutPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleApplyPromo = async () => {
+    if (!promoCode) return;
+    setPromoLoading(true);
+    setPromoError('');
+    try {
+      const res = await fetch('/api/validate-promo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: promoCode, subtotal: cartTotal }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setAppliedPromo(data);
+    } catch (err: any) {
+      setPromoError(err.message);
+    } finally {
+      setPromoLoading(false);
+    }
+  };
+
   const handlePayment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (items.length === 0) return;
@@ -57,6 +82,7 @@ export default function CheckoutPage() {
             quantity: item.quantity
           })),
           shippingDetails: formData,
+          promoCode: appliedPromo?.code,
         }),
       });
 
@@ -139,10 +165,43 @@ export default function CheckoutPage() {
                 </div>
               ))}
             </div>
+
+            <div className="mt-8">
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  value={promoCode}
+                  onChange={(e) => setPromoCode(e.target.value)}
+                  placeholder="Enter Promo Code"
+                  className="flex-1 px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-md bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:border-[#D4A017]"
+                />
+                <button 
+                  onClick={handleApplyPromo}
+                  disabled={promoLoading || !promoCode}
+                  className="bg-neutral-900 dark:bg-neutral-800 text-white px-4 py-2 rounded-md hover:bg-neutral-800 transition disabled:opacity-50"
+                  type="button"
+                >
+                  {promoLoading ? '...' : 'Apply'}
+                </button>
+              </div>
+              {promoError && <p className="text-red-500 text-xs mt-2">{promoError}</p>}
+            </div>
             
-            <div className="mt-8 pt-4 border-t border-neutral-200 dark:border-neutral-800 flex justify-between font-bold text-lg text-neutral-900 dark:text-white">
-              <span>Total</span>
-              <span>{formatPrice(cartTotal)}</span>
+            <div className="mt-6 pt-4 border-t border-neutral-200 dark:border-neutral-800">
+              <div className="flex justify-between text-neutral-600 dark:text-neutral-400 mb-2 text-sm">
+                <span>Subtotal</span>
+                <span>{formatPrice(cartTotal)}</span>
+              </div>
+              {appliedPromo && (
+                <div className="flex justify-between text-green-600 dark:text-green-500 mb-2 text-sm">
+                  <span>Discount ({appliedPromo.code})</span>
+                  <span>-{formatPrice(appliedPromo.discount_amount)}</span>
+                </div>
+              )}
+              <div className="flex justify-between font-bold text-lg text-neutral-900 dark:text-white pt-2 border-t border-neutral-100 dark:border-neutral-800">
+                <span>Total</span>
+                <span>{formatPrice(cartTotal - (appliedPromo?.discount_amount || 0))}</span>
+              </div>
             </div>
           </div>
 
@@ -184,7 +243,7 @@ export default function CheckoutPage() {
                 disabled={isLoading}
                 className="w-full mt-6 bg-[#D4A017] hover:bg-[#B8860B] text-white font-bold py-3 px-4 rounded-md transition-colors disabled:opacity-70 flex justify-center"
               >
-                {isLoading ? 'Processing...' : `Pay ${formatPrice(cartTotal)}`}
+                {isLoading ? 'Processing...' : `Pay ${formatPrice(cartTotal - (appliedPromo?.discount_amount || 0))}`}
               </button>
             </form>
           </div>
