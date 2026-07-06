@@ -15,6 +15,7 @@ export async function updateProduct(id: string, data: {
   is_featured: boolean;
   is_on_sale: boolean;
   discount_price: number | null;
+  external_price_url: string | null;
 }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -32,6 +33,7 @@ export async function updateProduct(id: string, data: {
       is_featured: data.is_featured,
       is_on_sale: data.is_on_sale, 
       discount_price: data.discount_price,
+      external_price_url: data.external_price_url,
       updated_at: new Date().toISOString() 
     })
     .eq('id', id);

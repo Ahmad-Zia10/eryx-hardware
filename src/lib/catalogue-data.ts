@@ -323,6 +323,7 @@ export interface CatalogueProduct {
   gallery: string[];
   description: string;
   material: string;
+  external_price_url?: string | null;
 }
 
 export const PRODUCTS: CatalogueProduct[] = RAW_ROWS.map(

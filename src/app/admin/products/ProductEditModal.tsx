@@ -21,6 +21,7 @@ export default function ProductEditModal({ product, onClose, onSuccess }: Produc
     is_featured: product.is_featured,
     is_on_sale: product.is_on_sale || false,
     discount_price: product.discount_price || '',
+    external_price_url: product.external_price_url || '',
   });
 
   // Escape key closes modal
@@ -52,6 +53,7 @@ export default function ProductEditModal({ product, onClose, onSuccess }: Produc
         is_featured: formData.is_featured,
         is_on_sale: formData.is_on_sale,
         discount_price: formData.is_on_sale && formData.discount_price ? Number(formData.discount_price) : null,
+        external_price_url: formData.external_price_url || null,
       });
       onSuccess();
       onClose();
@@ -98,6 +100,19 @@ export default function ProductEditModal({ product, onClose, onSuccess }: Produc
               className="w-full bg-[#1A1A1A] border border-[#2A2A2A] text-[#F5F5F5] text-sm px-4 py-2.5 focus:border-[#D4A017] focus:outline-none placeholder-[#9A9A9A] rounded-sm transition duration-200 ease-in-out"
               value={formData.mrp}
               onChange={(e) => setFormData({ ...formData, mrp: e.target.value })}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm text-[#F5F5F5] mb-2">
+              External Price Comparison URL
+            </label>
+            <input
+              type="url"
+              value={formData.external_price_url}
+              onChange={(e) => setFormData({ ...formData, external_price_url: e.target.value })}
+              className="w-full bg-[#1A1A1A] border border-[#2A2A2A] text-[#F5F5F5] text-sm px-4 py-2.5 focus:border-[#D4A017] focus:outline-none placeholder-[#9A9A9A] rounded-sm transition duration-200 ease-in-out"
+              placeholder="https://example.com/product"
             />
           </div>
 

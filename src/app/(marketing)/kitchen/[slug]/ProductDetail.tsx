@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Minus, Plus, ShoppingCart, Truck, ShieldCheck, Award } from "lucide-react";
+import { Minus, Plus, ShoppingCart, Truck, ShieldCheck, Award, ExternalLink } from "lucide-react";
 import ProductImage from "@/components/ui/ProductImage";
 import ProductCard from "@/components/sections/ProductCard";
 import { useCart } from "@/context/CartContext";
@@ -182,6 +182,17 @@ export default function ProductDetail({ product, relatedProducts }: ProductDetai
           >
             Enquire Now
           </button>
+
+          {product.external_price_url && (
+            <a
+              href={product.external_price_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-1.5 mt-2 text-sm text-[#555555] dark:text-[#9A9A9A] hover:text-[#D4A017] transition duration-200 ease-in-out"
+            >
+              Compare Prices on Another Site <ExternalLink size={12} />
+            </a>
+          )}
 
           <div className="flex flex-wrap gap-6 mt-2">
             <div className="flex items-center gap-2 text-xs text-[#555555] dark:text-[#9A9A9A]">

@@ -17,6 +17,7 @@ import type { CatalogueProduct } from "@/lib/catalogue-data";
 
 export interface DbProduct extends CatalogueProduct {
   id: string;
+  external_price_url?: string | null;
 }
 
 // Maps a raw Supabase row (snake_case, matches the `products` +
@@ -41,6 +42,7 @@ function mapRow(row: any): DbProduct {
     gallery: images.length > 0 ? images : [row.image_url].filter(Boolean),
     description: row.description || "",
     material: row.material || "",
+    external_price_url: row.external_price_url || null,
   };
 }
 

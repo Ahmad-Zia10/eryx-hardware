@@ -14,6 +14,7 @@ export default function ProductEditForm({ product }: { product: any }) {
     is_featured: product.is_featured,
     is_on_sale: product.is_on_sale || false,
     discount_price: product.discount_price || '',
+    external_price_url: product.external_price_url || '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -28,6 +29,7 @@ export default function ProductEditForm({ product }: { product: any }) {
         is_featured: formData.is_featured,
         is_on_sale: formData.is_on_sale,
         discount_price: formData.is_on_sale && formData.discount_price ? Number(formData.discount_price) : null,
+        external_price_url: formData.external_price_url || null,
       });
       // The Server Action handles the redirect on success
     } catch (err: any) {
@@ -109,6 +111,19 @@ export default function ProductEditForm({ product }: { product: any }) {
           />
         </div>
       )}
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          External Price Comparison URL
+        </label>
+        <input
+          type="url"
+          value={formData.external_price_url}
+          onChange={(e) => setFormData({ ...formData, external_price_url: e.target.value })}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black"
+          placeholder="https://example.com/product"
+        />
+      </div>
 
       <div className="pt-4 flex gap-4">
         <button
