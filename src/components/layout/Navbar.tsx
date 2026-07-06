@@ -220,6 +220,14 @@ export default function Navbar() {
                     Admin Panel
                   </Link>
                 )}
+                <Link
+                  href="/account"
+                  onClick={() => setUserDropdownOpen(false)}
+                  className="flex items-center px-4 py-2 text-sm text-[#555555] dark:text-[#9A9A9A] hover:bg-[#F5F5F5] dark:hover:bg-[#1F1F1F] hover:text-[#D4A017]"
+                >
+                  <User size={14} className="mr-2" />
+                  My Account
+                </Link>
                 <button
                   onClick={handleSignOut}
                   className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-[#F5F5F5] dark:hover:bg-[#1F1F1F]"

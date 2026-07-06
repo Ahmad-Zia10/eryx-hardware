@@ -18,6 +18,12 @@ export function StatusBadge({ status }: { status: string }) {
     case 'delivered':
       colorClass = 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30';
       break;
+    case 'approved':
+      colorClass = 'bg-green-500/10 text-green-400 border border-green-500/30';
+      break;
+    case 'rejected':
+      colorClass = 'bg-red-500/10 text-red-400 border border-red-500/30';
+      break;
     case 'new':
       colorClass = 'bg-[#D4A017]/10 text-[#D4A017] border border-[#D4A017]/30';
       break;
