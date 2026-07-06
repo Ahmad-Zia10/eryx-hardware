@@ -22,6 +22,15 @@ export const SITE_CONFIG = {
   catalogueUrl: "/catalogue/eryx-catalogue.pdf" as const,
 } as const;
 
+export const SERVICEABLE_PINCODES = [
+  "110", // Delhi NCR
+  "400", // Mumbai
+  "560", // Bangalore
+  "500", // Hyderabad
+  "600", // Chennai
+  "411", // Pune
+];
+
 export const NAV_LINKS: NavLink[] = [
   { label: "Home", href: "/" },
   { label: "About Us", href: "/about" },

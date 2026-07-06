@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Minus, Plus, ShoppingCart, Truck, ShieldCheck, Award, ExternalLink } from "lucide-react";
 import ProductImage from "@/components/ui/ProductImage";
 import ProductCard from "@/components/sections/ProductCard";
+import PincodeChecker from "@/components/ui/PincodeChecker";
 import { useCart } from "@/context/CartContext";
 import { useUI } from "@/context/UIContext";
 import { formatPrice } from "@/lib/catalogue-data";
@@ -146,7 +147,9 @@ export default function ProductDetail({ product, relatedProducts }: ProductDetai
 
           <div className="border-t border-[#D4D4D4] dark:border-[#2A2A2A]" />
 
-          <div>
+          <PincodeChecker />
+
+          <div className="mt-4">
             <span className="text-xs text-[#555555] dark:text-[#9A9A9A]">MRP</span>
             <p className="text-3xl font-bold text-[#D4A017]">{formatPrice(product.mrp)}</p>
           </div>
