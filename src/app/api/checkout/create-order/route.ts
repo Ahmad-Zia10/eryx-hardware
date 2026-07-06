@@ -92,6 +92,20 @@ export async function POST(req: Request) {
       if (promo) {
         if (!promo.expires_at || new Date(promo.expires_at) > new Date()) {
           if (!promo.min_order_value || subtotal >= promo.min_order_value) {
+            const { count } = await supabaseAdmin
+              .from('promo_usages')
+              .select('*', { count: 'exact', head: true })
+              .eq('promo_code_id', promo.id)
+              .eq('customer_id', user.id);
+
+            const maxUses = promo.max_uses_per_user ?? 1;
+            if (count !== null && count >= maxUses) {
+              return NextResponse.json(
+                { error: "You've already used this promo code" },
+                { status: 400 }
+              );
+            }
+
             promoCodeId = promo.id;
             if (promo.discount_type === 'percentage') {
               discountApplied = (subtotal * promo.discount_value) / 100;
@@ -144,6 +158,20 @@ export async function POST(req: Request) {
         { error: 'Failed to create order. Please try again.' },
         { status: 500 }
       );
+    }
+
+    if (promoCodeId) {
+      const { error: usageError } = await supabaseAdmin
+        .from('promo_usages')
+        .insert({
+          promo_code_id: promoCodeId,
+          customer_id: user.id,
+          order_id: orderId,
+        });
+
+      if (usageError) {
+        console.error('Failed to record promo usage:', usageError);
+      }
     }
 
     // 6. The needs_review flag logic from the previous version is no

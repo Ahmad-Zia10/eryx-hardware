@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { createClient, supabaseAdmin } from '@/lib/supabase/server';
 
 export async function POST(req: Request) {
   try {
@@ -8,6 +8,9 @@ export async function POST(req: Request) {
     if (!code || typeof subtotal !== 'number') {
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
     }
+
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
     // Query the promo code
     const { data: promo, error } = await supabaseAdmin
@@ -30,6 +33,19 @@ export async function POST(req: Request) {
 
     if (promo.min_order_value && subtotal < promo.min_order_value) {
       return NextResponse.json({ error: `Minimum order value of ₹${promo.min_order_value} required` }, { status: 400 });
+    }
+
+    if (user) {
+      const { count } = await supabaseAdmin
+        .from('promo_usages')
+        .select('*', { count: 'exact', head: true })
+        .eq('promo_code_id', promo.id)
+        .eq('customer_id', user.id);
+
+      const maxUses = promo.max_uses_per_user ?? 1;
+      if (count !== null && count >= maxUses) {
+        return NextResponse.json({ error: "You've already used this promo code" }, { status: 400 });
+      }
     }
 
     // Calculate discount

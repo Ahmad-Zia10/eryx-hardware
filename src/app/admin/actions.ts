@@ -123,6 +123,7 @@ export async function addPromoCode(data: {
   discount_value: number;
   min_order_value: number;
   expires_at: string | null;
+  max_uses_per_user: number;
 }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -140,6 +141,7 @@ export async function addPromoCode(data: {
       discount_value: data.discount_value,
       min_order_value: data.min_order_value,
       expires_at: data.expires_at || null,
+      max_uses_per_user: data.max_uses_per_user,
       is_active: true,
     });
 

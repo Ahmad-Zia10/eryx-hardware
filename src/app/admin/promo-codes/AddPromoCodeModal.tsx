@@ -19,6 +19,7 @@ export default function AddPromoCodeModal({ onClose, onSuccess }: AddPromoCodeMo
     discount_value: '',
     min_order_value: '',
     expires_at: '',
+    max_uses_per_user: '1',
   });
 
   // Escape key closes modal
@@ -50,6 +51,7 @@ export default function AddPromoCodeModal({ onClose, onSuccess }: AddPromoCodeMo
         discount_value: Number(formData.discount_value),
         min_order_value: formData.min_order_value ? Number(formData.min_order_value) : 0,
         expires_at: formData.expires_at ? new Date(formData.expires_at).toISOString() : null,
+        max_uses_per_user: formData.max_uses_per_user ? Number(formData.max_uses_per_user) : 1,
       });
       onSuccess();
       onClose();
@@ -147,6 +149,18 @@ export default function AddPromoCodeModal({ onClose, onSuccess }: AddPromoCodeMo
                 onChange={(e) => setFormData({ ...formData, expires_at: e.target.value })}
               />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-sm text-[#F5F5F5] mb-2">Max Uses Per User</label>
+            <input
+              type="number"
+              min="1"
+              required
+              className="w-full bg-[#1A1A1A] border border-[#2A2A2A] text-[#F5F5F5] text-sm px-4 py-2.5 focus:border-[#D4A017] focus:outline-none placeholder-[#555555] rounded-sm transition duration-200 ease-in-out"
+              value={formData.max_uses_per_user}
+              onChange={(e) => setFormData({ ...formData, max_uses_per_user: e.target.value })}
+            />
           </div>
 
           <div className="pt-4 flex gap-3 justify-end border-t border-[#2A2A2A]">
