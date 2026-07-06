@@ -26,6 +26,7 @@ export default function AddProductModal({ onClose, onSuccess }: AddProductModalP
     mrp: '',
     description: '',
     image_url: '',
+    external_price_url: '',
     is_active: true,
     is_featured: false,
   });
@@ -189,15 +190,27 @@ export default function AddProductModal({ onClose, onSuccess }: AddProductModalP
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm text-[#F5F5F5] mb-2">Image URL</label>
-            <input
-              type="url"
-              placeholder="https://example.com/image.jpg"
-              className="w-full bg-[#1A1A1A] border border-[#2A2A2A] text-[#F5F5F5] text-sm px-4 py-2.5 focus:border-[#D4A017] focus:outline-none placeholder-[#555555] rounded-sm transition duration-200 ease-in-out"
-              value={formData.image_url}
-              onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+              <label className="block text-sm text-[#F5F5F5] mb-2">Image URL</label>
+              <input
+                type="url"
+                placeholder="https://example.com/image.jpg"
+                className="w-full bg-[#1A1A1A] border border-[#2A2A2A] text-[#F5F5F5] text-sm px-4 py-2.5 focus:border-[#D4A017] focus:outline-none placeholder-[#555555] rounded-sm transition duration-200 ease-in-out"
+                value={formData.image_url}
+                onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-[#F5F5F5] mb-2">External Price Comparison URL</label>
+              <input
+                type="url"
+                placeholder="https://example.com/product"
+                className="w-full bg-[#1A1A1A] border border-[#2A2A2A] text-[#F5F5F5] text-sm px-4 py-2.5 focus:border-[#D4A017] focus:outline-none placeholder-[#555555] rounded-sm transition duration-200 ease-in-out"
+                value={formData.external_price_url}
+                onChange={(e) => setFormData({ ...formData, external_price_url: e.target.value })}
+              />
+            </div>
           </div>
 
           <div>

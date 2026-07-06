@@ -32,6 +32,10 @@ export async function POST(req: Request) {
 
     const is_verified_purchase = Array.isArray(orders) && orders.length > 0;
 
+    if (!is_verified_purchase) {
+      return NextResponse.json({ error: 'You must purchase this product before reviewing it.' }, { status: 403 });
+    }
+
     // Insert the review using the authenticated client (so RLS policies apply)
     const { data: review, error } = await supabase
       .from('product_reviews')
