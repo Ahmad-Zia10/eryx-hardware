@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { updateProduct } from '@/app/admin/actions';
 import Link from 'next/link';
+import ProductImageManager from '../../ProductImageManager';
 
 export default function ProductEditForm({ product }: { product: any }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,6 +47,13 @@ export default function ProductEditForm({ product }: { product: any }) {
           {error}
         </div>
       )}
+
+      <div className="rounded-lg bg-[#141414] p-4">
+        <ProductImageManager
+          productId={product.id}
+          initialImages={product.product_images || []}
+        />
+      </div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700">MRP (₹)</label>

@@ -73,7 +73,7 @@ export default function OrdersTable({ orders: initialOrders }: { orders: any[] }
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
                     <div className="text-sm text-[#F5F5F5]">{order.customer_name}</div>
-                    <div className="text-sm text-[#9A9A9A]">{order.email}</div>
+                    <div className="text-sm text-[#9A9A9A]">{order.customer_email}</div>
                   </td>
                   <td className="px-4 py-3 text-sm text-[#F5F5F5]">
                     {summary}

@@ -6,7 +6,7 @@ export const revalidate = 0; // Ensure fresh data for admin
 export default async function AdminProductsPage() {
   const { data: products } = await supabaseAdmin
     .from('products')
-    .select('*')
+    .select('*, product_images(id, image_url, display_order, is_primary)')
     .order('catalogue_sno', { ascending: true });
 
   return (

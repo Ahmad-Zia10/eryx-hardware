@@ -43,38 +43,28 @@ export async function POST(req: Request) {
     const event = JSON.parse(rawBody);
 
     if (event.event === 'payment.captured' || event.event === 'order.paid') {
-      const payment = event.payload.payment.entity;
-      const razorpayOrderId = payment.order_id;
-      const razorpayPaymentId = payment.id;
+      const payment = event.payload.payment?.entity;
+      const order = event.payload.order?.entity;
+      const razorpayOrderId = payment?.order_id || order?.id;
+      const razorpayPaymentId = payment?.id || null;
 
-      // Idempotency guard: Razorpay retries webhook delivery until it
-      // gets a 200 response, so the same event can legitimately arrive
-      // more than once. The update itself is naturally safe to repeat
-      // (no unique constraint to violate), but this guard avoids an
-      // unnecessary write and an updated_at bump on every retry of an
-      // event we've already processed.
-      const { data: existingOrder } = await supabaseAdmin
-        .from('orders')
-        .select('status')
-        .eq('razorpay_order_id', razorpayOrderId)
-        .single();
-
-      if (existingOrder?.status === 'paid') {
-        return NextResponse.json({ status: 'ok', note: 'already processed' });
+      if (!razorpayOrderId) {
+        return NextResponse.json({ error: 'Missing Razorpay order id' }, { status: 400 });
       }
 
-      const { error } = await supabaseAdmin
-        .from('orders')
-        .update({
-          status: 'paid',
-          razorpay_payment_id: razorpayPaymentId,
-          updated_at: new Date().toISOString()
-        })
-        .eq('razorpay_order_id', razorpayOrderId);
+      const { data: result, error } = await supabaseAdmin
+        .rpc('mark_order_paid_and_record_promo', {
+          p_razorpay_order_id: razorpayOrderId,
+          p_razorpay_payment_id: razorpayPaymentId,
+        });
 
       if (error) {
-        console.error('Error updating order:', error);
+        console.error('Error marking order paid:', error);
         return NextResponse.json({ error: 'Database update failed' }, { status: 500 });
+      }
+
+      if (result === 'already_processed') {
+        return NextResponse.json({ status: 'ok', note: 'already processed' });
       }
     }
 

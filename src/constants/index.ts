@@ -37,6 +37,7 @@ export const NAV_LINKS: NavLink[] = [
   { label: "Kitchen Accessories", href: "/kitchen" },
   { label: "Wardrobe Accessories", href: "/wardrobe", comingSoon: true },
   { label: "Deals & Offers", href: "/deals", comingSoon: true },
+  { label: "Blog", href: "/blog" },
   { label: "Contact Us", href: "/contact" },
 ];
 
@@ -78,5 +79,72 @@ export const BRAND_HIGHLIGHTS = [
     icon: "Phone",
     title: "Expert Support",
     subtitle: SITE_CONFIG.phone,
+  },
+] as const;
+
+export const FAQS = [
+  {
+    category: "Products",
+    questions: [
+      {
+        q: "What materials are used in Eryx kitchen hardware?",
+        a: "All Eryx hardware uses German-engineered steel components certified by SGS, with finishes available in Golden, Chrome, Dark Grey, Satin, and Glass options.",
+      },
+      {
+        q: "Do you offer products for both modular kitchens and wardrobes?",
+        a: "Yes, Eryx offers a complete range covering kitchen storage systems, wardrobe accessories, and hardware fittings.",
+      },
+      {
+        q: "Are dimensions listed per product?",
+        a: "Yes, every product listing includes exact dimensions in millimetres and a full specification table.",
+      },
+    ],
+  },
+  {
+    category: "Orders & Delivery",
+    questions: [
+      {
+        q: "Which areas do you deliver to?",
+        a: "We deliver pan India. Use the pincode checker on any product page to confirm serviceability to your specific area.",
+      },
+      {
+        q: "How long does delivery take?",
+        a: "Standard delivery takes 5-7 business days. Delivery timelines may vary for remote areas.",
+      },
+      {
+        q: "Can I track my order?",
+        a: "Yes, once your order is shipped you will receive a tracking link via email at the address used during checkout.",
+      },
+    ],
+  },
+  {
+    category: "Payments",
+    questions: [
+      {
+        q: "What payment methods do you accept?",
+        a: "We accept UPI, net banking, credit/debit cards, and EMI options through our secure Razorpay payment gateway.",
+      },
+      {
+        q: "Is it safe to pay on this website?",
+        a: "Yes, all payments are processed through Razorpay with bank-grade encryption. We do not store any card details.",
+      },
+      {
+        q: "Can I get an invoice for my order?",
+        a: "Yes, a GST invoice is generated for every order and sent to your registered email address.",
+      },
+    ],
+  },
+  {
+    category: "Returns & Support",
+    questions: [
+      {
+        q: "What is the return policy?",
+        a: "We accept returns for manufacturing defects within 7 days of delivery. Please contact us with photographs of the issue.",
+      },
+      {
+        q: "How do I contact support?",
+        a: "Call us at 70111 84853 or email Info@modularindia.com. Our team is available Monday to Saturday, 9:30 AM to 6 PM.",
+      },
+    ],
   },
 ] as const;

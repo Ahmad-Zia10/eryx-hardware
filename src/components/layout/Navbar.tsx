@@ -26,6 +26,7 @@ const NAV_LINKS = [
   { label: "Kitchen Accessories", href: "/kitchen" },
   { label: "Wardrobe Accessories", href: "/coming-soon/wardrobe" },
   { label: "Deals & Offers", href: "/coming-soon/deals" },
+  { label: "Blog", href: "/blog" },
 ];
 
 function ProductsMenu({ onNavigate }: { onNavigate: () => void }) {

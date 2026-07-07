@@ -161,12 +161,12 @@ export default function Footer() {
             <h4 className="text-xs tracking-widest uppercase text-[#D4A017]">
               Company
             </h4>
-            <a
-              href="#"
+            <Link
+              href="/about"
               className="text-sm text-[#9A9A9A] hover:text-[#F5F5F5] transition duration-200 ease-in-out"
             >
               About Us
-            </a>
+            </Link>
             {/* Plain anchor + scrollIntoView is fine here without client
                 state, but the onClick handler technically needs a client
                 boundary in Next.js. Since this whole Footer has no other
@@ -186,12 +186,18 @@ export default function Footer() {
             >
               Experience Centre
             </a>
-            <a
-              href="#"
+            <Link
+              href="/faqs"
+              className="text-sm text-[#9A9A9A] hover:text-[#F5F5F5] transition duration-200 ease-in-out"
+            >
+              FAQs
+            </Link>
+            <Link
+              href="/blog"
               className="text-sm text-[#9A9A9A] hover:text-[#F5F5F5] transition duration-200 ease-in-out"
             >
               Blog
-            </a>
+            </Link>
             <a
               href={SITE_CONFIG.catalogueUrl}
               download="Eryx-Hardware-Catalogue.pdf"

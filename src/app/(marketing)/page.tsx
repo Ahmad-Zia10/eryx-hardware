@@ -5,6 +5,7 @@ import ProductCard from "@/components/sections/ProductCard";
 import HeroActions from "@/components/sections/HeroActions";
 import { CATALOG_CATEGORIES, IMAGES } from "@/lib/catalogue-data";
 import { getTopPicks } from "@/lib/db/products";
+import { getPublishedPosts } from "@/lib/db/blog";
 import { SITE_CONFIG } from "@/constants";
 import {
   InstagramIcon,
@@ -13,6 +14,8 @@ import {
   LinkedinIcon,
   PinterestIcon,
 } from "@/components/ui/SocialIcons";
+import FAQTeaser from "@/components/sections/FAQTeaser";
+import BlogTeaser from "@/components/sections/BlogTeaser";
 
 const FOCUS_CARDS = [
   {
@@ -57,6 +60,7 @@ const TRUST_ITEMS = [
 // imported above — everything else here is static markup + server data.
 export default async function Home() {
   const topPicks = await getTopPicks();
+  const blogPosts = await getPublishedPosts(2);
 
   return (
     <div>
@@ -272,6 +276,10 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {blogPosts.length > 0 && <BlogTeaser posts={blogPosts} />}
+
+      <FAQTeaser />
 
       <section className="bg-[#F7F5F2] dark:bg-[#141414] border-t border-[#E8E4DD] dark:border-[#2A2A2A] py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -9,8 +9,9 @@ interface Review {
   rating: number;
   review_text: string | null;
   created_at: string;
-  product: { name: string } | null;
-  customer: { email: string } | null;
+  product_name: string;
+  reviewer_email: string;
+  reviewer_name: string;
 }
 
 export default function ReviewsTable({ reviews: initialReviews }: { reviews: Review[] }) {
@@ -51,10 +52,13 @@ export default function ReviewsTable({ reviews: initialReviews }: { reviews: Rev
             {reviews.map((review) => (
               <tr key={review.id} className="hover:bg-[#1A1A1A] transition duration-150 ease-in-out">
                 <td className="px-4 py-3 text-sm text-[#F5F5F5]">
-                  {review.product?.name || 'Unknown Product'}
+                  {review.product_name}
                 </td>
                 <td className="px-4 py-3 text-sm text-[#9A9A9A]">
-                  {review.customer?.email || 'Unknown'}
+                  <div>{review.reviewer_email}</div>
+                  {review.reviewer_name !== 'Unknown' && (
+                    <div className="text-xs text-[#555555] mt-0.5">{review.reviewer_name}</div>
+                  )}
                 </td>
                 <td className="px-4 py-3 text-sm text-[#F5F5F5]">
                   {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}

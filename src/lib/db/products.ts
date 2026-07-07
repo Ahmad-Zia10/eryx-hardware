@@ -25,8 +25,18 @@ export interface DbProduct extends CatalogueProduct {
 // already expect from catalogue-data.ts's CatalogueProduct.
 function mapRow(row: any): DbProduct {
   const images = (row.product_images || [])
-    .sort((a: any, b: any) => a.display_order - b.display_order)
-    .map((img: any) => img.image_url);
+    .sort((a: any, b: any) => a.display_order - b.display_order);
+
+  const primaryImage =
+    images.find((img: any) => img.is_primary)?.image_url ||
+    images[0]?.image_url ||
+    row.image_url ||
+    "";
+
+  const gallery =
+    images.length > 0
+      ? images.map((img: any) => img.image_url)
+      : [row.image_url].filter(Boolean);
 
   return {
     id: row.id,
@@ -38,8 +48,8 @@ function mapRow(row: any): DbProduct {
     category: row.category,
     categorySlug: slugify(row.category),
     slug: slugify(row.item_code),
-    image: row.image_url || images[0] || "",
-    gallery: images.length > 0 ? images : [row.image_url].filter(Boolean),
+    image: primaryImage,
+    gallery,
     description: row.description || "",
     material: row.material || "",
     external_price_url: row.external_price_url || null,
@@ -50,7 +60,7 @@ function slugify(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
-const PRODUCT_SELECT = "*, product_images(image_url, display_order)";
+const PRODUCT_SELECT = "*, product_images(image_url, display_order, is_primary)";
 
 export async function getAllProducts(): Promise<DbProduct[]> {
   const { data, error } = await supabase

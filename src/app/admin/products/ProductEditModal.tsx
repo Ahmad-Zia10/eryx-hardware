@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { updateProduct } from '@/app/admin/actions';
 import { Toggle } from '@/components/ui/Toggle';
+import ProductImageManager from './ProductImageManager';
 
 interface ProductEditModalProps {
   product: any;
@@ -70,7 +71,7 @@ export default function ProductEditModal({ product, onClose, onSuccess }: Produc
       onClick={onClose}
     >
       <div 
-        className="bg-[#141414] border border-[#2A2A2A] rounded-sm max-w-lg w-full mx-4 p-6 relative shadow-2xl"
+        className="bg-[#141414] border border-[#2A2A2A] rounded-sm max-w-3xl w-full mx-4 p-6 relative shadow-2xl max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <button 
@@ -90,6 +91,13 @@ export default function ProductEditModal({ product, onClose, onSuccess }: Produc
             {error}
           </div>
         )}
+
+        <div className="mb-6 pb-6 border-b border-[#2A2A2A]">
+          <ProductImageManager
+            productId={product.id}
+            initialImages={product.product_images || []}
+          />
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>

@@ -160,21 +160,11 @@ export async function POST(req: Request) {
       );
     }
 
-    if (promoCodeId) {
-      const { error: usageError } = await supabaseAdmin
-        .from('promo_usages')
-        .insert({
-          promo_code_id: promoCodeId,
-          customer_id: user.id,
-          order_id: orderId,
-        });
+    // 6. Promo usage is recorded only after Razorpay confirms payment
+    // in the webhook, so failed or abandoned payment attempts do not
+    // consume a customer's per-user promo limit.
 
-      if (usageError) {
-        console.error('Failed to record promo usage:', usageError);
-      }
-    }
-
-    // 6. The needs_review flag logic from the previous version is no
+    // 7. The needs_review flag logic from the previous version is no
     // longer needed here — the atomic transaction either fully succeeds
     // or fully rolls back. There is no partial success state to flag.
 

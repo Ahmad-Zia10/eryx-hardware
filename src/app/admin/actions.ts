@@ -184,3 +184,53 @@ export async function updatePromoCodeStatus(id: string, is_active: boolean) {
     .eq('id', id);
   if (error) throw new Error('Update failed');
 }
+
+export async function savePost(id: string | null, data: {
+  title: string;
+  slug: string;
+  excerpt: string | null;
+  content: string;
+  cover_image_url: string | null;
+  status: 'draft' | 'published';
+  published_at: string | null;
+}) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Unauthorized');
+
+  const { data: profile } = await supabaseAdmin
+    .from('profiles').select('role').eq('id', user.id).single();
+  if (profile?.role !== 'admin') throw new Error('Unauthorized');
+
+  const { data: existingPost } = id
+    ? await supabaseAdmin
+        .from('blog_posts')
+        .select('published_at, status')
+        .eq('id', id)
+        .single()
+    : { data: null };
+
+  const payload = {
+    title: data.title,
+    slug: data.slug,
+    excerpt: data.excerpt || null,
+    content: data.content,
+    cover_image_url: data.cover_image_url || null,
+    status: data.status,
+    published_at: data.status === 'published'
+      ? (data.published_at || existingPost?.published_at || new Date().toISOString())
+      : data.published_at,
+  };
+
+  const { error } = id
+    ? await supabaseAdmin.from('blog_posts').update(payload).eq('id', id)
+    : await supabaseAdmin.from('blog_posts').insert(payload);
+
+  if (error) {
+    if (error.code === '23505') throw new Error('Slug already exists');
+    throw new Error('Failed to save post');
+  }
+
+  revalidatePath('/admin/blog');
+  revalidatePath('/blog');
+}
