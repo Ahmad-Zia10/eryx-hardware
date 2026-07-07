@@ -168,7 +168,7 @@ export default function ProductDetail({ product, relatedProducts, reviews = [], 
           <span className="text-xs text-[#555555] dark:text-[#9A9A9A]">
             Item Code: {product.code}
           </span>
-          <div className="flex items-center gap-2 mt-[-8px]">
+          <div className="flex items-center gap-2 -mt-2">
             <div className="flex text-[#D4A017]">
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
