@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
-import { addProduct } from '@/app/admin/actions';
+import { useRef, useState, useEffect } from 'react';
+import { ImagePlus, Trash2, X } from 'lucide-react';
 import { Toggle } from '@/components/ui/Toggle';
 import { CATEGORIES } from '@/lib/catalogue-data';
 
@@ -11,9 +10,21 @@ interface AddProductModalProps {
   onSuccess: () => void;
 }
 
+interface SelectedImage {
+  file: File;
+  previewUrl: string;
+}
+
+const MAX_IMAGES = 5;
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+
 export default function AddProductModal({ onClose, onSuccess }: AddProductModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedImages, setSelectedImages] = useState<SelectedImage[]>([]);
+  const [primaryImageIndex, setPrimaryImageIndex] = useState(0);
+  const selectedImagesRef = useRef<SelectedImage[]>([]);
 
   const [formData, setFormData] = useState({
     item_code: '',
@@ -25,7 +36,6 @@ export default function AddProductModal({ onClose, onSuccess }: AddProductModalP
     dimension_notes: '',
     mrp: '',
     description: '',
-    image_url: '',
     external_price_url: '',
     is_active: true,
     is_featured: false,
@@ -48,16 +58,88 @@ export default function AddProductModal({ onClose, onSuccess }: AddProductModalP
     };
   }, []);
 
+  useEffect(() => {
+    selectedImagesRef.current = selectedImages;
+  }, [selectedImages]);
+
+  useEffect(() => {
+    return () => {
+      selectedImagesRef.current.forEach((image) => URL.revokeObjectURL(image.previewUrl));
+    };
+  }, []);
+
+  const handleImageSelect = (files: FileList | null) => {
+    if (!files) return;
+    setError(null);
+
+    const incoming = Array.from(files);
+    if (selectedImages.length + incoming.length > MAX_IMAGES) {
+      setError('You can upload up to 5 images per product.');
+      return;
+    }
+
+    const validImages: SelectedImage[] = [];
+    for (const file of incoming) {
+      if (!ALLOWED_TYPES.has(file.type)) {
+        setError('Only JPEG, PNG, and WebP images are allowed.');
+        return;
+      }
+
+      if (file.size > MAX_FILE_SIZE) {
+        setError('Each image must be 5MB or smaller.');
+        return;
+      }
+
+      validImages.push({
+        file,
+        previewUrl: URL.createObjectURL(file),
+      });
+    }
+
+    setSelectedImages((current) => [...current, ...validImages]);
+  };
+
+  const removeImage = (index: number) => {
+    setSelectedImages((current) => {
+      const image = current[index];
+      if (image) URL.revokeObjectURL(image.previewUrl);
+
+      const next = current.filter((_, imageIndex) => imageIndex !== index);
+      setPrimaryImageIndex((currentPrimary) => {
+        if (next.length === 0) return 0;
+        if (currentPrimary === index) return 0;
+        if (currentPrimary > index) return currentPrimary - 1;
+        return Math.min(currentPrimary, next.length - 1);
+      });
+      return next;
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
 
     try {
-      await addProduct({
-        ...formData,
-        mrp: formData.mrp ? Number(formData.mrp) : null,
+      const payload = new FormData();
+      Object.entries(formData).forEach(([key, value]) => {
+        payload.append(key, String(value));
       });
+      payload.append('primary_image_index', String(primaryImageIndex));
+      selectedImages.forEach((image) => {
+        payload.append('images', image.file);
+      });
+
+      const response = await fetch('/api/admin/products', {
+        method: 'POST',
+        body: payload,
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to add product');
+      }
+
       onSuccess();
       onClose();
     } catch (err: any) {
@@ -73,7 +155,7 @@ export default function AddProductModal({ onClose, onSuccess }: AddProductModalP
       onClick={onClose}
     >
       <div 
-        className="bg-[#141414] border border-[#2A2A2A] rounded-sm max-w-2xl w-full my-auto p-6 relative shadow-2xl"
+        className="bg-[#141414] border border-[#2A2A2A] rounded-sm max-w-4xl w-full my-auto p-6 relative shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <button 
@@ -190,18 +272,68 @@ export default function AddProductModal({ onClose, onSuccess }: AddProductModalP
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div>
-              <label className="block text-sm text-[#F5F5F5] mb-2">Image URL</label>
-              <input
-                type="url"
-                placeholder="https://example.com/image.jpg"
-                className="w-full bg-[#1A1A1A] border border-[#2A2A2A] text-[#F5F5F5] text-sm px-4 py-2.5 focus:border-[#D4A017] focus:outline-none placeholder-[#555555] rounded-sm transition duration-200 ease-in-out"
-                value={formData.image_url}
-                onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-              />
+          <div>
+            <label className="block text-sm text-[#F5F5F5] mb-2">Product Images</label>
+            <p className="text-xs text-[#9A9A9A] mb-3">Add up to 5 images. Choose one image as the primary product image.</p>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+              {Array.from({ length: MAX_IMAGES }, (_, index) => {
+                const image = selectedImages[index];
+
+                return (
+                  <div key={image?.previewUrl || `empty-${index}`} className="space-y-2">
+                    {image ? (
+                      <div className="relative border border-[#2A2A2A] rounded-sm overflow-hidden bg-[#1A1A1A]">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={image.previewUrl} alt="" className="w-full aspect-square object-cover" />
+                        {primaryImageIndex === index && (
+                          <span className="absolute top-2 left-2 bg-[#D4A017] text-[#0A0A0A] text-[10px] font-semibold px-2 py-0.5 rounded-sm">
+                            Primary
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="absolute top-2 right-2 bg-black/70 hover:bg-red-500 text-white p-1.5 rounded-sm transition duration-200"
+                          aria-label="Remove image"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="w-full aspect-square border border-dashed border-[#555555] hover:border-[#D4A017] rounded-sm bg-[#1A1A1A] text-[#9A9A9A] hover:text-[#D4A017] flex flex-col items-center justify-center gap-2 transition duration-200 cursor-pointer">
+                        <ImagePlus size={22} />
+                        <span className="text-xs">Add Image</span>
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp"
+                          multiple
+                          className="hidden"
+                          onChange={(event) => {
+                            handleImageSelect(event.target.files);
+                            event.currentTarget.value = '';
+                          }}
+                        />
+                      </label>
+                    )}
+
+                    {image && (
+                      <label className="flex items-center gap-2 text-xs text-[#9A9A9A]">
+                        <input
+                          type="radio"
+                          checked={primaryImageIndex === index}
+                          onChange={() => setPrimaryImageIndex(index)}
+                          className="accent-[#D4A017]"
+                        />
+                        Set as Primary
+                      </label>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-            <div>
+          </div>
+
+          <div>
               <label className="block text-sm text-[#F5F5F5] mb-2">External Price Comparison URL</label>
               <input
                 type="url"
@@ -210,7 +342,6 @@ export default function AddProductModal({ onClose, onSuccess }: AddProductModalP
                 value={formData.external_price_url}
                 onChange={(e) => setFormData({ ...formData, external_price_url: e.target.value })}
               />
-            </div>
           </div>
 
           <div>
