@@ -8,6 +8,15 @@
 @theme {
   --font-serif: "Cormorant Garamond", serif;
   --font-sans: "Inter", sans-serif;
+  --font-display: var(--font-display, "Prata", serif);
+
+  /* Brand Kit Colors */
+  --color-brand-navy: #012761;
+  --color-brand-gold: #fec201;
+  --color-brand-muted: #9ea4b5;
+  --color-brand-dark: #1B1611;
+  --color-brand-bronze: #b48214;
+  --color-brand-cream: #fff3c2;
 }
 
 /* Tailwind v4 needs an explicit custom variant for class-based dark

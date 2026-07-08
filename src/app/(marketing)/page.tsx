@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Shield, Globe, Award, Phone, Download } from "lucide-react";
 import ProductImage from "@/components/ui/ProductImage";
 import ProductCard from "@/components/sections/ProductCard";
-import HeroActions from "@/components/sections/HeroActions";
+import HeroSlider from "@/components/sections/HeroSlider";
 import { CATALOG_CATEGORIES, IMAGES } from "@/lib/catalogue-data";
 import { getTopPicks } from "@/lib/db/products";
 import { getPublishedPosts } from "@/lib/db/blog";
@@ -64,89 +64,7 @@ export default async function Home() {
 
   return (
     <div>
-      <section
-        className="min-h-[calc(100vh-104px)] flex items-center relative overflow-hidden"
-        style={{
-          background: "linear-gradient(135deg, #FFFFFF 0%, #F5F5F5 52%, #EBEBEB 100%)",
-        }}
-      >
-        <style>{`
-          .hero-bg-dark { background: linear-gradient(135deg, #0A0A0A 0%, #161616 52%, #0F0F0F 100%); }
-        `}</style>
-        <div className="absolute inset-0 hidden dark:block hero-bg-dark" />
-
-        <div className="absolute inset-0 overflow-hidden">
-          <ProductImage
-            src="/products/s-corner/s-corner-3-lifestyle-collage.jpg"
-            alt=""
-            className="w-full h-full opacity-10 dark:opacity-[0.07] blur-sm scale-105"
-            loading="eager"
-          />
-        </div>
-
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center w-full">
-          <div className="flex flex-col gap-6">
-            <span className="text-xs tracking-[0.3em] uppercase text-[#D4A017]">
-              A Division of Modular India
-            </span>
-            <h1 className="text-5xl md:text-7xl font-bold leading-tight text-[#0A0A0A] dark:text-[#F5F5F5]">
-              Precision
-              <br />
-              Hardware for
-              <br />
-              <span className="bg-gradient-to-r from-[#D4A017] to-[#E8B820] bg-clip-text text-transparent">Modular Spaces</span>
-            </h1>
-            <p className="text-lg text-[#555555] dark:text-[#9A9A9A] max-w-lg">
-              Hinges, fittings, sliding systems, baskets, pull-downs, shutters, and
-              wardrobe hardware engineered for modern Indian homes.
-            </p>
-
-            <HeroActions />
-
-            <div className="flex flex-wrap items-center gap-6 mt-6">
-              {["8 Core Categories", "Real Product Photos", "Pan India"].map(
-                (stat, index) => (
-                  <div key={stat} className="flex items-center gap-6">
-                    {index > 0 && (
-                      <span className="h-8 w-px bg-[#D4D4D4] dark:bg-[#2A2A2A]" />
-                    )}
-                    <span className="text-sm text-[#555555] dark:text-[#9A9A9A]">
-                      {stat}
-                    </span>
-                  </div>
-                )
-              )}
-            </div>
-          </div>
-
-          <div className="relative min-h-130 hidden md:block">
-            <div className="absolute right-0 top-6 w-[78%] h-97.5 border-2 border-[#D4A017] bg-[#EBEBEB] dark:bg-[#1A1A1A] overflow-hidden">
-              <ProductImage
-                src={IMAGES.heroMain}
-                alt="GTPT kitchen hardware"
-                className="w-full h-full"
-                loading="eager"
-              />
-            </div>
-            <div className="absolute left-4 bottom-14 w-[46%] h-52.5 border-4 border-white dark:border-[#0A0A0A] bg-[#EBEBEB] dark:bg-[#1A1A1A] overflow-hidden shadow-xl">
-              <ProductImage
-                src={IMAGES.heroAlt}
-                alt="Glass pull down hardware"
-                className="w-full h-full"
-                loading="eager"
-              />
-            </div>
-            <div className="absolute right-10 bottom-0 w-[42%] h-45 border-4 border-white dark:border-[#0A0A0A] bg-[#EBEBEB] dark:bg-[#1A1A1A] overflow-hidden shadow-xl">
-              <ProductImage
-                src={IMAGES.heroTertiary}
-                alt="S corner hardware"
-                className="w-full h-full"
-                loading="eager"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
+      <HeroSlider />
 
       <section className="bg-[#F5F5F5] dark:bg-[#141414] border-t border-b border-[#D4D4D4] dark:border-[#2A2A2A] py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
