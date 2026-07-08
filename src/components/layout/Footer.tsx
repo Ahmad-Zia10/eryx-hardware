@@ -120,12 +120,6 @@ export default function Footer() {
             >
               Hardware
             </Link>
-            <a
-              href="#"
-              className="text-sm text-[#9A9A9A] hover:text-[#F5F5F5] transition duration-200 ease-in-out"
-            >
-              Accessories
-            </a>
             <Link
               href="/coming-soon/deals"
               className="text-sm text-[#9A9A9A] hover:text-[#F5F5F5] transition duration-200 ease-in-out"
@@ -173,12 +167,7 @@ export default function Footer() {
             >
               Contact Us
             </Link>
-            <a
-              href="#"
-              className="text-sm text-[#9A9A9A] hover:text-[#F5F5F5] transition duration-200 ease-in-out"
-            >
-              Experience Centre
-            </a>
+
             <Link
               href="/faqs"
               className="text-sm text-[#9A9A9A] hover:text-[#F5F5F5] transition duration-200 ease-in-out"
@@ -204,6 +193,12 @@ export default function Footer() {
               className="text-sm text-[#9A9A9A] hover:text-[#F5F5F5] transition duration-200 ease-in-out"
             >
               Bulk Enquiry
+            </Link>
+            <Link
+              href="/dealer-enquiry"
+              className="text-sm text-[#9A9A9A] hover:text-[#F5F5F5] transition duration-200 ease-in-out"
+            >
+              Dealer Enquiry
             </Link>
           </div>
         </div>

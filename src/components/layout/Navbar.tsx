@@ -114,19 +114,6 @@ export default function Navbar() {
     setProductsOpen(false);
   };
 
-  const handleContactClick = () => {
-    closeMenus();
-    const footer = document.getElementById("footer");
-    if (footer) {
-      footer.scrollIntoView({ behavior: "smooth" });
-    } else {
-      router.push("/");
-      setTimeout(() => {
-        document.getElementById("footer")?.scrollIntoView({ behavior: "smooth" });
-      }, 300);
-    }
-  };
-
   return (
     <nav className="sticky top-9.25 z-40 bg-white dark:bg-[#0A0A0A] border-b border-[#D4D4D4] dark:border-[#2A2A2A]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -163,12 +150,12 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
-          <button
-            onClick={handleContactClick}
-            className="text-sm text-[#555555] dark:text-[#9A9A9A] hover:text-[#D4A017] transition duration-200 ease-in-out"
+          <Link
+            href="/contact"
+            className={navLinkClass(pathname === "/contact")}
           >
             Contact Us
-          </button>
+          </Link>
         </div>
 
         <div className="flex items-center gap-4">
@@ -305,12 +292,17 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
-            <button
-              onClick={handleContactClick}
-              className="py-3 text-sm text-left text-[#555555] dark:text-[#9A9A9A] hover:text-[#D4A017] transition duration-200 ease-in-out"
+            <Link
+              href="/contact"
+              onClick={closeMenus}
+              className={`py-3 text-sm border-b border-[#D4D4D4] dark:border-[#2A2A2A] hover:text-[#D4A017] transition duration-200 ease-in-out ${
+                pathname === "/contact"
+                  ? "text-[#D4A017]"
+                  : "text-[#555555] dark:text-[#9A9A9A]"
+              }`}
             >
               Contact Us
-            </button>
+            </Link>
           </div>
         </div>
       )}
