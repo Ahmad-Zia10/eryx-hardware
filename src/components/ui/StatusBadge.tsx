@@ -29,7 +29,13 @@ export function StatusBadge({ status }: { status: string }) {
       colorClass = 'bg-blue-500/10 text-blue-400 border border-blue-500/30';
       break;
     case 'new':
+    case 'open':
       colorClass = 'bg-[#D4A017]/10 text-[#D4A017] border border-[#D4A017]/30';
+      break;
+    case 'in_progress':
+    case 'reviewing':
+    case 'quoted':
+      colorClass = 'bg-blue-500/10 text-blue-400 border border-blue-500/30';
       break;
     case 'contacted':
     case 'resolved':
@@ -41,7 +47,7 @@ export function StatusBadge({ status }: { status: string }) {
 
   return (
     <span className={`px-2 py-0.5 text-xs font-medium rounded-sm ${colorClass} capitalize`}>
-      {status}
+      {status.replace(/_/g, ' ')}
     </span>
   );
 }

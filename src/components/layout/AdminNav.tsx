@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { FileText, LayoutDashboard, Package, MessageSquare, ShoppingBag, Tag, Star } from 'lucide-react';
+import { FileText, Handshake, HelpCircle, LayoutDashboard, Mail, Package, MessageSquare, ShoppingBag, Tag, Star, Users } from 'lucide-react';
 
 export default function AdminNav() {
   const pathname = usePathname();
@@ -11,10 +11,15 @@ export default function AdminNav() {
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
     { name: 'Products', href: '/admin/products', icon: Package },
     { name: 'Enquiries', href: '/admin/enquiries', icon: MessageSquare },
+    { name: 'Contact', href: '/admin/contact', icon: Mail },
+    { name: 'Bulk Enquiries', href: '/admin/bulk-enquiries', icon: Users },
+    { name: 'Dealer Enquiries', href: '/admin/dealer-enquiries', icon: Handshake },
+    { name: 'Support', href: '/admin/support', icon: HelpCircle },
     { name: 'Orders', href: '/admin/orders', icon: ShoppingBag },
     { name: 'Promo Codes', href: '/admin/promo-codes', icon: Tag },
     { name: 'Reviews', href: '/admin/reviews', icon: Star },
     { name: 'Blog', href: '/admin/blog', icon: FileText },
+    { name: 'About Page', href: '/admin/about', icon: FileText },
   ];
 
   return (
