@@ -5,7 +5,7 @@ import { X, Minus, Plus, Trash2 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useUI } from "@/context/UIContext";
 import ProductImage from "@/components/ui/ProductImage";
-import { formatPrice } from "@/lib/catalogue-data";
+import { formatPrice, getEffectivePrice } from "@/lib/pricing";
 
 export default function CartDrawer() {
   const { items, updateQuantity, removeItem, cartTotal, cartCount } = useCart();
@@ -51,7 +51,9 @@ export default function CartDrawer() {
             </div>
           ) : (
             <div className="flex flex-col divide-y divide-[#D4D4D4] dark:divide-[#2A2A2A]">
-              {items.map((item) => (
+              {items.map((item) => {
+                const price = getEffectivePrice(item.product);
+                return (
                 <div key={item.product.slug} className="flex gap-3 p-4">
                   <div className="w-20 h-20 shrink-0 bg-[#EBEBEB] dark:bg-[#1A1A1A] overflow-hidden">
                     <ProductImage
@@ -98,17 +100,18 @@ export default function CartDrawer() {
                     </div>
                     <div className="flex items-center justify-between gap-3 text-xs mt-1">
                       <span className="text-[#555555] dark:text-[#9A9A9A]">
-                        {formatPrice(item.product.mrp)} each
+                        {formatPrice(price)} each
                       </span>
                       <span className="text-[#D4A017] font-bold text-sm text-right">
-                        {typeof item.product.mrp === "number"
-                          ? formatPrice(item.product.mrp * item.quantity)
+                        {typeof price === "number"
+                          ? formatPrice(price * item.quantity)
                           : "Price on request"}
                       </span>
                     </div>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

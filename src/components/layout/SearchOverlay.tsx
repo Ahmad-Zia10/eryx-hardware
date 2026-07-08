@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { X, Search } from "lucide-react";
-import { ALL_PRODUCTS, formatPrice } from "@/lib/catalogue-data";
+import { formatProductPrice } from "@/lib/pricing";
+import type { DbProduct } from "@/lib/db/products";
 
 interface SearchOverlayProps {
   onClose: () => void;
@@ -11,6 +12,8 @@ interface SearchOverlayProps {
 
 export default function SearchOverlay({ onClose }: SearchOverlayProps) {
   const [query, setQuery] = useState("");
+  const [results, setResults] = useState<DbProduct[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -30,13 +33,36 @@ export default function SearchOverlay({ onClose }: SearchOverlayProps) {
     };
   }, [onClose]);
 
-  const results = query
-    ? ALL_PRODUCTS.filter(
-        (p) =>
-          p.name.toLowerCase().includes(query.toLowerCase()) ||
-          p.code.toLowerCase().includes(query.toLowerCase())
-      ).slice(0, 8)
-    : [];
+  useEffect(() => {
+    const controller = new AbortController();
+    const value = query.trim();
+    if (!value) {
+      setResults([]);
+      return;
+    }
+
+    setIsSearching(true);
+    const timer = window.setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/products/search?q=${encodeURIComponent(value)}`, {
+          signal: controller.signal,
+        });
+        const data = await response.json();
+        setResults(data.products || []);
+      } catch (error: any) {
+        if (error.name !== "AbortError") {
+          setResults([]);
+        }
+      } finally {
+        setIsSearching(false);
+      }
+    }, 200);
+
+    return () => {
+      controller.abort();
+      window.clearTimeout(timer);
+    };
+  }, [query]);
 
   const handleSelect = (slug: string) => {
     router.push(`/kitchen/${slug}`);
@@ -73,6 +99,10 @@ export default function SearchOverlay({ onClose }: SearchOverlayProps) {
             <div className="p-12 text-center text-[#555555] dark:text-[#9A9A9A]">
               <p>Start typing to search products</p>
             </div>
+          ) : isSearching ? (
+            <div className="p-12 text-center text-[#555555] dark:text-[#9A9A9A]">
+              <p>Searching...</p>
+            </div>
           ) : results.length === 0 ? (
             <div className="p-12 text-center text-[#555555] dark:text-[#9A9A9A]">
               <p>No results found for &quot;{query}&quot;</p>
@@ -95,7 +125,7 @@ export default function SearchOverlay({ onClose }: SearchOverlayProps) {
                     </div>
                     <div className="text-right">
                       <span className="font-semibold text-[#0A0A0A] dark:text-[#F5F5F5]">
-                        {formatPrice(product.mrp)}
+                        {formatProductPrice(product)}
                       </span>
                     </div>
                   </button>

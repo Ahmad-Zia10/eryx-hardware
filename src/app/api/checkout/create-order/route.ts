@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
 import { createClient, supabaseAdmin } from '@/lib/supabase/server';
-import { ALL_PRODUCTS } from '@/lib/catalogue-data';
+import { getEffectivePrice } from '@/lib/pricing';
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID!,
@@ -26,39 +26,54 @@ export async function POST(req: Request) {
 
     // 2. Validate products and calculate total server-side
     // Never trust the client for pricing — re-derive from catalogue data
+    const codes = items.map((item: any) => item.code).filter(Boolean);
+    const { data: dbProducts, error: productsError } = await supabaseAdmin
+      .from('products')
+      .select('id, item_code, name, mrp, is_on_sale, discount_price')
+      .in('item_code', codes)
+      .eq('is_active', true);
+
+    if (productsError) {
+      console.error('Checkout product lookup failed:', productsError);
+      return NextResponse.json({ error: 'Failed to validate cart' }, { status: 500 });
+    }
+
+    const productByCode = new Map((dbProducts || []).map((product) => [product.item_code, product]));
     let total = 0;
     const orderItems = [];
 
     for (const item of items) {
-      const catalogProduct = ALL_PRODUCTS.find(p => p.code === item.code);
+      const product = productByCode.get(item.code);
 
-      if (!catalogProduct) {
+      if (!product) {
         return NextResponse.json(
           { error: `Product not found: ${item.code}` },
           { status: 400 }
         );
       }
 
-      if (typeof catalogProduct.mrp !== 'number') {
+      const effectivePrice = getEffectivePrice(product);
+      if (typeof effectivePrice !== 'number') {
         return NextResponse.json(
-          { error: `${catalogProduct.name} does not have a listed price. Please enquire instead.` },
+          { error: `${product.name} does not have a listed price. Please enquire instead.` },
           { status: 400 }
         );
       }
 
-      if (item.quantity < 1) {
+      if (!Number.isInteger(item.quantity) || item.quantity < 1) {
         return NextResponse.json(
-          { error: `Invalid quantity for ${catalogProduct.name}` },
+          { error: `Invalid quantity for ${product.name}` },
           { status: 400 }
         );
       }
 
-      total += catalogProduct.mrp * item.quantity;
+      total += effectivePrice * item.quantity;
       orderItems.push({
-        item_code: catalogProduct.code,
-        product_name: catalogProduct.name,
+        item_code: product.item_code,
+        product_name: product.name,
         quantity: item.quantity,
-        price_at_purchase: catalogProduct.mrp,
+        price_at_purchase: effectivePrice,
+        product_id: product.id,
       });
     }
 
@@ -66,16 +81,7 @@ export async function POST(req: Request) {
     // This is a best-effort enrichment — if a product isn't found in
     // the DB (e.g., added via admin but not in catalogue-data.ts yet),
     // we still proceed with product_id as null, which the schema allows.
-    const itemCodes = orderItems.map(i => i.item_code);
-    const { data: dbProducts } = await supabaseAdmin
-      .from('products')
-      .select('id, item_code')
-      .in('item_code', itemCodes);
-
-    const enrichedItems = orderItems.map(item => ({
-      ...item,
-      product_id: dbProducts?.find(p => p.item_code === item.item_code)?.id ?? null,
-    }));
+    const enrichedItems = orderItems;
 
     let subtotal = total;
     let discountApplied = 0;

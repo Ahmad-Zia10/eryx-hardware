@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useReducer, ReactNode, useEffect, useState } from "react";
 import { CatalogueProduct } from "@/lib/catalogue-data";
+import { getEffectivePrice } from "@/lib/pricing";
 
 export interface CartItem {
   product: CatalogueProduct;
@@ -113,8 +114,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const cartCount = state.items.reduce((sum, i) => sum + i.quantity, 0);
   const cartTotal = state.items.reduce((sum, i) => {
-    if (typeof i.product.mrp !== "number") return sum;
-    return sum + i.quantity * i.product.mrp;
+    const price = getEffectivePrice(i.product);
+    if (typeof price !== "number") return sum;
+    return sum + i.quantity * price;
   }, 0);
 
   return (

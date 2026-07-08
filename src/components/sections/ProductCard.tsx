@@ -5,7 +5,7 @@ import { ShoppingCart, Star } from "lucide-react";
 import ProductImage from "@/components/ui/ProductImage";
 import { useCart } from "@/context/CartContext";
 import { useUI } from "@/context/UIContext";
-import { formatPrice } from "@/lib/catalogue-data";
+import { formatPrice, getEffectivePrice, hasActiveDiscount } from "@/lib/pricing";
 import type { DbProduct } from "@/lib/db/products";
 
 interface ProductCardProps {
@@ -19,6 +19,8 @@ export default function ProductCard({ product, className = "", averageRating, re
   const router = useRouter();
   const { addItem } = useCart();
   const { showToast, openEnquiryModal } = useUI();
+  const effectivePrice = getEffectivePrice(product);
+  const discounted = hasActiveDiscount(product);
 
   const handleCardClick = () => {
     router.push(`/kitchen/${product.slug}`);
@@ -67,9 +69,16 @@ export default function ProductCard({ product, className = "", averageRating, re
         <span className="text-xs text-[#555555] dark:text-[#9A9A9A]">
           {product.dimensions}
         </span>
-        <span className="text-[#D4A017] font-bold mt-1">
-          {formatPrice(product.mrp)}
-        </span>
+        <div className="flex items-baseline gap-2 mt-1">
+          <span className="text-[#D4A017] font-bold">
+            {formatPrice(effectivePrice)}
+          </span>
+          {discounted && (
+            <span className="text-xs text-[#9A9A9A] line-through">
+              {formatPrice(product.mrp)}
+            </span>
+          )}
+        </div>
         <div className="flex gap-2 mt-3">
           <button
             onClick={(e) => {

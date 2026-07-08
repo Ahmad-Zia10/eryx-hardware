@@ -44,6 +44,8 @@ function mapRow(row: any): DbProduct {
     name: row.name,
     dimensions: row.dimension_notes || "",
     mrp: row.mrp,
+    is_on_sale: row.is_on_sale || false,
+    discount_price: row.discount_price ?? null,
     finish: row.finish || "",
     category: row.category,
     categorySlug: slugify(row.category),

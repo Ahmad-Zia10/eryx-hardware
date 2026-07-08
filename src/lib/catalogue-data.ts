@@ -315,6 +315,8 @@ export interface CatalogueProduct {
   name: string;
   dimensions: string;
   mrp: number | null;
+  is_on_sale?: boolean | null;
+  discount_price?: number | null;
   finish: string;
   category: string;
   categorySlug: string;

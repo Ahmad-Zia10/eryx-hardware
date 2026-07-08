@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useCart } from '@/context/CartContext';
 import { createClient } from '@/lib/supabase/client';
-import { formatPrice } from '@/lib/catalogue-data';
+import { formatPrice, getEffectivePrice } from '@/lib/pricing';
 import Script from 'next/script';
 
 export default function CheckoutPage() {
@@ -148,7 +148,9 @@ export default function CheckoutPage() {
           <div>
             <h2 className="text-xl font-semibold mb-4 text-neutral-800 dark:text-neutral-200 border-b border-neutral-200 dark:border-neutral-800 pb-2">Order Summary</h2>
             <div className="space-y-4">
-              {items.map((item) => (
+              {items.map((item) => {
+                const price = getEffectivePrice(item.product);
+                return (
                 <div key={item.product.slug} className="flex justify-between text-sm">
                   <div className="flex gap-4">
                     <div className="w-16 h-16 bg-neutral-100 dark:bg-neutral-800 rounded shrink-0 overflow-hidden">
@@ -160,10 +162,11 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                   <div className="text-neutral-900 dark:text-white font-medium">
-                    {formatPrice(item.product.mrp! * item.quantity)}
+                    {typeof price === 'number' ? formatPrice(price * item.quantity) : 'Price on request'}
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="mt-8">

@@ -10,7 +10,7 @@ import PincodeChecker from "@/components/ui/PincodeChecker";
 import { useCart } from "@/context/CartContext";
 import { useUI } from "@/context/UIContext";
 import { createClient } from "@/lib/supabase/client";
-import { formatPrice } from "@/lib/catalogue-data";
+import { formatPrice, getEffectivePrice, hasActiveDiscount } from "@/lib/pricing";
 import type { DbProduct } from "@/lib/db/products";
 
 interface ProductDetailProps {
@@ -103,6 +103,8 @@ export default function ProductDetail({ product, relatedProducts, reviews = [], 
     addItem(product, quantity);
     showToast();
   };
+  const effectivePrice = getEffectivePrice(product);
+  const discounted = hasActiveDiscount(product);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -222,7 +224,12 @@ export default function ProductDetail({ product, relatedProducts, reviews = [], 
 
           <div className="mt-4">
             <span className="text-xs text-[#555555] dark:text-[#9A9A9A]">MRP</span>
-            <p className="text-3xl font-bold text-[#D4A017]">{formatPrice(product.mrp)}</p>
+            <div className="flex items-baseline gap-3">
+              <p className="text-3xl font-bold text-[#D4A017]">{formatPrice(effectivePrice)}</p>
+              {discounted && (
+                <span className="text-sm text-[#9A9A9A] line-through">{formatPrice(product.mrp)}</span>
+              )}
+            </div>
           </div>
 
           <div className="flex items-center gap-4">
