@@ -1,8 +1,14 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { savePost } from '@/app/admin/actions';
+import { deletePost, savePost } from '@/app/admin/actions';
+import RichTextEditor from '@/components/admin/RichTextEditor';
+
+const EMPTY_TIPTAP_DOCUMENT = {
+  type: 'doc',
+  content: [{ type: 'paragraph' }],
+};
 
 interface BlogPost {
   id: string;
@@ -10,9 +16,13 @@ interface BlogPost {
   slug: string;
   excerpt: string | null;
   content: string;
+  content_json: any | null;
   cover_image_url: string | null;
   status: 'draft' | 'published';
   published_at: string | null;
+  author: string | null;
+  meta_title: string | null;
+  meta_description: string | null;
 }
 
 function slugify(value: string) {
@@ -34,7 +44,9 @@ function toDateTimeLocal(value: string | null) {
 
 export default function BlogForm({ post }: { post?: BlogPost }) {
   const router = useRouter();
+  const coverInputRef = useRef<HTMLInputElement | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [slugEdited, setSlugEdited] = useState(Boolean(post));
   const [formData, setFormData] = useState({
@@ -42,9 +54,12 @@ export default function BlogForm({ post }: { post?: BlogPost }) {
     slug: post?.slug || '',
     excerpt: post?.excerpt || '',
     cover_image_url: post?.cover_image_url || '',
-    content: post?.content || '',
+    content_json: post?.content_json || EMPTY_TIPTAP_DOCUMENT,
     status: post?.status || 'draft',
     published_at: toDateTimeLocal(post?.published_at || null),
+    author: post?.author || '',
+    meta_title: post?.meta_title || '',
+    meta_description: post?.meta_description || '',
   });
 
   const previewSlug = useMemo(
@@ -71,16 +86,60 @@ export default function BlogForm({ post }: { post?: BlogPost }) {
         slug: previewSlug,
         excerpt: formData.excerpt.trim() || null,
         cover_image_url: formData.cover_image_url.trim() || null,
-        content: formData.content,
+        content_json: formData.content_json,
         status: formData.status as 'draft' | 'published',
         published_at: formData.published_at
           ? new Date(formData.published_at).toISOString()
           : null,
+        author: formData.author.trim() || null,
+        meta_title: formData.meta_title.trim() || null,
+        meta_description: formData.meta_description.trim() || null,
       });
       router.push('/admin/blog');
       router.refresh();
     } catch (err: any) {
       setError(err.message || 'Failed to save post');
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCoverUpload = async (file: File) => {
+    setError(null);
+    setIsUploadingCover(true);
+    try {
+      const upload = new FormData();
+      upload.append('file', file);
+      upload.append('folder', 'blog');
+
+      const response = await fetch('/api/admin/uploads', {
+        method: 'POST',
+        body: upload,
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Cover upload failed');
+      }
+
+      setFormData((current) => ({ ...current, cover_image_url: data.url }));
+    } catch (err: any) {
+      setError(err.message || 'Cover upload failed');
+    } finally {
+      setIsUploadingCover(false);
+      if (coverInputRef.current) coverInputRef.current.value = '';
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!post || !window.confirm('Delete this blog post?')) return;
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      await deletePost(post.id);
+      router.push('/admin/blog');
+      router.refresh();
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete post');
       setIsSubmitting(false);
     }
   };
@@ -133,27 +192,59 @@ export default function BlogForm({ post }: { post?: BlogPost }) {
 
       <div>
         <label className="block text-sm text-[#F5F5F5] mb-2">Cover Image URL</label>
+        <div className="flex gap-3">
+          <input
+            type="url"
+            value={formData.cover_image_url}
+            onChange={(event) => setFormData({ ...formData, cover_image_url: event.target.value })}
+            className="flex-1 bg-[#1A1A1A] border border-[#2A2A2A] text-[#F5F5F5] text-sm px-4 py-2.5 focus:border-[#D4A017] focus:outline-none rounded-sm transition duration-200"
+          />
+          <button
+            type="button"
+            onClick={() => coverInputRef.current?.click()}
+            disabled={isUploadingCover}
+            className="border border-[#2A2A2A] text-[#9A9A9A] hover:border-[#D4A017] hover:text-[#D4A017] px-4 py-2 text-sm transition duration-200 rounded-sm disabled:opacity-50"
+          >
+            {isUploadingCover ? 'Uploading...' : 'Upload'}
+          </button>
+        </div>
+        {formData.cover_image_url && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={formData.cover_image_url} alt="" className="mt-3 h-32 w-full object-cover rounded-sm border border-[#2A2A2A]" />
+        )}
         <input
-          type="url"
-          value={formData.cover_image_url}
-          onChange={(event) => setFormData({ ...formData, cover_image_url: event.target.value })}
-          className="w-full bg-[#1A1A1A] border border-[#2A2A2A] text-[#F5F5F5] text-sm px-4 py-2.5 focus:border-[#D4A017] focus:outline-none rounded-sm transition duration-200"
+          ref={coverInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          className="hidden"
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            if (file) void handleCoverUpload(file);
+          }}
         />
       </div>
 
       <div>
-        <label className="block text-sm text-[#F5F5F5] mb-2">Content HTML *</label>
-        <textarea
-          rows={16}
-          required
-          value={formData.content}
-          onChange={(event) => setFormData({ ...formData, content: event.target.value })}
-          className="w-full bg-[#1A1A1A] border border-[#2A2A2A] text-[#F5F5F5] text-sm px-4 py-2.5 focus:border-[#D4A017] focus:outline-none rounded-sm transition duration-200 font-mono"
-          placeholder="<p>Write the post content as HTML.</p>"
+        <label className="block text-sm text-[#F5F5F5] mb-2">Content *</label>
+        <RichTextEditor
+          value={formData.content_json}
+          onChange={(content_json) => setFormData({ ...formData, content_json })}
+          placeholder="Write the post content..."
+          uploadFolder="blog"
         />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div>
+          <label className="block text-sm text-[#F5F5F5] mb-2">Author</label>
+          <input
+            type="text"
+            value={formData.author}
+            onChange={(event) => setFormData({ ...formData, author: event.target.value })}
+            className="w-full bg-[#1A1A1A] border border-[#2A2A2A] text-[#F5F5F5] text-sm px-4 py-2.5 focus:border-[#D4A017] focus:outline-none rounded-sm transition duration-200"
+          />
+        </div>
+
         <div>
           <label className="block text-sm text-[#F5F5F5] mb-2">Status</label>
           <select
@@ -165,7 +256,9 @@ export default function BlogForm({ post }: { post?: BlogPost }) {
             <option value="published">Published</option>
           </select>
         </div>
+      </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div>
           <label className="block text-sm text-[#F5F5F5] mb-2">Published At</label>
           <input
@@ -175,9 +268,42 @@ export default function BlogForm({ post }: { post?: BlogPost }) {
             className="w-full bg-[#1A1A1A] border border-[#2A2A2A] text-[#F5F5F5] text-sm px-4 py-2.5 focus:border-[#D4A017] focus:outline-none rounded-sm transition duration-200"
           />
         </div>
+
+        <div>
+          <label className="block text-sm text-[#F5F5F5] mb-2">SEO Meta Title</label>
+          <input
+            type="text"
+            value={formData.meta_title}
+            onChange={(event) => setFormData({ ...formData, meta_title: event.target.value })}
+            className="w-full bg-[#1A1A1A] border border-[#2A2A2A] text-[#F5F5F5] text-sm px-4 py-2.5 focus:border-[#D4A017] focus:outline-none rounded-sm transition duration-200"
+          />
+        </div>
       </div>
 
-      <div className="pt-4 flex gap-3 justify-end border-t border-[#2A2A2A]">
+      <div>
+        <label className="block text-sm text-[#F5F5F5] mb-2">SEO Meta Description</label>
+        <textarea
+          rows={2}
+          value={formData.meta_description}
+          onChange={(event) => setFormData({ ...formData, meta_description: event.target.value })}
+          className="w-full bg-[#1A1A1A] border border-[#2A2A2A] text-[#F5F5F5] text-sm px-4 py-2.5 focus:border-[#D4A017] focus:outline-none rounded-sm transition duration-200"
+        />
+      </div>
+
+      <div className="pt-4 flex gap-3 justify-between border-t border-[#2A2A2A]">
+        <div>
+          {post && (
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={isSubmitting}
+              className="border border-red-500/40 text-red-400 hover:bg-red-500/10 px-4 py-2 text-sm transition duration-200 rounded-sm disabled:opacity-50"
+            >
+              Delete
+            </button>
+          )}
+        </div>
+        <div className="flex gap-3">
         <button
           type="button"
           onClick={() => router.push('/admin/blog')}
@@ -193,6 +319,7 @@ export default function BlogForm({ post }: { post?: BlogPost }) {
         >
           {isSubmitting ? 'Saving...' : 'Save Post'}
         </button>
+        </div>
       </div>
     </form>
   );

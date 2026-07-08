@@ -15,8 +15,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   return {
-    title: post.title,
-    description: post.excerpt || undefined,
+    title: post.meta_title || post.title,
+    description: post.meta_description || post.excerpt || undefined,
   };
 }
 
@@ -53,6 +53,11 @@ export default async function BlogPostPage({ params }: PageProps) {
               year: 'numeric',
             })}
           </time>
+        )}
+        {post.author && (
+          <p className="text-sm text-[#555555] dark:text-[#9A9A9A] mt-2">
+            By {post.author}
+          </p>
         )}
       </header>
       <div
