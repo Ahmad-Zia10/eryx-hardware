@@ -132,12 +132,12 @@ export default function Footer() {
             >
               Deals &amp; Offers
             </Link>
-            <a
-              href="#"
+            <Link
+              href="/dealer-enquiry"
               className="text-sm text-[#9A9A9A] hover:text-[#F5F5F5] transition duration-200 ease-in-out"
             >
               Dealer Enquiry
-            </a>
+            </Link>
           </div>
 
           {/* Kitchen */}
@@ -167,19 +167,12 @@ export default function Footer() {
             >
               About Us
             </Link>
-            {/* Plain anchor + scrollIntoView is fine here without client
-                state, but the onClick handler technically needs a client
-                boundary in Next.js. Since this whole Footer has no other
-                interactivity, it's simplest to leave this one link as a
-                plain anchor to #footer (default browser jump-to-anchor
-                behavior) rather than promoting the entire Footer to a
-                Client Component just for a smooth-scroll nicety. */}
-            <a
-              href="#footer"
+            <Link
+              href="/contact"
               className="text-sm text-[#9A9A9A] hover:text-[#F5F5F5] transition duration-200 ease-in-out"
             >
               Contact Us
-            </a>
+            </Link>
             <a
               href="#"
               className="text-sm text-[#9A9A9A] hover:text-[#F5F5F5] transition duration-200 ease-in-out"
@@ -206,12 +199,12 @@ export default function Footer() {
               <Download size={12} />
               Catalogues
             </a>
-            <a
-              href="mailto:Info@modularindia.com"
+            <Link
+              href="/bulk-enquiry"
               className="text-sm text-[#9A9A9A] hover:text-[#F5F5F5] transition duration-200 ease-in-out"
             >
               Bulk Enquiry
-            </a>
+            </Link>
           </div>
         </div>
 
