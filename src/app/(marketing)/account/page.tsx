@@ -47,6 +47,12 @@ export default async function AccountPage() {
     .eq('customer_id', user.id)
     .order('created_at', { ascending: false });
 
+  const { data: supportRequests } = await supabaseAdmin
+    .from('support_requests')
+    .select('id, order_id, reason, message, attachment_url, status, created_at')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
+
   const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture || null;
 
   return (
@@ -56,6 +62,7 @@ export default async function AccountPage() {
         profile={profile || { full_name: null, email: user.email || '', created_at: user.created_at }}
         orders={(orders as any[]) || []}
         reviews={(reviews as any[]) || []}
+        supportRequests={(supportRequests as any[]) || []}
         avatarUrl={avatarUrl}
       />
     </div>

@@ -39,18 +39,32 @@ interface Profile {
   created_at: string;
 }
 
+interface SupportRequest {
+  id: string;
+  order_id: string;
+  reason: string;
+  message: string;
+  attachment_url: string | null;
+  status: string;
+  created_at: string;
+}
+
 interface AccountTabsProps {
   profile: Profile;
   orders: Order[];
   reviews: Review[];
+  supportRequests: SupportRequest[];
   avatarUrl: string | null;
 }
 
 type Tab = 'overview' | 'orders' | 'reviews';
 
-export default function AccountTabs({ profile, orders, reviews, avatarUrl }: AccountTabsProps) {
+export default function AccountTabs({ profile, orders, reviews, supportRequests, avatarUrl }: AccountTabsProps) {
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+  const [helpOrderId, setHelpOrderId] = useState<string | null>(null);
+  const [helpSubmitting, setHelpSubmitting] = useState(false);
+  const [helpMessage, setHelpMessage] = useState<string | null>(null);
 
   const displayName = profile.full_name || profile.email.split('@')[0];
   const avatarInitial = displayName.charAt(0).toUpperCase();
@@ -72,6 +86,27 @@ export default function AccountTabs({ profile, orders, reviews, avatarUrl }: Acc
     if (count === 0) return 'No items';
     if (count === 1) return first.product_name;
     return `${count} items — ${first.product_name}, ...`;
+  };
+
+  const submitHelpRequest = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setHelpSubmitting(true);
+    setHelpMessage(null);
+
+    try {
+      const response = await fetch('/api/support-requests', {
+        method: 'POST',
+        body: new FormData(event.currentTarget),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Could not submit request');
+      setHelpMessage('Support request submitted.');
+      setHelpOrderId(null);
+    } catch (err: any) {
+      setHelpMessage(err.message || 'Could not submit request');
+    } finally {
+      setHelpSubmitting(false);
+    }
   };
 
   return (
@@ -197,6 +232,34 @@ export default function AccountTabs({ profile, orders, reviews, avatarUrl }: Acc
                       <StatusBadge status={order.status} />
                     </div>
                   </button>
+                  <div className="px-4 pb-3 -mt-1">
+                    <button
+                      type="button"
+                      onClick={() => setHelpOrderId(helpOrderId === order.id ? null : order.id)}
+                      className="text-xs text-[#D4A017] hover:text-[#E8B820] transition duration-200"
+                    >
+                      Need Help?
+                    </button>
+                  </div>
+                  {helpOrderId === order.id && (
+                    <form onSubmit={submitHelpRequest} className="border-t border-[#D4D4D4] dark:border-[#2A2A2A] px-4 py-4 bg-[#F5F5F5] dark:bg-[#0A0A0A] space-y-3">
+                      <input type="hidden" name="order_id" value={order.id} />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <select name="reason" required className="bg-white dark:bg-[#141414] border border-[#D4D4D4] dark:border-[#2A2A2A] px-3 py-2 rounded-sm text-sm">
+                          <option value="order_not_received">Order not received</option>
+                          <option value="wrong_item">Wrong item received</option>
+                          <option value="damaged_product">Damaged product</option>
+                          <option value="refund_return">Refund/Return</option>
+                          <option value="other">Other</option>
+                        </select>
+                        <input name="attachment" type="file" accept="image/jpeg,image/png,image/webp" className="text-sm" />
+                      </div>
+                      <textarea name="message" required minLength={10} maxLength={2000} rows={3} placeholder="Tell us what happened" className="w-full bg-white dark:bg-[#141414] border border-[#D4D4D4] dark:border-[#2A2A2A] px-3 py-2 rounded-sm text-sm" />
+                      <button disabled={helpSubmitting} className="bg-[#D4A017] hover:bg-[#E8B820] text-[#0A0A0A] font-semibold px-4 py-2 text-sm rounded-sm disabled:opacity-50">
+                        {helpSubmitting ? 'Submitting...' : 'Submit Request'}
+                      </button>
+                    </form>
+                  )}
                   {expandedOrderId === order.id && order.order_items?.length > 0 && (
                     <div className="border-t border-[#D4D4D4] dark:border-[#2A2A2A] bg-[#F5F5F5] dark:bg-[#0A0A0A] px-4 py-3">
                       <table className="w-full text-sm">
@@ -223,6 +286,32 @@ export default function AccountTabs({ profile, orders, reviews, avatarUrl }: Acc
                   )}
                 </div>
               ))}
+            </div>
+          )}
+          {helpMessage && (
+            <p className="text-sm text-[#555555] dark:text-[#9A9A9A] mt-4">{helpMessage}</p>
+          )}
+          {supportRequests.length > 0 && (
+            <div className="mt-10">
+              <h3 className="text-lg font-semibold text-[#0A0A0A] dark:text-[#F5F5F5] mb-4">Your help requests</h3>
+              <div className="space-y-3">
+                {supportRequests.map((request) => (
+                  <div key={request.id} className="bg-white dark:bg-[#141414] border border-[#D4D4D4] dark:border-[#2A2A2A] rounded-sm p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="font-mono text-xs text-[#555555] dark:text-[#9A9A9A]">
+                          {request.id.split('-')[0]}... · Order {request.order_id.split('-')[0]}...
+                        </p>
+                        <p className="text-sm text-[#0A0A0A] dark:text-[#F5F5F5] mt-1">
+                          {request.reason.replace(/_/g, ' ')}
+                        </p>
+                      </div>
+                      <StatusBadge status={request.status} />
+                    </div>
+                    <p className="text-sm text-[#555555] dark:text-[#9A9A9A] mt-3 whitespace-pre-wrap">{request.message}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
