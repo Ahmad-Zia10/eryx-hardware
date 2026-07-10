@@ -1,130 +1,138 @@
-import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase/server";
 import type { CatalogueProduct } from "@/lib/catalogue-data";
 
 // ─────────────────────────────────────────────────────────────────
-// This is the real, Supabase-backed replacement for the static
-// functions in catalogue-data.ts. Function names and return shapes
-// intentionally mirror that file (getProductBySlug, getProductsBy-
-// Category, getTopPicks, etc.) so the already-working page components
-// (Home, Kitchen, ProductDetail) need only a one-line import change
-// to switch from static data to the real database — no JSX changes.
+// Post-variant-migration data layer.
 //
-// DbProduct extends CatalogueProduct rather than duplicating its
-// fields, so the two stay structurally identical by construction —
-// ProductCard and every other component typed against
-// CatalogueProduct accepts a DbProduct without any cast or drift risk.
+// The database now has two tables:
+//   products        — parent "concept" product (one row per sellable idea)
+//   product_variants — purchasable SKU (one or more rows per parent)
+//
+// DbProduct continues to extend CatalogueProduct so that every
+// existing component typed against CatalogueProduct still compiles
+// without changes. The key addition is `variantId` (the UUID of the
+// specific variant) and `parentId` (the parent products.id).
+//
+// `id` is kept as the variantId for backward-compat with:
+//   - product_reviews.product_id (references product_variants.id)
+//   - cart items keyed by product.slug (derived from variant item_code)
 // ─────────────────────────────────────────────────────────────────
 
+export interface ProductVariant {
+  id: string;             // product_variants.id
+  item_code: string;
+  finish: string;
+  dimension_notes: string;
+  mrp: number | null;
+  is_on_sale: boolean;
+  discount_price: number | null;
+  is_default: boolean;
+  is_active: boolean;
+  external_price_url: string | null;
+  image: string;          // primary image URL
+  gallery: string[];
+  slug: string;           // slugified item_code
+  optionValues: Record<string, string>;
+  optionOrder: string[];
+}
+
 export interface DbProduct extends CatalogueProduct {
-  id: string;
+  id: string;             // variant UUID — kept for backward-compat
+  parentId: string;       // parent products.id
+  variantId: string;      // explicit alias for id
+  variants?: ProductVariant[];
+  variantCount?: number;
   external_price_url?: string | null;
 }
 
-// Maps a raw Supabase row (snake_case, matches the `products` +
-// `product_images` tables) into the same shape the ported components
-// already expect from catalogue-data.ts's CatalogueProduct.
-function mapRow(row: any): DbProduct {
-  const images = (row.product_images || [])
-    .sort((a: any, b: any) => a.display_order - b.display_order);
+const FALLBACK_PRODUCT_IMAGE = "/products/hero/kitchen-hero-1.jpg";
 
-  const primaryImage =
-    images.find((img: any) => img.is_primary)?.image_url ||
-    images[0]?.image_url ||
-    row.image_url ||
-    "";
-
-  const gallery =
-    images.length > 0
-      ? images.map((img: any) => img.image_url)
-      : [row.image_url].filter(Boolean);
-
-  return {
-    id: row.id,
-    code: row.item_code,
-    name: row.name,
-    dimensions: row.dimension_notes || "",
-    mrp: row.mrp,
-    is_on_sale: row.is_on_sale || false,
-    discount_price: row.discount_price ?? null,
-    finish: row.finish || "",
-    category: row.category,
-    categorySlug: slugify(row.category),
-    slug: slugify(row.item_code),
-    image: primaryImage,
-    gallery,
-    description: row.description || "",
-    material: row.material || "",
-    external_price_url: row.external_price_url || null,
-  };
-}
+// ─── Helpers ─────────────────────────────────────────────────────
 
 function slugify(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
-const PRODUCT_SELECT = "*, product_images(image_url, display_order, is_primary)";
+function resolveImages(row: any): { image: string; gallery: string[] } {
+  const images = (row.product_images || [])
+    .sort((a: any, b: any) => a.display_order - b.display_order);
 
-export async function getAllProducts(): Promise<DbProduct[]> {
-  const { data, error } = await supabase
-    .from("products")
-    .select(PRODUCT_SELECT)
-    .eq("is_active", true)
-    .order("catalogue_sno", { ascending: true });
+  const image =
+    images.find((img: any) => img.is_primary)?.image_url ||
+    images[0]?.image_url ||
+    row.image_url ||
+    FALLBACK_PRODUCT_IMAGE;
 
-  if (error) {
-    console.error("getAllProducts failed:", error.message);
-    return [];
+  const gallery =
+    images.length > 0
+      ? images.map((img: any) => img.image_url)
+      : [row.image_url || FALLBACK_PRODUCT_IMAGE].filter(Boolean);
+
+  return { image, gallery };
+}
+
+function mapVariantRow(pv: any): DbProduct {
+  const { image, gallery } = resolveImages(pv);
+  return {
+    // CatalogueProduct fields
+    code: pv.item_code,
+    name: pv.name,
+    dimensions: pv.dimension_notes || "",
+    mrp: pv.mrp,
+    is_on_sale: pv.is_on_sale || false,
+    discount_price: pv.discount_price ?? null,
+    finish: pv.finish || "",
+    category: pv.category,
+    categorySlug: slugify(pv.category),
+    slug: slugify(pv.item_code),
+    image,
+    gallery,
+    description: pv.description || "",
+    material: pv.material || "",
+    external_price_url: pv.external_price_url || null,
+    // DbProduct extras
+    id: pv.id,                // variant UUID (backward-compat)
+    variantId: pv.id,
+    parentId: pv.product_id,
+  };
+}
+
+function fallbackOptionValues(pv: any): Record<string, string> {
+  const values: Record<string, string> = {};
+  const finish = pv.finish?.trim();
+  const dimensions = pv.dimension_notes?.trim();
+
+  if (finish) values.Finish = finish;
+  if (dimensions && dimensions.toLowerCase() !== "contact for specifications") {
+    values.Dimensions = dimensions;
   }
 
-  return (data || []).map(mapRow);
+  return values;
 }
 
-export async function getProductBySlug(slug: string): Promise<DbProduct | null> {
-  // item_code isn't stored pre-slugified, so we fetch active products
-  // and match in application code rather than querying by a derived
-  // value the database doesn't have a column for. For 82-200 rows this
-  // is fine; if the catalogue grows much larger, add a generated
-  // `slug` column with an index instead of filtering client-side.
-  const all = await getAllProducts();
-  return all.find((p) => p.slug === slug) || null;
-}
-
-export async function getProductsByCategory(
-  category: string
-): Promise<DbProduct[]> {
-  const { data, error } = await supabase
-    .from("products")
-    .select(PRODUCT_SELECT)
-    .eq("is_active", true)
-    .eq("category", category)
-    .order("catalogue_sno", { ascending: true });
-
-  if (error) {
-    console.error("getProductsByCategory failed:", error.message);
-    return [];
-  }
-
-  return (data || []).map(mapRow);
-}
-
-export async function getTopPicks(): Promise<DbProduct[]> {
-  const { data, error } = await supabase
-    .from("products")
-    .select(PRODUCT_SELECT)
-    .eq("is_active", true)
-    .eq("is_featured", true)
-    .limit(4);
-
-  if (error) {
-    console.error("getTopPicks failed:", error.message);
-    return [];
-  }
-
-  return (data || []).map(mapRow);
-}
-
-export function formatPrice(mrp: number | null): string {
-  return typeof mrp === "number" ? `₹${mrp.toLocaleString("en-IN")}` : "Price on request";
+function mapVariantToSelector(
+  pv: any,
+  optionValues: Record<string, string> = fallbackOptionValues(pv),
+  optionOrder: string[] = Object.keys(optionValues)
+): ProductVariant {
+  const { image, gallery } = resolveImages(pv);
+  return {
+    id: pv.id,
+    item_code: pv.item_code,
+    finish: pv.finish || "",
+    dimension_notes: pv.dimension_notes || "",
+    mrp: pv.mrp,
+    is_on_sale: pv.is_on_sale || false,
+    discount_price: pv.discount_price ?? null,
+    is_default: pv.is_default,
+    is_active: pv.is_active,
+    external_price_url: pv.external_price_url || null,
+    image,
+    gallery,
+    slug: slugify(pv.item_code),
+    optionValues,
+    optionOrder,
+  };
 }
 
 function getReviewAuthorName(profile: any): string {
@@ -135,6 +143,142 @@ function getReviewAuthorName(profile: any): string {
   if (parts.length <= 1) return fullName;
   return `${parts[0]} ${parts[parts.length - 1].charAt(0)}.`;
 }
+
+/**
+ * Returns all active products — one row per parent, using the default variant
+ * for price/image/code. Shape is identical to the old products table query,
+ * so all existing consumers (PLP, search, home) work without change.
+ */
+export async function getAllProducts(): Promise<DbProduct[]> {
+  const { data, error } = await supabaseAdmin
+    .from("product_variants")
+    .select("*, product_images(image_url, display_order, is_primary)")
+    .eq("is_default", true)
+    .eq("is_active", true)
+    .order("catalogue_sno", { ascending: true, nullsFirst: false });
+
+  if (error) {
+    console.error("getAllProducts failed:", error.message);
+    return [];
+  }
+
+  return (data || []).map(mapVariantRow);
+}
+
+export async function getProductBySlug(slug: string): Promise<DbProduct | null> {
+  // Slug is derived from item_code. Fetch the matching default variant.
+  const all = await getAllProducts();
+  return all.find((p) => p.slug === slug) || null;
+}
+
+export async function getProductsByCategory(
+  category: string
+): Promise<DbProduct[]> {
+  const { data, error } = await supabaseAdmin
+    .from("product_variants")
+    .select("*, product_images(image_url, display_order, is_primary)")
+    .eq("is_default", true)
+    .eq("is_active", true)
+    .eq("category", category)
+    .order("catalogue_sno", { ascending: true, nullsFirst: false });
+
+  if (error) {
+    console.error("getProductsByCategory failed:", error.message);
+    return [];
+  }
+
+  return (data || []).map(mapVariantRow);
+}
+
+export async function getTopPicks(): Promise<DbProduct[]> {
+  // is_featured is mirrored on product_variants from the parent during seed.
+  const { data, error } = await supabaseAdmin
+    .from("product_variants")
+    .select("*, product_images(image_url, display_order, is_primary)")
+    .eq("is_default", true)
+    .eq("is_active", true)
+    .eq("is_featured", true)
+    .limit(4);
+
+  if (error) {
+    console.error("getTopPicks failed:", error.message);
+    return [];
+  }
+
+  return (data || []).map(mapVariantRow);
+}
+
+/**
+ * Returns ALL active variants for a parent product, used by the PDP
+ * variant selector. Includes full image data per variant.
+ */
+export async function getProductVariants(
+  parentId: string
+): Promise<ProductVariant[]> {
+  const { data, error } = await supabaseAdmin
+    .from("product_variants")
+    .select("*, product_images(image_url, display_order, is_primary)")
+    .eq("product_id", parentId)
+    .eq("is_active", true)
+    .order("catalogue_sno", { ascending: true, nullsFirst: false });
+
+  if (error) {
+    console.error("getProductVariants failed:", error.message);
+    return [];
+  }
+
+  const variantRows = data || [];
+  if (variantRows.length === 0) return [];
+
+  const { data: optionRows, error: optionError } = await supabaseAdmin
+    .from("product_variant_options")
+    .select(`
+      id,
+      name,
+      display_order,
+      product_variant_option_values(
+        variant_id,
+        value,
+        display_order
+      )
+    `)
+    .eq("product_id", parentId)
+    .order("display_order", { ascending: true });
+
+  if (optionError || !optionRows || optionRows.length === 0) {
+    if (optionError) console.warn("getProductVariants options failed:", optionError.message);
+    return variantRows.map((variant) => mapVariantToSelector(variant));
+  }
+
+  const optionOrder = optionRows.map((option: any) => option.name);
+  const optionMap = new Map<string, Record<string, string>>();
+
+  for (const option of optionRows as any[]) {
+    const values = [...(option.product_variant_option_values || [])].sort(
+      (a: any, b: any) => (a.display_order || 0) - (b.display_order || 0)
+    );
+
+    for (const value of values) {
+      const current = optionMap.get(value.variant_id) || {};
+      current[option.name] = value.value;
+      optionMap.set(value.variant_id, current);
+    }
+  }
+
+  return variantRows.map((variant) => {
+    const optionValues = {
+      ...fallbackOptionValues(variant),
+      ...(optionMap.get(variant.id) || {}),
+    };
+    const order = [
+      ...optionOrder,
+      ...Object.keys(optionValues).filter((name) => !optionOrder.includes(name)),
+    ];
+    return mapVariantToSelector(variant, optionValues, order);
+  });
+}
+
+// ─── Reviews (unchanged — still keyed by product_variants.id) ────
 
 export async function getProductReviews(variantId: string) {
   const { data, error } = await supabaseAdmin
@@ -184,11 +328,12 @@ export async function getProductReviews(variantId: string) {
   });
 }
 
-export async function getProductRatingSummary(productId: string) {
-  const { data, error } = await supabase
+export async function getProductRatingSummary(variantId: string) {
+  const { data, error } = await supabaseAdmin
     .from("product_reviews")
     .select("rating")
-    .eq("product_id", productId);
+    .eq("product_id", variantId)
+    .eq("approval_status", "approved");
 
   if (error || !data || data.length === 0) {
     return { average: 0, count: 0 };
@@ -199,4 +344,11 @@ export async function getProductRatingSummary(productId: string) {
     average: Number((sum / data.length).toFixed(1)),
     count: data.length,
   };
+}
+
+// ─── Kept for backward-compat (used by admin/products/ProductsTable) ─
+export function formatPrice(mrp: number | null): string {
+  return typeof mrp === "number"
+    ? `₹${mrp.toLocaleString("en-IN")}`
+    : "Price on request";
 }

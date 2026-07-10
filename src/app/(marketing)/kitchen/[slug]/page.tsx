@@ -3,13 +3,11 @@ import {
   getProductBySlug, 
   getProductsByCategory,
   getProductReviews,
-  getProductRatingSummary 
+  getProductRatingSummary,
+  getProductVariants,
 } from "@/lib/db/products";
 
-// Next.js App Router convention: a folder named [slug] makes `slug`
-// available as a prop here automatically. In Next.js 15+ (this project
-// is on 16.2.9), `params` is a Promise and must be awaited — this
-// changed from earlier versions where it was a plain synchronous object.
+// Next.js 16+ — params is a Promise, must be awaited.
 export default async function ProductDetailPage({
   params,
 }: {
@@ -18,23 +16,24 @@ export default async function ProductDetailPage({
   const { slug } = await params;
   const product = await getProductBySlug(slug);
 
-  // Fetch related products only if the product actually exists —
-  // no point querying by a category that doesn't exist.
-  const relatedProducts = product
-    ? (await getProductsByCategory(product.category)).filter(
-        (p) => p.slug !== product.slug
-      ).slice(0, 4)
-    : [];
-
-  const reviews = product ? await getProductReviews(product.id) : [];
-  const ratingSummary = product ? await getProductRatingSummary(product.id) : { average: 0, count: 0 };
+  const [relatedProducts, reviews, ratingSummary, variants] = await Promise.all([
+    product
+      ? (await getProductsByCategory(product.category)).filter(
+          (p) => p.slug !== product.slug
+        ).slice(0, 4)
+      : [],
+    product ? getProductReviews(product.id) : [],
+    product ? getProductRatingSummary(product.id) : { average: 0, count: 0 },
+    product ? getProductVariants(product.parentId) : [],
+  ]);
 
   return (
     <ProductDetail 
       product={product} 
-      relatedProducts={relatedProducts} 
+      relatedProducts={relatedProducts}
       reviews={reviews}
       ratingSummary={ratingSummary}
+      variants={variants}
     />
   );
 }

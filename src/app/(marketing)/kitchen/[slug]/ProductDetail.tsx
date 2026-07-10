@@ -11,29 +11,124 @@ import { useCart } from "@/context/CartContext";
 import { useUI } from "@/context/UIContext";
 import { createClient } from "@/lib/supabase/client";
 import { formatPrice, getEffectivePrice, hasActiveDiscount } from "@/lib/pricing";
-import type { DbProduct } from "@/lib/db/products";
+import type { DbProduct, ProductVariant } from "@/lib/db/products";
 
 interface ProductDetailProps {
-  // Both fetched server-side by page.tsx now (getProductBySlug and
-  // getProductsByCategory are async Supabase calls) and passed down
-  // as plain props — this component no longer does any data fetching
-  // of its own, same pattern as Kitchen.tsx.
   product: DbProduct | null;
   relatedProducts: DbProduct[];
   reviews?: any[];
   ratingSummary?: { average: number; count: number };
+  variants?: ProductVariant[];
 }
 
-export default function ProductDetail({ product, relatedProducts, reviews = [], ratingSummary = { average: 0, count: 0 } }: ProductDetailProps) {
+type VariantAxis = {
+  name: string;
+  values: string[];
+};
+
+function getVariantAxes(variants: ProductVariant[]): VariantAxis[] {
+  const orderedNames: string[] = [];
+
+  for (const variant of variants) {
+    for (const name of variant.optionOrder || Object.keys(variant.optionValues || {})) {
+      if (!orderedNames.includes(name)) orderedNames.push(name);
+    }
+  }
+
+  return orderedNames
+    .map((name) => ({
+      name,
+      values: Array.from(
+        new Set(
+          variants
+            .map((variant) => variant.optionValues?.[name])
+            .filter((value): value is string => Boolean(value))
+        )
+      ),
+    }))
+    .filter((axis) => axis.values.length > 1);
+}
+
+function variantMatchesSelection(
+  variant: ProductVariant,
+  axes: VariantAxis[],
+  selection: Record<string, string>
+) {
+  return axes.every((axis) => {
+    const selected = selection[axis.name];
+    return !selected || variant.optionValues?.[axis.name] === selected;
+  });
+}
+
+function getFlatVariantLabel(variant: ProductVariant) {
+  const dimensions = variant.dimension_notes?.trim();
+  if (dimensions && dimensions.toLowerCase() !== "contact for specifications") {
+    return dimensions;
+  }
+  return variant.finish || variant.item_code;
+}
+
+export default function ProductDetail({
+  product,
+  relatedProducts,
+  reviews = [],
+  ratingSummary = { average: 0, count: 0 },
+  variants = [],
+}: ProductDetailProps) {
   const router = useRouter();
   const supabase = createClient();
   const { addItem } = useCart();
   const { showToast, openEnquiryModal } = useUI();
   const [quantity, setQuantity] = useState(1);
-  const [selectedImage, setSelectedImage] = useState(
-    product?.gallery?.[0] || product?.image
+
+  // Variant selector — initialised to the default variant.
+  // When there is only one variant (or no variants array supplied), activeVariant
+  // stays null and liveProduct falls back to the product prop directly.
+  const [activeVariant, setActiveVariant] = useState<ProductVariant | null>(
+    variants.length > 1
+      ? (variants.find((v) => v.is_default) ?? variants[0] ?? null)
+      : null
   );
-  
+  const variantAxes = getVariantAxes(variants);
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>(
+    () => activeVariant?.optionValues || {}
+  );
+
+  // The "live" product merges the parent prop with whichever variant is selected.
+  const liveProduct: DbProduct | null = activeVariant
+    ? {
+        ...product!,
+        id: activeVariant.id,
+        variantId: activeVariant.id,
+        code: activeVariant.item_code,
+        slug: activeVariant.slug,
+        finish: activeVariant.finish,
+        dimensions: activeVariant.dimension_notes,
+        mrp: activeVariant.mrp,
+        is_on_sale: activeVariant.is_on_sale,
+        discount_price: activeVariant.discount_price,
+        image: activeVariant.image,
+        gallery: activeVariant.gallery,
+        external_price_url: activeVariant.external_price_url,
+      }
+    : product;
+
+  const [selectedImage, setSelectedImage] = useState<string | undefined>(
+    liveProduct?.gallery?.[0] || liveProduct?.image
+  );
+
+  // Reset selected image to the new variant's primary when the selection changes.
+  useEffect(() => {
+    setSelectedImage(liveProduct?.gallery?.[0] || liveProduct?.image);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeVariant?.id]);
+
+  useEffect(() => {
+    if (activeVariant?.optionValues) {
+      setSelectedOptions(activeVariant.optionValues);
+    }
+  }, [activeVariant?.id, activeVariant?.optionValues]);
+
   const [user, setUser] = useState<any>(null);
   const [localReviews, setLocalReviews] = useState(reviews);
   const [reviewForm, setReviewForm] = useState({ rating: 5, text: "" });
@@ -48,7 +143,7 @@ export default function ProductDetail({ product, relatedProducts, reviews = [], 
 
   const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!product) return;
+    if (!liveProduct) return;
     setReviewSubmitting(true);
     setReviewError("");
 
@@ -57,7 +152,7 @@ export default function ProductDetail({ product, relatedProducts, reviews = [], 
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          product_id: product.id,
+          product_id: liveProduct.id,
           rating: reviewForm.rating,
           review_text: reviewForm.text,
         }),
@@ -69,11 +164,10 @@ export default function ProductDetail({ product, relatedProducts, reviews = [], 
       }
 
       const newReview = await res.json();
-      // Optimistically add to list. We mock authorName since API just returns raw row.
       const enrichedReview = {
         ...newReview,
-        authorName: user?.user_metadata?.first_name 
-          ? `${user.user_metadata.first_name} ${user.user_metadata.last_name?.charAt(0) || ""}.` 
+        authorName: user?.user_metadata?.first_name
+          ? `${user.user_metadata.first_name} ${user.user_metadata.last_name?.charAt(0) || ""}.`
           : "You",
       };
       setLocalReviews([enrichedReview, ...localReviews]);
@@ -85,7 +179,7 @@ export default function ProductDetail({ product, relatedProducts, reviews = [], 
     }
   };
 
-  if (!product) {
+  if (!product || !liveProduct) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-24 text-center">
         <p className="text-[#0A0A0A] dark:text-[#F5F5F5] text-lg">Product not found.</p>
@@ -100,11 +194,24 @@ export default function ProductDetail({ product, relatedProducts, reviews = [], 
   }
 
   const handleAddToCart = () => {
-    addItem(product, quantity);
+    addItem(liveProduct, quantity);
     showToast();
   };
-  const effectivePrice = getEffectivePrice(product);
-  const discounted = hasActiveDiscount(product);
+
+  const handleOptionSelect = (axisName: string, value: string) => {
+    const nextSelection = { ...selectedOptions, [axisName]: value };
+    const exactMatch = variants.find((variant) =>
+      variantMatchesSelection(variant, variantAxes, nextSelection)
+    );
+    const fallbackMatch = variants.find((variant) => variant.optionValues?.[axisName] === value);
+    const nextVariant = exactMatch || fallbackMatch;
+
+    setSelectedOptions(nextSelection);
+    if (nextVariant) setActiveVariant(nextVariant);
+  };
+
+  const effectivePrice = getEffectivePrice(liveProduct);
+  const discounted = hasActiveDiscount(liveProduct);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -122,10 +229,10 @@ export default function ProductDetail({ product, relatedProducts, reviews = [], 
         </Link>{" "}
         /{" "}
         <Link
-          href={`/kitchen?category=${encodeURIComponent(product.category)}`}
+          href={`/kitchen?category=${encodeURIComponent(liveProduct.category)}`}
           className="hover:text-[#D4A017] transition duration-200 ease-in-out"
         >
-          {product.category}
+          {liveProduct.category}
         </Link>{" "}
         / <span className="text-[#0A0A0A] dark:text-[#F5F5F5]">{product.name}</span>
       </p>
@@ -143,13 +250,13 @@ export default function ProductDetail({ product, relatedProducts, reviews = [], 
           <div className="bg-[#EBEBEB] dark:bg-[#1A1A1A] border border-[#D4D4D4] dark:border-[#2A2A2A] rounded-sm min-h-125 overflow-hidden">
             <ProductImage
               src={selectedImage!}
-              alt={product.name}
+              alt={liveProduct.name}
               className="w-full h-full min-h-125"
               loading="eager"
             />
           </div>
           <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1">
-            {product.gallery.map((image) => (
+            {liveProduct.gallery.map((image) => (
               <button
                 key={image}
                 onClick={() => setSelectedImage(image)}
@@ -168,8 +275,10 @@ export default function ProductDetail({ product, relatedProducts, reviews = [], 
         {/* Right: Details */}
         <div className="flex flex-col gap-4">
           <span className="text-xs text-[#555555] dark:text-[#9A9A9A]">
-            Item Code: {product.code}
+            Item Code: {liveProduct.code}
           </span>
+
+          {/* Rating summary */}
           <div className="flex items-center gap-2 -mt-2">
             <div className="flex text-[#D4A017]">
               {[1, 2, 3, 4, 5].map((star) => (
@@ -177,37 +286,114 @@ export default function ProductDetail({ product, relatedProducts, reviews = [], 
                   key={star}
                   size={14}
                   fill={star <= Math.round(ratingSummary.average) ? "currentColor" : "none"}
-                  className={star <= Math.round(ratingSummary.average) ? "text-[#D4A017]" : "text-[#D4D4D4] dark:text-[#2A2A2A]"}
+                  className={
+                    star <= Math.round(ratingSummary.average)
+                      ? "text-[#D4A017]"
+                      : "text-[#D4D4D4] dark:text-[#2A2A2A]"
+                  }
                 />
               ))}
             </div>
-            <span className="text-xs text-[#0A0A0A] dark:text-[#F5F5F5] font-semibold">{ratingSummary.average > 0 ? ratingSummary.average.toFixed(1) : ""}</span>
+            <span className="text-xs text-[#0A0A0A] dark:text-[#F5F5F5] font-semibold">
+              {ratingSummary.average > 0 ? ratingSummary.average.toFixed(1) : ""}
+            </span>
             <span className="text-xs text-[#555555] dark:text-[#9A9A9A]">
               {ratingSummary.count > 0 ? `(${ratingSummary.count})` : "Be the first to review"}
             </span>
           </div>
+
           <h1 className="text-4xl font-semibold text-[#0A0A0A] dark:text-[#F5F5F5]">
             {product.name}
           </h1>
-          <div className="flex gap-2">
+
+          <div className="flex gap-2 flex-wrap">
             <span className="border border-[#D4A017] text-[#D4A017] text-xs px-2 py-0.5">
-              {product.category}
+              {liveProduct.category}
             </span>
-            <span className="border border-[#D4A017] text-[#D4A017] text-xs px-2 py-0.5">
-              {product.finish}
-            </span>
+            {liveProduct.finish && (
+              <span className="border border-[#D4A017] text-[#D4A017] text-xs px-2 py-0.5">
+                {liveProduct.finish}
+              </span>
+            )}
           </div>
+
           <p className="text-sm text-[#555555] dark:text-[#9A9A9A]">{product.description}</p>
+
+          {/* ── Variant selector ── */}
+          {variants.length > 1 && (
+            <div className="flex flex-col gap-2">
+              {variantAxes.length > 0 ? (
+                variantAxes.map((axis) => (
+                  <div key={axis.name} className="space-y-2">
+                    <span className="text-xs font-medium text-[#555555] dark:text-[#9A9A9A] uppercase tracking-wider">
+                      Select {axis.name}
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {axis.values.map((value) => {
+                        const isActive = selectedOptions[axis.name] === value;
+                        const candidateSelection = { ...selectedOptions, [axis.name]: value };
+                        const isAvailable = variants.some((variant) =>
+                          variantMatchesSelection(variant, variantAxes, candidateSelection)
+                        );
+
+                        return (
+                          <button
+                            key={`${axis.name}-${value}`}
+                            type="button"
+                            disabled={!isAvailable}
+                            onClick={() => handleOptionSelect(axis.name, value)}
+                            className={`px-3 py-1.5 text-sm border rounded-sm transition duration-200 ease-in-out disabled:opacity-40 disabled:cursor-not-allowed ${
+                              isActive
+                                ? "border-[#D4A017] bg-[#D4A017]/10 text-[#D4A017] font-semibold"
+                                : "border-[#D4D4D4] dark:border-[#2A2A2A] text-[#555555] dark:text-[#9A9A9A] hover:border-[#D4A017] hover:text-[#D4A017]"
+                            }`}
+                          >
+                            {value}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="space-y-2">
+                  <span className="text-xs font-medium text-[#555555] dark:text-[#9A9A9A] uppercase tracking-wider">
+                    Select Variant
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {variants.map((variant) => {
+                      const isActive = (activeVariant?.id ?? product.id) === variant.id;
+                      return (
+                        <button
+                          key={variant.id}
+                          type="button"
+                          onClick={() => setActiveVariant(variant)}
+                          className={`px-3 py-1.5 text-sm border rounded-sm transition duration-200 ease-in-out ${
+                            isActive
+                              ? "border-[#D4A017] bg-[#D4A017]/10 text-[#D4A017] font-semibold"
+                              : "border-[#D4D4D4] dark:border-[#2A2A2A] text-[#555555] dark:text-[#9A9A9A] hover:border-[#D4A017] hover:text-[#D4A017]"
+                          }`}
+                        >
+                          {getFlatVariantLabel(variant)}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="border-t border-[#D4D4D4] dark:border-[#2A2A2A]" />
 
+          {/* Spec table */}
           <div className="flex flex-col divide-y divide-[#D4D4D4] dark:divide-[#2A2A2A]">
             {[
-              ["Dimensions", product.dimensions],
-              ["Finish", product.finish],
-              ["Material", product.material],
-              ["Category", product.category],
-              ["Item Code", product.code],
+              ["Dimensions", liveProduct.dimensions],
+              ["Finish", liveProduct.finish],
+              ["Material", liveProduct.material],
+              ["Category", liveProduct.category],
+              ["Item Code", liveProduct.code],
               ["Technology", "German Tech"],
               ["Unit", "Set"],
             ].map(([key, value]) => (
@@ -222,16 +408,20 @@ export default function ProductDetail({ product, relatedProducts, reviews = [], 
 
           <PincodeChecker />
 
+          {/* Price */}
           <div className="mt-4">
             <span className="text-xs text-[#555555] dark:text-[#9A9A9A]">MRP</span>
             <div className="flex items-baseline gap-3">
               <p className="text-3xl font-bold text-[#D4A017]">{formatPrice(effectivePrice)}</p>
               {discounted && (
-                <span className="text-sm text-[#9A9A9A] line-through">{formatPrice(product.mrp)}</span>
+                <span className="text-sm text-[#9A9A9A] line-through">
+                  {formatPrice(liveProduct.mrp)}
+                </span>
               )}
             </div>
           </div>
 
+          {/* Quantity + Add to cart */}
           <div className="flex items-center gap-4">
             <div className="flex items-center border border-[#D4D4D4] dark:border-[#2A2A2A]">
               <button
@@ -258,15 +448,15 @@ export default function ProductDetail({ product, relatedProducts, reviews = [], 
           </button>
 
           <button
-            onClick={() => openEnquiryModal({ productName: product.name })}
+            onClick={() => openEnquiryModal({ productName: liveProduct.name })}
             className="border border-[#D4A017] text-[#D4A017] hover:bg-[#D4A017] hover:text-[#0A0A0A] w-full py-3 font-semibold transition duration-200 ease-in-out"
           >
             Enquire Now
           </button>
 
-          {product.external_price_url && (
+          {liveProduct.external_price_url && (
             <a
-              href={product.external_price_url}
+              href={liveProduct.external_price_url}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-1.5 mt-2 text-sm text-[#555555] dark:text-[#9A9A9A] hover:text-[#D4A017] transition duration-200 ease-in-out"
@@ -312,15 +502,22 @@ export default function ProductDetail({ product, relatedProducts, reviews = [], 
         <h2 className="text-2xl font-bold text-[#0A0A0A] dark:text-[#F5F5F5] mb-8">
           Customer Reviews
         </h2>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-12">
           {/* Review Form */}
           <div>
-            <h3 className="font-semibold text-lg text-[#0A0A0A] dark:text-[#F5F5F5] mb-4">Write a Review</h3>
+            <h3 className="font-semibold text-lg text-[#0A0A0A] dark:text-[#F5F5F5] mb-4">
+              Write a Review
+            </h3>
             {user ? (
-              <form onSubmit={handleReviewSubmit} className="flex flex-col gap-4 bg-[#F5F5F5] dark:bg-[#1A1A1A] p-6 border border-[#E8E4DD] dark:border-[#2A2A2A]">
+              <form
+                onSubmit={handleReviewSubmit}
+                className="flex flex-col gap-4 bg-[#F5F5F5] dark:bg-[#1A1A1A] p-6 border border-[#E8E4DD] dark:border-[#2A2A2A]"
+              >
                 <div>
-                  <label className="block text-sm text-[#555555] dark:text-[#9A9A9A] mb-2">Rating</label>
+                  <label className="block text-sm text-[#555555] dark:text-[#9A9A9A] mb-2">
+                    Rating
+                  </label>
                   <div className="flex gap-1 cursor-pointer">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <Star
@@ -328,13 +525,19 @@ export default function ProductDetail({ product, relatedProducts, reviews = [], 
                         size={24}
                         onClick={() => setReviewForm({ ...reviewForm, rating: star })}
                         fill={star <= reviewForm.rating ? "currentColor" : "none"}
-                        className={star <= reviewForm.rating ? "text-[#D4A017]" : "text-[#D4D4D4] dark:text-[#2A2A2A]"}
+                        className={
+                          star <= reviewForm.rating
+                            ? "text-[#D4A017]"
+                            : "text-[#D4D4D4] dark:text-[#2A2A2A]"
+                        }
                       />
                     ))}
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm text-[#555555] dark:text-[#9A9A9A] mb-2">Review (Optional)</label>
+                  <label className="block text-sm text-[#555555] dark:text-[#9A9A9A] mb-2">
+                    Review (Optional)
+                  </label>
                   <textarea
                     value={reviewForm.text}
                     onChange={(e) => setReviewForm({ ...reviewForm, text: e.target.value })}
@@ -354,7 +557,11 @@ export default function ProductDetail({ product, relatedProducts, reviews = [], 
               </form>
             ) : (
               <div className="bg-[#F5F5F5] dark:bg-[#1A1A1A] p-6 border border-[#E8E4DD] dark:border-[#2A2A2A] text-sm text-[#555555] dark:text-[#9A9A9A]">
-                Please <Link href="/login" className="text-[#D4A017] hover:underline">log in</Link> to write a review.
+                Please{" "}
+                <Link href="/login" className="text-[#D4A017] hover:underline">
+                  log in
+                </Link>{" "}
+                to write a review.
               </div>
             )}
           </div>
@@ -365,7 +572,10 @@ export default function ProductDetail({ product, relatedProducts, reviews = [], 
               <p className="text-[#555555] dark:text-[#9A9A9A]">No reviews yet.</p>
             ) : (
               localReviews.map((review) => (
-                <div key={review.id} className="border-b border-[#E8E4DD] dark:border-[#2A2A2A] pb-6 last:border-0 last:pb-0">
+                <div
+                  key={review.id}
+                  className="border-b border-[#E8E4DD] dark:border-[#2A2A2A] pb-6 last:border-0 last:pb-0"
+                >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
                       <div className="flex text-[#D4A017]">
@@ -374,11 +584,17 @@ export default function ProductDetail({ product, relatedProducts, reviews = [], 
                             key={star}
                             size={14}
                             fill={star <= review.rating ? "currentColor" : "none"}
-                            className={star <= review.rating ? "text-[#D4A017]" : "text-[#D4D4D4] dark:text-[#2A2A2A]"}
+                            className={
+                              star <= review.rating
+                                ? "text-[#D4A017]"
+                                : "text-[#D4D4D4] dark:text-[#2A2A2A]"
+                            }
                           />
                         ))}
                       </div>
-                      <span className="font-medium text-[#0A0A0A] dark:text-[#F5F5F5] text-sm">{review.authorName}</span>
+                      <span className="font-medium text-[#0A0A0A] dark:text-[#F5F5F5] text-sm">
+                        {review.authorName}
+                      </span>
                       {review.is_verified_purchase && (
                         <span className="text-[10px] uppercase tracking-wider text-green-600 dark:text-green-500 border border-green-600 dark:border-green-500 px-1.5 py-0.5 rounded-sm">
                           Verified Purchase
@@ -386,11 +602,16 @@ export default function ProductDetail({ product, relatedProducts, reviews = [], 
                       )}
                     </div>
                     <span className="text-xs text-[#555555] dark:text-[#9A9A9A]">
-                      {new Date(review.created_at).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
+                      {new Date(review.created_at).toLocaleDateString("en-US", {
+                        month: "short",
+                        year: "numeric",
+                      })}
                     </span>
                   </div>
                   {review.review_text && (
-                    <p className="text-sm text-[#555555] dark:text-[#F5F5F5] whitespace-pre-wrap">{review.review_text}</p>
+                    <p className="text-sm text-[#555555] dark:text-[#F5F5F5] whitespace-pre-wrap">
+                      {review.review_text}
+                    </p>
                   )}
                 </div>
               ))
