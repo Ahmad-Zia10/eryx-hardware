@@ -25,12 +25,22 @@ export async function POST(req: Request) {
     }
     if (parsed.data.website) return NextResponse.json({ ok: true });
 
-    const productIds = parsed.data.items.map((item) => item.product_id);
-    const { data: products } = await supabaseAdmin
-      .from("products")
-      .select("id, name")
-      .in("id", productIds);
-    const productNameById = new Map((products || []).map((product) => [product.id, product.name]));
+    const variantIds = parsed.data.items.map((item) => item.product_id);
+    const { data: variants, error: variantError } = await supabaseAdmin
+      .from("product_variants")
+      .select("id, item_code, name, product:products(name)")
+      .in("id", variantIds);
+
+    if (variantError) {
+      throw new Error(variantError.message);
+    }
+
+    const productNameById = new Map(
+      (variants || []).map((variant: any) => [
+        variant.id,
+        `${variant.product?.name || variant.name} (${variant.item_code})`,
+      ])
+    );
 
     const { data: enquiry, error: enquiryError } = await supabaseAdmin
       .from("bulk_enquiries")
