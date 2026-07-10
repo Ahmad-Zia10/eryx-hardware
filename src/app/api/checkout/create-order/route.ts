@@ -24,11 +24,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Cart is empty' }, { status: 400 });
     }
 
-    // 2. Validate products and calculate total server-side
-    // Never trust the client for pricing — re-derive from catalogue data
+    // 2. Validate variants and calculate total server-side.
+    // Never trust the client for pricing — re-derive from the DB.
+    // After the rename migration, purchasable SKUs live in product_variants.
     const codes = items.map((item: any) => item.code).filter(Boolean);
     const { data: dbProducts, error: productsError } = await supabaseAdmin
-      .from('products')
+      .from('product_variants')
       .select('id, item_code, name, mrp, is_on_sale, discount_price')
       .in('item_code', codes)
       .eq('is_active', true);
@@ -73,7 +74,7 @@ export async function POST(req: Request) {
         product_name: product.name,
         quantity: item.quantity,
         price_at_purchase: effectivePrice,
-        product_id: product.id,
+        variant_id: product.id,   // product_variants.id (renamed from product_id)
       });
     }
 
