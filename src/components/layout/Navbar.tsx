@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import {
@@ -74,6 +74,7 @@ export default function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement | null>(null);
   const supabase = createClient();
 
   useEffect(() => {
@@ -103,6 +104,27 @@ export default function Navbar() {
     };
   }, [supabase]);
 
+  useEffect(() => {
+    if (!userDropdownOpen) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!userMenuRef.current?.contains(event.target as Node)) {
+        setUserDropdownOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setUserDropdownOpen(false);
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [userDropdownOpen]);
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     setUserDropdownOpen(false);
@@ -119,7 +141,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 shrink-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/eryx-logo.png" alt="ERYX" className="h-12 object-contain" />
+          <img src="/eryx-logo-transparent.png" alt="ERYX" className="h-12 object-contain" />
         </Link>
 
         <div className="hidden lg:flex items-center gap-8">
@@ -174,12 +196,14 @@ export default function Navbar() {
           >
             {isDark ? <Moon size={20} /> : <Sun size={20} />}
           </button>
-          <div className="relative">
+          <div className="relative" ref={userMenuRef}>
             {user ? (
               <button
                 onClick={() => setUserDropdownOpen(!userDropdownOpen)}
                 className="hidden sm:block text-[#555555] dark:text-[#9A9A9A] hover:text-[#D4A017] transition duration-200 ease-in-out"
                 aria-label="Account"
+                aria-expanded={userDropdownOpen}
+                aria-haspopup="menu"
               >
                 <User size={20} />
               </button>
