@@ -15,7 +15,7 @@ export default async function AdminReviewsPage() {
 
   const [{ data: products }, { data: profiles }] = await Promise.all([
     productIds.length > 0
-      ? supabaseAdmin.from('products').select('id, name').in('id', productIds)
+      ? supabaseAdmin.from('product_variants').select('id, name').in('id', productIds)
       : Promise.resolve({ data: [] }),
     customerIds.length > 0
       ? supabaseAdmin.from('profiles').select('id, email, full_name').in('id', customerIds)

@@ -127,35 +127,60 @@ export function formatPrice(mrp: number | null): string {
   return typeof mrp === "number" ? `₹${mrp.toLocaleString("en-IN")}` : "Price on request";
 }
 
-export async function getProductReviews(productId: string) {
-  const { data, error } = await supabase
+function getReviewAuthorName(profile: any): string {
+  const fullName = profile?.full_name?.trim();
+  if (!fullName) return "Anonymous";
+
+  const parts = fullName.split(/\s+/).filter(Boolean);
+  if (parts.length <= 1) return fullName;
+  return `${parts[0]} ${parts[parts.length - 1].charAt(0)}.`;
+}
+
+export async function getProductReviews(variantId: string) {
+  const { data, error } = await supabaseAdmin
     .from("product_reviews")
     .select(`
       *,
-      customer:profiles!customer_id(first_name, last_name)
+      customer:profiles!product_reviews_profile_fkey(full_name, email)
     `)
-    .eq("product_id", productId)
+    .eq("product_id", variantId)
+    .eq("approval_status", "approved")
     .order("created_at", { ascending: false })
     .limit(20);
 
   if (error) {
-    console.error("getProductReviews failed:", error.message);
-    return [];
+    console.warn("getProductReviews embed failed, falling back:", error.message);
+
+    const { data: fallbackReviews, error: fallbackError } = await supabaseAdmin
+      .from("product_reviews")
+      .select("*")
+      .eq("product_id", variantId)
+      .eq("approval_status", "approved")
+      .order("created_at", { ascending: false })
+      .limit(20);
+
+    if (fallbackError || !fallbackReviews) {
+      console.error("getProductReviews fallback failed:", fallbackError?.message);
+      return [];
+    }
+
+    const customerIds = [...new Set(fallbackReviews.map((review) => review.customer_id).filter(Boolean))];
+    const { data: profiles } = customerIds.length > 0
+      ? await supabaseAdmin
+          .from("profiles")
+          .select("id, full_name, email")
+          .in("id", customerIds)
+      : { data: [] };
+
+    const profileMap = new Map((profiles || []).map((profile: any) => [profile.id, profile]));
+    return fallbackReviews.map((review) => {
+      const profile = profileMap.get(review.customer_id);
+      return { ...review, authorName: getReviewAuthorName(profile) };
+    });
   }
 
-  // To match the UI requirement "first name + last initial":
   return data.map((review) => {
-    let authorName = "Anonymous";
-    if (review.customer) {
-      const { first_name, last_name } = review.customer;
-      if (first_name) {
-        authorName = last_name ? `${first_name} ${last_name.charAt(0)}.` : first_name;
-      }
-    }
-    return {
-      ...review,
-      authorName,
-    };
+    return { ...review, authorName: getReviewAuthorName(review.customer) };
   });
 }
 

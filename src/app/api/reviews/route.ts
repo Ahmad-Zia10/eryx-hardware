@@ -19,16 +19,24 @@ export async function POST(req: Request) {
 
     // Check if the user has purchased this product (using supabaseAdmin to bypass RLS for orders)
     // We look for orders by this customer with status in 'paid', 'shipped', 'delivered'
-    const { data: orders } = await supabaseAdmin
+    const { data: orders, error: purchaseError } = await supabaseAdmin
       .from('orders')
       .select(`
         id,
         status,
-        order_items!inner(product_id)
+        order_items!inner(variant_id)
       `)
       .eq('customer_id', user.id)
-      .eq('order_items.product_id', product_id)
+      .eq('order_items.variant_id', product_id)
       .in('status', ['paid', 'shipped', 'delivered']);
+
+    if (purchaseError) {
+      console.error('Verified purchase lookup failed:', purchaseError);
+      return NextResponse.json(
+        { error: 'Could not verify purchase history. Please try again.' },
+        { status: 500 }
+      );
+    }
 
     const is_verified_purchase = Array.isArray(orders) && orders.length > 0;
 
