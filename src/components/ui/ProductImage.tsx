@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 interface ProductImageProps {
-  src: string;
+  src?: string | null;
   alt: string;
   className?: string;
   loading?: "lazy" | "eager";
@@ -17,7 +17,7 @@ export default function ProductImage({
 }: ProductImageProps) {
   const [errored, setErrored] = useState(false);
 
-  if (errored) {
+  if (!src || errored) {
     return (
       <div
         className={`flex items-center justify-center bg-[#EBEBEB] dark:bg-[#1A1A1A] text-[#555555] dark:text-[#9A9A9A] text-sm ${className}`}
