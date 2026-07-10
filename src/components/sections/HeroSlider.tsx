@@ -86,7 +86,7 @@ export default function HeroSlider() {
 
   useEffect(() => {
     if (isPaused) return;
-    const timer = setInterval(nextSlide, 7000);
+    const timer = setInterval(nextSlide, 4000);
     return () => clearInterval(timer);
   }, [isPaused, nextSlide]);
 
