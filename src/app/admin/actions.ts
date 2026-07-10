@@ -258,7 +258,7 @@ export async function savePost(id: string | null, data: {
     : { data: null };
 
   const contentJson = data.content_json || emptyTiptapDocument();
-  const content = tiptapJsonToHtml(contentJson);
+  const content = await tiptapJsonToHtml(contentJson);
   const payload = {
     title: data.title,
     slug: data.slug,
@@ -333,7 +333,7 @@ export async function saveAboutSection(id: string, data: {
   if (profile?.role !== 'admin') throw new Error('Unauthorized');
 
   const contentJson = data.content_json || emptyTiptapDocument();
-  const contentHtml = tiptapJsonToHtml(contentJson);
+  const contentHtml = await tiptapJsonToHtml(contentJson);
 
   const { error } = await supabaseAdmin
     .from('about_page_sections')

@@ -1,22 +1,6 @@
-import { generateHTML } from "@tiptap/html";
-import StarterKit from "@tiptap/starter-kit";
-import Underline from "@tiptap/extension-underline";
-import Link from "@tiptap/extension-link";
-import Image from "@tiptap/extension-image";
-import sanitizeHtml from "sanitize-html";
+import "server-only";
 
-const extensions = [
-  StarterKit,
-  Underline,
-  Link.configure({
-    openOnClick: false,
-    HTMLAttributes: {
-      rel: "noopener noreferrer nofollow",
-      target: "_blank",
-    },
-  }),
-  Image,
-];
+import sanitizeHtml from "sanitize-html";
 
 const sanitizeOptions: sanitizeHtml.IOptions = {
   allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img", "h1", "h2", "h3", "pre", "code"]),
@@ -29,7 +13,43 @@ const sanitizeOptions: sanitizeHtml.IOptions = {
   allowedSchemes: ["http", "https", "mailto", "tel"],
 };
 
-export function tiptapJsonToHtml(contentJson: any) {
+async function createServerTiptapExtensions() {
+  const [
+    { generateHTML },
+    { default: StarterKit },
+    { default: Underline },
+    { default: Link },
+    { default: Image },
+  ] = await Promise.all([
+    import("@tiptap/html"),
+    import("@tiptap/starter-kit"),
+    import("@tiptap/extension-underline"),
+    import("@tiptap/extension-link"),
+    import("@tiptap/extension-image"),
+  ]);
+
+  return {
+    generateHTML,
+    extensions: [
+      StarterKit.configure({
+        link: false,
+        underline: false,
+      }),
+      Underline,
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: {
+          rel: "noopener noreferrer nofollow",
+          target: "_blank",
+        },
+      }),
+      Image,
+    ],
+  };
+}
+
+export async function tiptapJsonToHtml(contentJson: any) {
+  const { generateHTML, extensions } = await createServerTiptapExtensions();
   const html = generateHTML(contentJson, extensions);
   return sanitizeHtml(html, sanitizeOptions);
 }
