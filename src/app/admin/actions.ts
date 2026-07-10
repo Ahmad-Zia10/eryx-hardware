@@ -11,6 +11,7 @@ export async function signOut() {
   redirect('/');
 }
 
+// updateProduct targets product_variants (the per-SKU row) for pricing/status fields.
 export async function updateProduct(id: string, data: {
   mrp: number | null;
   is_active: boolean;
@@ -27,8 +28,9 @@ export async function updateProduct(id: string, data: {
     .from('profiles').select('role').eq('id', user.id).single();
   if (profile?.role !== 'admin') throw new Error('Unauthorized');
 
-  const { error } = await supabaseAdmin
-    .from('products')
+  // Update the variant row for SKU-level fields (price, sale, visibility)
+  const { error: variantError } = await supabaseAdmin
+    .from('product_variants')
     .update({ 
       mrp: data.mrp, 
       is_active: data.is_active, 
@@ -40,11 +42,209 @@ export async function updateProduct(id: string, data: {
     })
     .eq('id', id);
 
-  if (error) throw new Error('Update failed');
+  if (variantError) throw new Error('Update failed');
 
   revalidatePath('/');
   revalidatePath('/kitchen');
   revalidatePath('/checkout');
+}
+
+// updateParentProduct targets the products table for shared concept-level fields.
+export async function updateParentProduct(id: string, data: {
+  name: string;
+  description: string | null;
+  category: string;
+  product_line: string;
+  is_featured: boolean;
+  is_active: boolean;
+}) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Unauthorized');
+  
+  const { data: profile } = await supabaseAdmin
+    .from('profiles').select('role').eq('id', user.id).single();
+  if (profile?.role !== 'admin') throw new Error('Unauthorized');
+
+  const { error } = await supabaseAdmin
+    .from('products')
+    .update({ 
+      name: data.name,
+      description: data.description,
+      category: data.category,
+      product_line: data.product_line,
+      is_featured: data.is_featured,
+      is_active: data.is_active,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', id);
+
+  if (error) throw new Error('Update failed');
+  revalidatePath('/');
+  revalidatePath('/kitchen');
+}
+
+export async function addProductVariant(parentId: string, data: {
+  item_code: string;
+  name: string;
+  finish: string | null;
+  material: string | null;
+  dimension_notes: string | null;
+  mrp: number | null;
+  external_price_url: string | null;
+  is_default: boolean;
+}) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Unauthorized');
+
+  const { data: profile } = await supabaseAdmin
+    .from('profiles').select('role').eq('id', user.id).single();
+  if (profile?.role !== 'admin') throw new Error('Unauthorized');
+
+  const { data: parent } = await supabaseAdmin
+    .from('products')
+    .select('name, description, category, product_line, is_active, is_featured')
+    .eq('id', parentId)
+    .single();
+
+  if (!parent) throw new Error('Parent product not found');
+
+  if (data.is_default) {
+    await supabaseAdmin
+      .from('product_variants')
+      .update({ is_default: false })
+      .eq('product_id', parentId);
+  }
+
+  const { error } = await supabaseAdmin
+    .from('product_variants')
+    .insert({
+      product_id: parentId,
+      item_code: data.item_code,
+      name: data.name || parent.name,
+      description: parent.description,
+      category: parent.category,
+      product_line: parent.product_line,
+      finish: data.finish,
+      material: data.material,
+      dimension_notes: data.dimension_notes,
+      mrp: data.mrp,
+      external_price_url: data.external_price_url,
+      is_active: parent.is_active,
+      is_featured: parent.is_featured,
+      is_on_sale: false,
+      discount_price: null,
+      is_default: data.is_default,
+      updated_at: new Date().toISOString(),
+    });
+
+  if (error) {
+    if (error.code === '23505') throw new Error('Item code already exists');
+    throw new Error('Failed to add variant');
+  }
+
+  revalidatePath('/admin/products');
+  revalidatePath('/kitchen');
+}
+
+export async function removeProductVariant(id: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Unauthorized');
+
+  const { data: profile } = await supabaseAdmin
+    .from('profiles').select('role').eq('id', user.id).single();
+  if (profile?.role !== 'admin') throw new Error('Unauthorized');
+
+  const { data: variant } = await supabaseAdmin
+    .from('product_variants')
+    .select('product_id')
+    .eq('id', id)
+    .single();
+
+  if (!variant?.product_id) throw new Error('Variant not found');
+
+  const { count: activeCount } = await supabaseAdmin
+    .from('product_variants')
+    .select('*', { count: 'exact', head: true })
+    .eq('product_id', variant.product_id)
+    .eq('is_active', true);
+
+  if ((activeCount || 0) <= 1) {
+    throw new Error('Cannot remove the last active variant');
+  }
+
+  const { count: orderCount } = await supabaseAdmin
+    .from('order_items')
+    .select('*', { count: 'exact', head: true })
+    .eq('variant_id', id);
+
+  const { count: reviewCount } = await supabaseAdmin
+    .from('product_reviews')
+    .select('*', { count: 'exact', head: true })
+    .eq('product_id', id);
+
+  if ((orderCount || 0) > 0 || (reviewCount || 0) > 0) {
+    const { error } = await supabaseAdmin
+      .from('product_variants')
+      .update({ is_active: false, is_default: false, updated_at: new Date().toISOString() })
+      .eq('id', id);
+    if (error) throw new Error('Failed to deactivate variant');
+  } else {
+    const { error } = await supabaseAdmin
+      .from('product_variants')
+      .delete()
+      .eq('id', id);
+    if (error) throw new Error('Failed to delete variant');
+  }
+
+  revalidatePath('/admin/products');
+  revalidatePath('/kitchen');
+}
+
+export async function deleteParentProduct(id: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Unauthorized');
+
+  const { data: profile } = await supabaseAdmin
+    .from('profiles').select('role').eq('id', user.id).single();
+  if (profile?.role !== 'admin') throw new Error('Unauthorized');
+
+  const { data: variants } = await supabaseAdmin
+    .from('product_variants')
+    .select('id')
+    .eq('product_id', id);
+
+  const variantIds = (variants || []).map((variant) => variant.id);
+  const { count: orderCount } = variantIds.length > 0
+    ? await supabaseAdmin.from('order_items').select('*', { count: 'exact', head: true }).in('variant_id', variantIds)
+    : { count: 0 };
+  const { count: reviewCount } = variantIds.length > 0
+    ? await supabaseAdmin.from('product_reviews').select('*', { count: 'exact', head: true }).in('product_id', variantIds)
+    : { count: 0 };
+
+  if ((orderCount || 0) > 0 || (reviewCount || 0) > 0) {
+    await supabaseAdmin
+      .from('product_variants')
+      .update({ is_active: false, is_default: false, updated_at: new Date().toISOString() })
+      .eq('product_id', id);
+    const { error } = await supabaseAdmin
+      .from('products')
+      .update({ is_active: false, updated_at: new Date().toISOString() })
+      .eq('id', id);
+    if (error) throw new Error('Failed to deactivate product');
+  } else {
+    const { error } = await supabaseAdmin
+      .from('products')
+      .delete()
+      .eq('id', id);
+    if (error) throw new Error('Failed to delete product');
+  }
+
+  revalidatePath('/admin/products');
+  revalidatePath('/kitchen');
 }
 
 export async function updateEnquiryStatus(id: string, status: string) {

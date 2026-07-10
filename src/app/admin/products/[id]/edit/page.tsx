@@ -7,7 +7,7 @@ export const revalidate = 0;
 export default async function ProductEditPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
   const { data: product } = await supabaseAdmin
-    .from('products')
+    .from('product_variants')
     .select('*, product_images(id, image_url, display_order, is_primary)')
     .eq('id', resolvedParams.id)
     .single();
