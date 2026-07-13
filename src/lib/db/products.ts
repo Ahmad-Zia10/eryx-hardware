@@ -34,6 +34,8 @@ export interface ProductVariant {
   slug: string;           // slugified item_code
   optionValues: Record<string, string>;
   optionOrder: string[];
+  stock_quantity: number;
+  track_inventory: boolean;
 }
 
 export interface DbProduct extends CatalogueProduct {
@@ -90,6 +92,8 @@ function mapVariantRow(pv: any): DbProduct {
     description: pv.description || "",
     material: pv.material || "",
     external_price_url: pv.external_price_url || null,
+    stock_quantity: pv.stock_quantity ?? 0,
+    track_inventory: pv.track_inventory ?? true,
     // DbProduct extras
     id: pv.id,                // variant UUID (backward-compat)
     variantId: pv.id,
@@ -132,6 +136,8 @@ function mapVariantToSelector(
     slug: slugify(pv.item_code),
     optionValues,
     optionOrder,
+    stock_quantity: pv.stock_quantity ?? 0,
+    track_inventory: pv.track_inventory ?? true,
   };
 }
 

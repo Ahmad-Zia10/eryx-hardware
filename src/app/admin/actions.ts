@@ -554,3 +554,44 @@ export async function saveAboutSection(id: string, data: {
   revalidatePath('/about');
   revalidatePath('/admin/about');
 }
+
+export async function adjustStock(
+  variantId: string,
+  delta: number,
+  reason: 'restock' | 'manual_adjustment'
+): Promise<{ ok: true; newQuantity: number } | { ok: false; error: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: 'Unauthorized' };
+
+  const { data: profile } = await supabaseAdmin
+    .from('profiles').select('role').eq('id', user.id).single();
+  if (profile?.role !== 'admin') return { ok: false, error: 'Unauthorized' };
+
+  if (!Number.isInteger(delta) || delta === 0) {
+    return { ok: false, error: 'Delta must be a non-zero integer' };
+  }
+  if (reason !== 'restock' && reason !== 'manual_adjustment') {
+    return { ok: false, error: 'Invalid reason' };
+  }
+
+  const { data, error } = await supabaseAdmin.rpc('adjust_stock', {
+    p_variant_id: variantId,
+    p_delta: delta,
+    p_reason: reason,
+    p_admin_id: user.id,
+  });
+
+  if (error) {
+    // Column CHECK aborts negative-result updates; surface a friendly message.
+    const msg = /negative|check/i.test(error.message)
+      ? 'Adjustment would drop stock below zero'
+      : error.message;
+    return { ok: false, error: msg };
+  }
+
+  revalidatePath('/admin/products');
+  revalidatePath('/kitchen', 'layout');
+
+  return { ok: true, newQuantity: data as number };
+}

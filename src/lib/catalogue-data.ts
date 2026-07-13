@@ -326,6 +326,8 @@ export interface CatalogueProduct {
   description: string;
   material: string;
   external_price_url?: string | null;
+  stock_quantity?: number;
+  track_inventory?: boolean;
 }
 
 export const PRODUCTS: CatalogueProduct[] = RAW_ROWS.map(

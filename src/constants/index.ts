@@ -20,6 +20,11 @@ export const SITE_CONFIG = {
   catalogueUrl: "/catalogue/eryx-catalogue.pdf" as const,
 } as const;
 
+// Below this quantity a variant is flagged low-stock in the admin UI.
+// Kept as a single global for v1 — per-variant thresholds can be added
+// as an additive migration if needed later.
+export const LOW_STOCK_THRESHOLD = 5;
+
 export const SERVICEABLE_PINCODES = [
   "110", // Delhi NCR
   "400", // Mumbai

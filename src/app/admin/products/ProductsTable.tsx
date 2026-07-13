@@ -2,12 +2,14 @@
 
 import { Fragment, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, ChevronDown, ChevronUp, Edit, Plus, Trash2 } from 'lucide-react';
+import { Search, ChevronDown, ChevronUp, Edit, Plus, Trash2, Package } from 'lucide-react';
 import { deleteParentProduct, removeProductVariant } from '@/app/admin/actions';
 import ProductEditModal from './ProductEditModal';
 import AddProductModal from './AddProductModal';
 import ProductParentEditModal from './ProductParentEditModal';
 import AddVariantModal from './AddVariantModal';
+import AdjustStockModal from '@/components/admin/AdjustStockModal';
+import { LOW_STOCK_THRESHOLD } from '@/constants';
 
 function formatPrice(mrp: number | null): string {
   return typeof mrp === 'number' ? `₹${mrp.toLocaleString('en-IN')}` : 'POA';
@@ -23,6 +25,22 @@ function priceRange(variants: any[]): string {
   return `${formatPrice(min)} – ${formatPrice(max)}`;
 }
 
+function totalStock(variants: any[]): { total: number; tracked: boolean } {
+  const tracked = variants.filter((v) => v.track_inventory !== false);
+  if (tracked.length === 0) return { total: 0, tracked: false };
+  return {
+    total: tracked.reduce((sum, v) => sum + (v.stock_quantity ?? 0), 0),
+    tracked: true,
+  };
+}
+
+function stockToneClass(qty: number): string {
+  if (qty <= 0) return 'bg-red-500/10 text-red-400 border-red-500/30';
+  if (qty < LOW_STOCK_THRESHOLD) return 'bg-red-500/10 text-red-400 border-red-500/30';
+  if (qty < LOW_STOCK_THRESHOLD * 2) return 'bg-yellow-500/10 text-yellow-300 border-yellow-500/30';
+  return 'bg-green-500/10 text-green-400 border-green-500/30';
+}
+
 export default function ProductsTable({ products }: { products: any[] }) {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
@@ -33,6 +51,7 @@ export default function ProductsTable({ products }: { products: any[] }) {
   const [isParentEditModalOpen, setIsParentEditModalOpen] = useState(false);
   const [isAddVariantModalOpen, setIsAddVariantModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [stockVariant, setStockVariant] = useState<any | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
   const filteredProducts = products.filter((p) => {
@@ -118,6 +137,7 @@ export default function ProductsTable({ products }: { products: any[] }) {
                 <th className="px-4 py-3 text-left text-xs tracking-widest uppercase text-[#9A9A9A]">Product</th>
                 <th className="px-4 py-3 text-left text-xs tracking-widest uppercase text-[#9A9A9A]">Variants</th>
                 <th className="px-4 py-3 text-left text-xs tracking-widest uppercase text-[#9A9A9A]">Price Range</th>
+                <th className="px-4 py-3 text-left text-xs tracking-widest uppercase text-[#9A9A9A]">Stock</th>
                 <th className="px-4 py-3 text-left text-xs tracking-widest uppercase text-[#9A9A9A]">Status</th>
                 <th className="px-4 py-3 text-left text-xs tracking-widest uppercase text-[#9A9A9A]">Tags</th>
                 <th className="px-4 py-3 text-right text-xs tracking-widest uppercase text-[#9A9A9A]">Actions</th>
@@ -156,6 +176,17 @@ export default function ProductsTable({ products }: { products: any[] }) {
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-[#F5F5F5]">
                         {priceRange(variants)}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm">
+                        {(() => {
+                          const s = totalStock(variants);
+                          if (!s.tracked) return <span className="text-[#555555]">—</span>;
+                          return (
+                            <span className={`px-2 py-0.5 text-xs font-medium rounded-sm border ${stockToneClass(s.total)}`}>
+                              {s.total}
+                            </span>
+                          );
+                        })()}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <span className={`px-2 py-0.5 text-xs font-medium rounded-sm ${parent.is_active ? 'bg-green-500/10 text-green-400 border border-green-500/30' : 'bg-red-500/10 text-red-400 border border-red-500/30'}`}>
@@ -245,6 +276,15 @@ export default function ProductsTable({ products }: { products: any[] }) {
                             <span className="text-[#555555]">POA</span>
                           )}
                         </td>
+                        <td className="px-4 py-2.5 whitespace-nowrap text-sm">
+                          {variant.track_inventory === false ? (
+                            <span className="text-[#555555] text-xs">Not tracked</span>
+                          ) : (
+                            <span className={`px-2 py-0.5 text-xs font-medium rounded-sm border ${stockToneClass(variant.stock_quantity ?? 0)}`}>
+                              {variant.stock_quantity ?? 0}
+                            </span>
+                          )}
+                        </td>
                         <td className="px-4 py-2.5">
                           <span className={`px-2 py-0.5 text-xs font-medium rounded-sm ${variant.is_active ? 'bg-green-500/10 text-green-400 border border-green-500/30' : 'bg-red-500/10 text-red-400 border border-red-500/30'}`}>
                             {variant.is_active ? 'Active' : 'Inactive'}
@@ -252,7 +292,18 @@ export default function ProductsTable({ products }: { products: any[] }) {
                         </td>
                         <td className="px-4 py-2.5"></td>
                         <td className="px-4 py-2.5 text-xs text-[#555555]">
-                          <div className="flex justify-end gap-2">
+                          <div className="flex justify-end gap-2 items-center">
+                            <button
+                              type="button"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                setStockVariant(variant);
+                              }}
+                              className="text-[#9A9A9A] hover:text-[#D4A017]"
+                              title="Adjust stock"
+                            >
+                              <Package size={14} />
+                            </button>
                             <span>Edit</span>
                             <button
                               type="button"
@@ -284,7 +335,7 @@ export default function ProductsTable({ products }: { products: any[] }) {
 
               {filteredProducts.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-[#9A9A9A]">
+                  <td colSpan={8} className="px-4 py-8 text-center text-[#9A9A9A]">
                     No products found.
                   </td>
                 </tr>
@@ -321,6 +372,14 @@ export default function ProductsTable({ products }: { products: any[] }) {
       {isAddModalOpen && (
         <AddProductModal
           onClose={() => setIsAddModalOpen(false)}
+          onSuccess={() => router.refresh()}
+        />
+      )}
+
+      {stockVariant && (
+        <AdjustStockModal
+          variant={stockVariant}
+          onClose={() => setStockVariant(null)}
           onSuccess={() => router.refresh()}
         />
       )}

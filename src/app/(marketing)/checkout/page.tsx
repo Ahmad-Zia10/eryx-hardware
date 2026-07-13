@@ -6,10 +6,18 @@ import { createClient } from '@/lib/supabase/client';
 import { formatPrice, getEffectivePrice } from '@/lib/pricing';
 import Script from 'next/script';
 
+type OutOfStockItem = {
+  code: string;
+  name: string;
+  requested: number;
+  available: number;
+};
+
 export default function CheckoutPage() {
-  const { items, cartTotal, clearCart } = useCart();
+  const { items, cartTotal, clearCart, removeItem } = useCart();
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [outOfStock, setOutOfStock] = useState<OutOfStockItem[]>([]);
 
   const [promoCode, setPromoCode] = useState('');
   const [appliedPromo, setAppliedPromo] = useState<any>(null);
@@ -70,6 +78,7 @@ export default function CheckoutPage() {
     e.preventDefault();
     if (items.length === 0) return;
     setIsLoading(true);
+    setOutOfStock([]);
 
     try {
       // 1. Create order on backend
@@ -87,6 +96,13 @@ export default function CheckoutPage() {
       });
 
       const data = await res.json();
+
+      if (res.status === 409 && Array.isArray(data.outOfStockItems)) {
+        setOutOfStock(data.outOfStockItems);
+        setIsLoading(false);
+        return;
+      }
+
       if (!res.ok) throw new Error(data.error || 'Failed to create order');
 
       const options = {
@@ -150,20 +166,47 @@ export default function CheckoutPage() {
             <div className="space-y-4">
               {items.map((item) => {
                 const price = getEffectivePrice(item.product);
+                const stale = outOfStock.find((o) => o.code === item.product.code);
                 return (
-                <div key={item.product.slug} className="flex justify-between text-sm">
-                  <div className="flex gap-4">
-                    <div className="w-16 h-16 bg-neutral-100 dark:bg-neutral-800 rounded shrink-0 overflow-hidden">
-                      <img src={item.product.image} alt={item.product.name} className="w-full h-full object-cover" />
+                <div
+                  key={item.product.slug}
+                  className={`flex flex-col text-sm rounded p-2 ${
+                    stale ? 'border border-red-500 bg-red-50 dark:bg-red-950/30' : ''
+                  }`}
+                >
+                  <div className="flex justify-between">
+                    <div className="flex gap-4">
+                      <div className="w-16 h-16 bg-neutral-100 dark:bg-neutral-800 rounded shrink-0 overflow-hidden">
+                        <img src={item.product.image} alt={item.product.name} className="w-full h-full object-cover" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-neutral-900 dark:text-white">{item.product.name}</p>
+                        <p className="text-neutral-500 dark:text-neutral-400">Qty: {item.quantity}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium text-neutral-900 dark:text-white">{item.product.name}</p>
-                      <p className="text-neutral-500 dark:text-neutral-400">Qty: {item.quantity}</p>
+                    <div className="text-neutral-900 dark:text-white font-medium">
+                      {typeof price === 'number' ? formatPrice(price * item.quantity) : 'Price on request'}
                     </div>
                   </div>
-                  <div className="text-neutral-900 dark:text-white font-medium">
-                    {typeof price === 'number' ? formatPrice(price * item.quantity) : 'Price on request'}
-                  </div>
+                  {stale && (
+                    <div className="mt-2 flex items-center justify-between text-xs text-red-700 dark:text-red-400">
+                      <span>
+                        {stale.available === 0
+                          ? 'Out of stock — remove to continue.'
+                          : `Only ${stale.available} available. Reduce quantity or remove.`}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          removeItem(item.product.slug);
+                          setOutOfStock((prev) => prev.filter((o) => o.code !== item.product.code));
+                        }}
+                        className="ml-3 underline hover:no-underline"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  )}
                 </div>
                 );
               })}
@@ -241,12 +284,16 @@ export default function CheckoutPage() {
                 </div>
               </div>
               
-              <button 
-                type="submit" 
-                disabled={isLoading}
-                className="w-full mt-6 bg-[#D4A017] hover:bg-[#B8860B] text-white font-bold py-3 px-4 rounded-md transition-colors disabled:opacity-70 flex justify-center"
+              <button
+                type="submit"
+                disabled={isLoading || outOfStock.length > 0}
+                className="w-full mt-6 bg-[#D4A017] hover:bg-[#B8860B] text-white font-bold py-3 px-4 rounded-md transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex justify-center"
               >
-                {isLoading ? 'Processing...' : `Pay ${formatPrice(cartTotal - (appliedPromo?.discount_amount || 0))}`}
+                {isLoading
+                  ? 'Processing...'
+                  : outOfStock.length > 0
+                    ? 'Resolve stock issues to continue'
+                    : `Pay ${formatPrice(cartTotal - (appliedPromo?.discount_amount || 0))}`}
               </button>
             </form>
           </div>

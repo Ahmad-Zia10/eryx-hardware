@@ -110,6 +110,8 @@ export default function ProductDetail({
         image: activeVariant.image,
         gallery: activeVariant.gallery,
         external_price_url: activeVariant.external_price_url,
+        stock_quantity: activeVariant.stock_quantity,
+        track_inventory: activeVariant.track_inventory,
       }
     : product;
 
@@ -212,6 +214,8 @@ export default function ProductDetail({
 
   const effectivePrice = getEffectivePrice(liveProduct);
   const discounted = hasActiveDiscount(liveProduct);
+  const outOfStock =
+    (liveProduct.track_inventory ?? true) && (liveProduct.stock_quantity ?? 0) <= 0;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -442,9 +446,14 @@ export default function ProductDetail({
 
           <button
             onClick={handleAddToCart}
-            className="bg-[#0A0A0A] dark:bg-[#1A1A1A] text-white w-full py-3 font-semibold flex items-center justify-center gap-2 transition duration-200 ease-in-out hover:opacity-90"
+            disabled={outOfStock}
+            className={`w-full py-3 font-semibold flex items-center justify-center gap-2 transition duration-200 ease-in-out ${
+              outOfStock
+                ? "bg-[#D4D4D4] dark:bg-[#2A2A2A] text-[#9A9A9A] cursor-not-allowed"
+                : "bg-[#0A0A0A] dark:bg-[#1A1A1A] text-white hover:opacity-90"
+            }`}
           >
-            <ShoppingCart size={18} /> Add to Cart
+            <ShoppingCart size={18} /> {outOfStock ? "Out of Stock" : "Add to Cart"}
           </button>
 
           <button

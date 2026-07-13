@@ -13,7 +13,7 @@ export default async function AdminProductsPage() {
       product_variants!product_variants_product_id_fkey(
         id, item_code, catalogue_sno, name, finish, dimension_notes,
         mrp, is_on_sale, discount_price, is_featured, is_active,
-        is_default, external_price_url,
+        is_default, external_price_url, stock_quantity, track_inventory,
         product_images(id, image_url, display_order, is_primary)
       )
     `)

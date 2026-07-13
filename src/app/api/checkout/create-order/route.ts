@@ -8,9 +8,15 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET!,
 });
 
+type OutOfStockItem = {
+  code: string;
+  name: string;
+  requested: number;
+  available: number;
+};
+
 export async function POST(req: Request) {
   try {
-    // 1. Verify authenticated session
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -24,13 +30,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Cart is empty' }, { status: 400 });
     }
 
-    // 2. Validate variants and calculate total server-side.
-    // Never trust the client for pricing — re-derive from the DB.
-    // After the rename migration, purchasable SKUs live in product_variants.
+    // Re-fetch variants server-side. Never trust client prices or stock.
     const codes = items.map((item: any) => item.code).filter(Boolean);
     const { data: dbProducts, error: productsError } = await supabaseAdmin
       .from('product_variants')
-      .select('id, item_code, name, mrp, is_on_sale, discount_price')
+      .select('id, item_code, name, mrp, is_on_sale, discount_price, stock_quantity, track_inventory')
       .in('item_code', codes)
       .eq('is_active', true);
 
@@ -42,6 +46,7 @@ export async function POST(req: Request) {
     const productByCode = new Map((dbProducts || []).map((product) => [product.item_code, product]));
     let total = 0;
     const orderItems = [];
+    const outOfStockItems: OutOfStockItem[] = [];
 
     for (const item of items) {
       const product = productByCode.get(item.code);
@@ -68,21 +73,35 @@ export async function POST(req: Request) {
         );
       }
 
+      // Cheap short-circuit for the common stale-cart case. The RPC still
+      // re-checks under a row lock — this is defence in depth, not the
+      // primary guard.
+      if (product.track_inventory && product.stock_quantity < item.quantity) {
+        outOfStockItems.push({
+          code: product.item_code,
+          name: product.name,
+          requested: item.quantity,
+          available: product.stock_quantity,
+        });
+        continue;
+      }
+
       total += effectivePrice * item.quantity;
       orderItems.push({
         item_code: product.item_code,
         product_name: product.name,
         quantity: item.quantity,
         price_at_purchase: effectivePrice,
-        variant_id: product.id,   // product_variants.id (renamed from product_id)
+        variant_id: product.id,
       });
     }
 
-    // 3. Optionally resolve real product UUIDs for foreign key linkage
-    // This is a best-effort enrichment — if a product isn't found in
-    // the DB (e.g., added via admin but not in catalogue-data.ts yet),
-    // we still proceed with product_id as null, which the schema allows.
-    const enrichedItems = orderItems;
+    if (outOfStockItems.length > 0) {
+      return NextResponse.json(
+        { error: 'Some items are out of stock', outOfStockItems },
+        { status: 409 }
+      );
+    }
 
     let subtotal = total;
     let discountApplied = 0;
@@ -126,23 +145,10 @@ export async function POST(req: Request) {
       }
     }
 
-    // 4. Create Razorpay order (amount in paise)
-    const amountInPaise = Math.round(total * 100);
-
-    const rzpOrder = await razorpay.orders.create({
-      amount: amountInPaise,
-      currency: 'INR',
-      receipt: `rcpt_${Date.now()}`,
-    });
-
-    // 5. Atomically create the order + all line items in one transaction
-    // via a Postgres RPC function. If either the order or any item
-    // insert fails, the entire transaction rolls back — no orphaned
-    // order rows, no paid orders with zero line items.
-    // Uses supabaseAdmin (service role) since the RPC function is
-    // security definer and this bypasses the RLS timing issue described
-    // in the function's comment.
-    const { data: orderId, error: rpcError } = await supabaseAdmin
+    // Reserve stock + create the DB order atomically. Do this BEFORE the
+    // Razorpay order so a rolled-back DB order (e.g. lost race for the
+    // last unit) never leaves a dangling Razorpay order behind.
+    const { data: rpcResult, error: rpcError } = await supabaseAdmin
       .rpc('create_order_with_items', {
         p_customer_id: user.id,
         p_customer_name: shippingDetails.name,
@@ -153,13 +159,14 @@ export async function POST(req: Request) {
         p_shipping_pincode: shippingDetails.pincode,
         p_subtotal: subtotal,
         p_total: total,
-        p_razorpay_order_id: rzpOrder.id,
-        p_items: enrichedItems,
+        p_razorpay_order_id: null,
+        p_items: orderItems,
         p_promo_code_id: promoCodeId,
         p_discount_applied: discountApplied,
+        p_payment_method: 'online',
       });
 
-    if (rpcError || !orderId) {
+    if (rpcError || !rpcResult) {
       console.error('Atomic order creation failed:', rpcError);
       return NextResponse.json(
         { error: 'Failed to create order. Please try again.' },
@@ -167,13 +174,66 @@ export async function POST(req: Request) {
       );
     }
 
-    // 6. Promo usage is recorded only after Razorpay confirms payment
-    // in the webhook, so failed or abandoned payment attempts do not
-    // consume a customer's per-user promo limit.
+    if (rpcResult.out_of_stock && Array.isArray(rpcResult.out_of_stock)) {
+      const nameByCode = new Map(
+        (dbProducts || []).map((p) => [p.item_code, p.name])
+      );
+      const raceItems: OutOfStockItem[] = rpcResult.out_of_stock.map((row: any) => ({
+        code: row.item_code,
+        name: nameByCode.get(row.item_code) ?? row.item_code,
+        requested: row.requested,
+        available: row.available,
+      }));
+      return NextResponse.json(
+        { error: 'Some items are out of stock', outOfStockItems: raceItems },
+        { status: 409 }
+      );
+    }
 
-    // 7. The needs_review flag logic from the previous version is no
-    // longer needed here — the atomic transaction either fully succeeds
-    // or fully rolls back. There is no partial success state to flag.
+    const orderId = rpcResult.order_id as string;
+
+    // Now that stock is reserved and the DB order exists, create the
+    // Razorpay order and back-fill its id on the order row.
+    const amountInPaise = Math.round(total * 100);
+    let rzpOrder;
+    try {
+      rzpOrder = await razorpay.orders.create({
+        amount: amountInPaise,
+        currency: 'INR',
+        receipt: `rcpt_${Date.now()}`,
+      });
+    } catch (rzpError) {
+      console.error('Razorpay order creation failed:', rzpError);
+      // Release the reservation immediately via the shared RPC. Waiting
+      // for the 10-minute cron sweep would strand stock needlessly, and
+      // the sweep only touches 'pending' rows anyway — this one is now
+      // 'failed'.
+      await supabaseAdmin.rpc('release_order_stock', {
+        p_order_id: orderId,
+        p_reason: 'failed',
+      });
+      return NextResponse.json(
+        { error: 'Payment gateway is unavailable. Please try again.' },
+        { status: 502 }
+      );
+    }
+
+    const { error: updateError } = await supabaseAdmin
+      .from('orders')
+      .update({ razorpay_order_id: rzpOrder.id })
+      .eq('id', orderId);
+
+    if (updateError) {
+      console.error('Failed to backfill razorpay_order_id:', updateError);
+      await supabaseAdmin.rpc('release_order_stock', {
+        p_order_id: orderId,
+        p_reason: 'failed',
+      });
+      return NextResponse.json(
+        { error: 'Failed to create order. Please try again.' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       orderId,
