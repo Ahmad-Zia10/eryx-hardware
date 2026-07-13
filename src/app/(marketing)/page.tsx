@@ -104,7 +104,7 @@ export default async function Home() {
             <Link
               key={card.label}
               href={card.href}
-              className={`relative overflow-hidden border border-[#D4D4D4] dark:border-[#2A2A2A] hover:border-[#D4A017] group-hover:shadow-[0_8px_40px_rgba(0,0,0,0.15)] dark:group-hover:shadow-[0_8px_40px_rgba(212,160,23,0.1)] transition duration-200 ease-in-out cursor-pointer group min-h-55 ${
+              className={`relative overflow-hidden border border-[#D4D4D4] dark:border-[#2A2A2A] hover:border-[#D4A017] shadow-sm hover:shadow-2xl hover:-translate-y-1 dark:hover:shadow-[0_16px_48px_rgba(212,160,23,0.15)] transition duration-200 ease-in-out cursor-pointer group min-h-55 ${
                 card.large ? "lg:col-span-2 lg:row-span-2" : ""
               }`}
             >
