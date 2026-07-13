@@ -286,11 +286,13 @@ export async function addPromoCode(data: {
   min_order_value: number;
   expires_at: string | null;
   max_uses_per_user: number;
+  description?: string | null;
+  is_public?: boolean;
 }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Unauthorized');
-  
+
   const { data: profile } = await supabaseAdmin
     .from('profiles').select('role').eq('id', user.id).single();
   if (profile?.role !== 'admin') throw new Error('Unauthorized');
@@ -304,6 +306,8 @@ export async function addPromoCode(data: {
       min_order_value: data.min_order_value,
       expires_at: data.expires_at || null,
       max_uses_per_user: data.max_uses_per_user,
+      description: data.description?.trim() || null,
+      is_public: data.is_public ?? false,
       is_active: true,
     });
 
@@ -311,6 +315,9 @@ export async function addPromoCode(data: {
     if (error.code === '23505') throw new Error('Promo code already exists');
     throw new Error('Failed to add promo code');
   }
+
+  revalidatePath('/admin/promo-codes');
+  revalidatePath('/checkout');
 }
 
 export async function moderateReview(id: string, status: 'approved' | 'rejected') {

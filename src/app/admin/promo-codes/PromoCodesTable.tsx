@@ -50,21 +50,25 @@ export default function PromoCodesTable({ promoCodes }: { promoCodes: any[] }) {
                 <th className="px-6 py-3 text-left text-xs tracking-widest uppercase text-[#9A9A9A]">Value</th>
                 <th className="px-6 py-3 text-left text-xs tracking-widest uppercase text-[#9A9A9A]">Min Order</th>
                 <th className="px-6 py-3 text-left text-xs tracking-widest uppercase text-[#9A9A9A]">Expires At</th>
+                <th className="px-6 py-3 text-left text-xs tracking-widest uppercase text-[#9A9A9A]">Public</th>
                 <th className="px-6 py-3 text-left text-xs tracking-widest uppercase text-[#9A9A9A]">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#2A2A2A]">
               {!promoCodes || promoCodes.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-[#9A9A9A]">
+                  <td colSpan={7} className="px-6 py-8 text-center text-[#9A9A9A]">
                     No promo codes found. Create one to get started.
                   </td>
                 </tr>
               ) : (
                 promoCodes.map((promo) => (
                   <tr key={promo.id} className="hover:bg-[#1A1A1A] transition-colors">
-                    <td className="px-6 py-4 font-semibold text-[#D4A017]">
-                      {promo.code}
+                    <td className="px-6 py-4">
+                      <div className="font-semibold text-[#D4A017]">{promo.code}</div>
+                      {promo.description && (
+                        <div className="text-xs text-[#9A9A9A] mt-0.5">{promo.description}</div>
+                      )}
                     </td>
                     <td className="px-6 py-4 capitalize text-[#F5F5F5] text-sm">
                       {promo.discount_type}
@@ -81,6 +85,17 @@ export default function PromoCodesTable({ promoCodes }: { promoCodes: any[] }) {
                     </td>
                     <td className="px-6 py-4 text-[#9A9A9A] text-sm">
                       {promo.expires_at ? new Date(promo.expires_at).toLocaleDateString() : 'Never'}
+                    </td>
+                    <td className="px-6 py-4">
+                      {promo.is_public ? (
+                        <span className="px-2 py-0.5 text-xs font-medium rounded-sm bg-[#D4A017]/10 text-[#D4A017] border border-[#D4A017]/30">
+                          Yes
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 text-xs font-medium rounded-sm bg-[#2A2A2A]/40 text-[#9A9A9A] border border-[#2A2A2A]">
+                          No
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4">
                       <div className={loadingId === promo.id ? 'opacity-50 pointer-events-none' : ''}>

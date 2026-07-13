@@ -20,6 +20,8 @@ export default function AddPromoCodeModal({ onClose, onSuccess }: AddPromoCodeMo
     min_order_value: '',
     expires_at: '',
     max_uses_per_user: '1',
+    description: '',
+    is_public: false,
   });
 
   // Escape key closes modal
@@ -52,6 +54,8 @@ export default function AddPromoCodeModal({ onClose, onSuccess }: AddPromoCodeMo
         min_order_value: formData.min_order_value ? Number(formData.min_order_value) : 0,
         expires_at: formData.expires_at ? new Date(formData.expires_at).toISOString() : null,
         max_uses_per_user: formData.max_uses_per_user ? Number(formData.max_uses_per_user) : 1,
+        description: formData.description,
+        is_public: formData.is_public,
       });
       onSuccess();
       onClose();
@@ -161,6 +165,35 @@ export default function AddPromoCodeModal({ onClose, onSuccess }: AddPromoCodeMo
               value={formData.max_uses_per_user}
               onChange={(e) => setFormData({ ...formData, max_uses_per_user: e.target.value })}
             />
+          </div>
+
+          <div>
+            <label className="block text-sm text-[#F5F5F5] mb-2">Description</label>
+            <input
+              type="text"
+              placeholder="e.g. 10% off summer sale"
+              className="w-full bg-[#1A1A1A] border border-[#2A2A2A] text-[#F5F5F5] text-sm px-4 py-2.5 focus:border-[#D4A017] focus:outline-none placeholder-[#555555] rounded-sm transition duration-200 ease-in-out"
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            />
+            <p className="text-xs text-[#9A9A9A] mt-1">Shown next to the code on the checkout page.</p>
+          </div>
+
+          <div>
+            <label className="flex items-start gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                className="mt-0.5 h-4 w-4 accent-[#D4A017] bg-[#1A1A1A] border-[#2A2A2A]"
+                checked={formData.is_public}
+                onChange={(e) => setFormData({ ...formData, is_public: e.target.checked })}
+              />
+              <span>
+                <span className="block text-sm text-[#F5F5F5]">Show in checkout list (public)</span>
+                <span className="block text-xs text-[#9A9A9A] mt-0.5">
+                  When enabled, this code is listed on the checkout page for logged-in customers. Private codes still work if typed.
+                </span>
+              </span>
+            </label>
           </div>
 
           <div className="pt-4 flex gap-3 justify-end border-t border-[#2A2A2A]">

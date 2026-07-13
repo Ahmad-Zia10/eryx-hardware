@@ -13,6 +13,20 @@ type OutOfStockItem = {
   available: number;
 };
 
+type AvailableCode = {
+  code: string;
+  description: string | null;
+  discount_type: string;
+  discount_value: number;
+  eligible: boolean;
+  ineligibility_reason?: string;
+};
+
+function formatDiscountBadge(code: AvailableCode): string {
+  if (code.discount_type === 'percentage') return `${code.discount_value}% off`;
+  return `${formatPrice(code.discount_value)} off`;
+}
+
 export default function CheckoutPage() {
   const { items, cartTotal, clearCart, removeItem } = useCart();
   const [isLoading, setIsLoading] = useState(false);
@@ -23,6 +37,7 @@ export default function CheckoutPage() {
   const [appliedPromo, setAppliedPromo] = useState<any>(null);
   const [promoError, setPromoError] = useState('');
   const [promoLoading, setPromoLoading] = useState(false);
+  const [availableCodes, setAvailableCodes] = useState<AvailableCode[]>([]);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -49,6 +64,29 @@ export default function CheckoutPage() {
     };
     fetchUser();
   }, [supabase.auth]);
+
+  // Load the public promo codes list (auth-gated on the server). Refetch
+  // when cartTotal changes because min-order eligibility flips with it.
+  useEffect(() => {
+    if (!user) {
+      setAvailableCodes([]);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/promo-codes/available?subtotal=${cartTotal}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!cancelled) setAvailableCodes(data.codes ?? []);
+      } catch {
+        // Non-fatal — the input still works if the list fails to load.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user, cartTotal]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -231,6 +269,75 @@ export default function CheckoutPage() {
                 </button>
               </div>
               {promoError && <p className="text-red-500 text-xs mt-2">{promoError}</p>}
+
+              {availableCodes.length > 0 && (
+                <div className="mt-4">
+                  <p className="text-xs uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mb-2">
+                    Available codes
+                  </p>
+                  <ul className="space-y-2">
+                    {availableCodes.map((code) => {
+                      const selected = promoCode.toUpperCase() === code.code.toUpperCase();
+                      const muted = !code.eligible;
+                      const rowClass = `flex items-center justify-between gap-3 rounded-md border px-3 py-2 text-sm ${
+                        muted
+                          ? 'opacity-60 cursor-not-allowed border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/40'
+                          : 'border-neutral-200 dark:border-neutral-800 hover:border-[#D4A017] cursor-pointer'
+                      } ${selected ? 'ring-1 ring-[#D4A017]' : ''}`;
+
+                      const inner = (
+                        <>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono font-semibold text-[#D4A017]">
+                                {code.code}
+                              </span>
+                              <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                                {formatDiscountBadge(code)}
+                              </span>
+                            </div>
+                            {code.description && (
+                              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 truncate">
+                                {code.description}
+                              </p>
+                            )}
+                          </div>
+                          {code.ineligibility_reason && (
+                            <span
+                              className={`text-xs whitespace-nowrap ${
+                                code.eligible
+                                  ? 'text-amber-600 dark:text-amber-400'
+                                  : 'text-neutral-500 dark:text-neutral-400'
+                              }`}
+                            >
+                              {code.ineligibility_reason}
+                            </span>
+                          )}
+                        </>
+                      );
+
+                      return (
+                        <li key={code.code}>
+                          {code.eligible ? (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setPromoCode(code.code);
+                                setPromoError('');
+                              }}
+                              className={`${rowClass} w-full text-left`}
+                            >
+                              {inner}
+                            </button>
+                          ) : (
+                            <div className={rowClass}>{inner}</div>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
             </div>
             
             <div className="mt-6 pt-4 border-t border-neutral-200 dark:border-neutral-800">
