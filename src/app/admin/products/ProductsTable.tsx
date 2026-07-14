@@ -179,6 +179,20 @@ export default function ProductsTable({ products }: { products: any[] }) {
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm">
                         {(() => {
+                          // Single-variant products show the concrete
+                          // variant's stock (aggregate == the one row);
+                          // multi-variant shows the summed aggregate.
+                          if (variants.length === 1) {
+                            const v = variants[0];
+                            if (v.track_inventory === false) {
+                              return <span className="text-[#555555] text-xs">Not tracked</span>;
+                            }
+                            return (
+                              <span className={`px-2 py-0.5 text-xs font-medium rounded-sm border ${stockToneClass(v.stock_quantity ?? 0)}`}>
+                                {v.stock_quantity ?? 0}
+                              </span>
+                            );
+                          }
                           const s = totalStock(variants);
                           if (!s.tracked) return <span className="text-[#555555]">—</span>;
                           return (
@@ -219,14 +233,24 @@ export default function ProductsTable({ products }: { products: any[] }) {
                             <Plus size={15} />
                           </button>
                           {variants.length === 1 && (
-                            <button
-                              type="button"
-                              onClick={() => openVariantEdit(parent, variants[0])}
-                              className="text-[#9A9A9A] hover:text-[#D4A017]"
-                              title="Edit variant"
-                            >
-                              <Edit size={15} />
-                            </button>
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => setStockVariant(variants[0])}
+                                className="text-[#9A9A9A] hover:text-[#D4A017]"
+                                title="Adjust stock"
+                              >
+                                <Package size={15} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => openVariantEdit(parent, variants[0])}
+                                className="text-[#9A9A9A] hover:text-[#D4A017]"
+                                title="Edit variant"
+                              >
+                                <Edit size={15} />
+                              </button>
+                            </>
                           )}
                           <button
                             type="button"
