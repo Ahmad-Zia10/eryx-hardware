@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Minus, Plus, ShoppingCart, Truck, ShieldCheck, Award, ExternalLink, Star } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Minus, Plus, ShoppingCart, Truck, ShieldCheck, Award, ExternalLink, Star, Layers } from "lucide-react";
 import ProductImage from "@/components/ui/ProductImage";
 import ProductCard from "@/components/sections/ProductCard";
 import PincodeChecker from "@/components/ui/PincodeChecker";
+import NotifyMeForm from "@/components/sections/NotifyMeForm";
 import { useCart } from "@/context/CartContext";
 import { useUI } from "@/context/UIContext";
 import { createClient } from "@/lib/supabase/client";
@@ -76,10 +77,13 @@ export default function ProductDetail({
   variants = [],
 }: ProductDetailProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
   const { addItem } = useCart();
-  const { showToast, openEnquiryModal } = useUI();
+  const { showToast } = useUI();
   const [quantity, setQuantity] = useState(1);
+  const notifyEmailRef = useRef<HTMLInputElement>(null);
+  const notifySectionRef = useRef<HTMLDivElement>(null);
 
   // Variant selector — initialised to the default variant.
   // When there is only one variant (or no variants array supplied), activeVariant
@@ -142,6 +146,23 @@ export default function ProductDetail({
       setUser(user);
     });
   }, [supabase.auth]);
+
+  // Deep-link from the listing card's bell icon: scroll to and focus the
+  // notify-me form. Only fires once (checked via a ref sentinel) so a
+  // scroll-jumping variant switch doesn't re-trigger it.
+  const notifyScrolledRef = useRef(false);
+  useEffect(() => {
+    if (notifyScrolledRef.current) return;
+    if (searchParams.get('notify') !== '1') return;
+    // Wait a beat so the notify section has definitely mounted for the
+    // OOS branch.
+    const timer = setTimeout(() => {
+      notifySectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      notifyEmailRef.current?.focus();
+      notifyScrolledRef.current = true;
+    }, 120);
+    return () => clearTimeout(timer);
+  }, [searchParams]);
 
   const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -456,12 +477,32 @@ export default function ProductDetail({
             <ShoppingCart size={18} /> {outOfStock ? "Out of Stock" : "Add to Cart"}
           </button>
 
-          <button
-            onClick={() => openEnquiryModal({ productName: liveProduct.name })}
-            className="border border-[#D4A017] text-[#D4A017] hover:bg-[#D4A017] hover:text-[#0A0A0A] w-full py-3 font-semibold transition duration-200 ease-in-out"
-          >
-            Enquire Now
-          </button>
+          {outOfStock ? (
+            <div
+              id="notify"
+              ref={notifySectionRef}
+              className="border border-[#D4A017]/30 bg-[#F7F5F2] dark:bg-[#1A1A1A] p-4 rounded-sm"
+            >
+              <NotifyMeForm
+                ref={notifyEmailRef}
+                variantId={liveProduct.variantId ?? liveProduct.id}
+                variantName={liveProduct.name}
+                defaultEmail={user?.email ?? ''}
+              />
+            </div>
+          ) : (
+            <Link
+              href={`/bulk-enquiry?variant=${liveProduct.variantId ?? liveProduct.id}`}
+              className="border border-[#D4A017] text-[#D4A017] hover:bg-[#D4A017] hover:text-[#0A0A0A] w-full py-3 font-semibold transition duration-200 ease-in-out flex flex-col items-center justify-center gap-0.5"
+            >
+              <span className="flex items-center gap-2">
+                <Layers size={18} /> Bulk Enquiry
+              </span>
+              <span className="text-xs font-normal opacity-80">
+                For contractors, projects, and volume orders
+              </span>
+            </Link>
+          )}
 
           {liveProduct.external_price_url && (
             <a

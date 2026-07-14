@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 type ProductOption = {
   id: string;
@@ -16,10 +17,41 @@ type Line = {
 };
 
 export default function BulkEnquiryForm({ products }: { products: ProductOption[] }) {
-  const [lines, setLines] = useState<Line[]>([{ product_id: products[0]?.id || "", quantity: 1, note: "" }]);
+  const searchParams = useSearchParams();
+
+  // Resolve ?variant=<uuid> against the products prop. If present and
+  // valid, seed the first line with it so PDP → Bulk Enquiry deep-links
+  // land with the right product preselected. Silent fallback to the
+  // current default when the variant isn't in the picker's options.
+  const preselectedVariantId = useMemo(() => {
+    const raw = searchParams.get("variant");
+    if (!raw) return null;
+    return products.some((p) => p.id === raw) ? raw : null;
+  }, [searchParams, products]);
+
+  const [lines, setLines] = useState<Line[]>([
+    {
+      product_id: preselectedVariantId || products[0]?.id || "",
+      quantity: 1,
+      note: "",
+    },
+  ]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  // If the search param changes after mount (rare — e.g. same-page nav),
+  // update the first line to reflect it. Only touches the first line;
+  // any user-added lines are left alone.
+  useEffect(() => {
+    if (!preselectedVariantId) return;
+    setLines((current) => {
+      if (current[0]?.product_id === preselectedVariantId) return current;
+      return current.map((line, idx) =>
+        idx === 0 ? { ...line, product_id: preselectedVariantId } : line
+      );
+    });
+  }, [preselectedVariantId]);
 
   const updateLine = (index: number, patch: Partial<Line>) => {
     setLines((current) => current.map((line, lineIndex) => lineIndex === index ? { ...line, ...patch } : line));
@@ -74,6 +106,11 @@ export default function BulkEnquiryForm({ products }: { products: ProductOption[
 
       <section className="border border-[#D4D4D4] dark:border-[#2A2A2A] rounded-sm p-5 space-y-4">
         <h2 className="font-semibold">Products</h2>
+        {preselectedVariantId && (
+          <p className="text-xs text-[#D4A017]">
+            Pre-selected from product page. Add more products or update the line below.
+          </p>
+        )}
         {lines.map((line, index) => (
           <div key={index} className="grid grid-cols-1 md:grid-cols-[1fr_120px_1fr_auto] gap-3">
             <select

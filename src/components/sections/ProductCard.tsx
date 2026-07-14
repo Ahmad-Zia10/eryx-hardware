@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ShoppingCart, Star } from "lucide-react";
+import { Bell, ShoppingCart, Star } from "lucide-react";
 import ProductImage from "@/components/ui/ProductImage";
 import { useCart } from "@/context/CartContext";
 import { useUI } from "@/context/UIContext";
@@ -18,9 +18,12 @@ interface ProductCardProps {
 export default function ProductCard({ product, className = "", averageRating, reviewCount }: ProductCardProps) {
   const router = useRouter();
   const { addItem } = useCart();
-  const { showToast, openEnquiryModal } = useUI();
+  const { showToast } = useUI();
   const effectivePrice = getEffectivePrice(product);
   const discounted = hasActiveDiscount(product);
+  const outOfStock =
+    (product.track_inventory ?? true) && (product.stock_quantity ?? 0) <= 0;
+  const variantId = product.variantId ?? product.id;
 
   const handleCardClick = () => {
     router.push(`/kitchen/${product.slug}`);
@@ -32,9 +35,13 @@ export default function ProductCard({ product, className = "", averageRating, re
     showToast();
   };
 
-  const handleEnquire = (e: React.MouseEvent) => {
+  const handleNotifyMe = (e: React.MouseEvent) => {
     e.stopPropagation();
-    openEnquiryModal({ productName: product.name });
+    // Send the shopper to the PDP with the notify deep-link. The PDP's
+    // full notify form (with email prefill for logged-in users) lives
+    // there — inline notify on the card would need a mini modal we
+    // don't have yet.
+    router.push(`/kitchen/${product.slug}?notify=1#notify`);
   };
 
   return (
@@ -44,13 +51,29 @@ export default function ProductCard({ product, className = "", averageRating, re
     >
       <div className="relative overflow-hidden h-52 w-full bg-[#EBEBEB] dark:bg-[#1A1A1A]">
         <ProductImage src={product.image} alt={product.name} className="h-52 w-full" />
-        <button
-          onClick={handleAddToCart}
-          aria-label="Add to cart"
-          className="absolute bottom-2 right-2 bg-[#D4A017] hover:bg-[#E8B820] text-[#0A0A0A] p-2 rounded-sm transition duration-200 ease-in-out"
-        >
-          <ShoppingCart size={18} />
-        </button>
+        {outOfStock && (
+          <span className="absolute top-2 left-2 px-2 py-1 text-[10px] font-semibold tracking-widest uppercase bg-white/95 dark:bg-[#1A1A1A]/95 text-red-500 backdrop-blur-sm rounded-sm">
+            Out of Stock
+          </span>
+        )}
+        {outOfStock ? (
+          <button
+            onClick={handleNotifyMe}
+            aria-label="Notify me when back in stock"
+            title="Notify me when back in stock"
+            className="absolute bottom-2 right-2 bg-white/95 dark:bg-[#1A1A1A]/95 hover:bg-[#D4A017] hover:text-[#0A0A0A] text-[#D4A017] p-2 rounded-sm backdrop-blur-sm transition duration-200 ease-in-out"
+          >
+            <Bell size={18} />
+          </button>
+        ) : (
+          <button
+            onClick={handleAddToCart}
+            aria-label="Add to cart"
+            className="absolute bottom-2 right-2 bg-[#D4A017] hover:bg-[#E8B820] text-[#0A0A0A] p-2 rounded-sm transition duration-200 ease-in-out"
+          >
+            <ShoppingCart size={18} />
+          </button>
+        )}
       </div>
       <div className="p-4 flex flex-col gap-1 flex-1">
         <span className="text-xs text-[#555555] dark:text-[#9A9A9A]">
@@ -90,10 +113,13 @@ export default function ProductCard({ product, className = "", averageRating, re
             View Details
           </button>
           <button
-            onClick={handleEnquire}
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/bulk-enquiry?variant=${variantId}`);
+            }}
             className="flex-1 bg-[#D4A017] hover:bg-[#E8B820] text-[#0A0A0A] text-xs font-semibold py-2 transition duration-200 ease-in-out"
           >
-            Enquire
+            Bulk Enquiry
           </button>
         </div>
       </div>

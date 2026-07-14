@@ -2,6 +2,7 @@
 
 import { createClient, supabaseAdmin } from '@/lib/supabase/server';
 import { emptyTiptapDocument, tiptapJsonToHtml } from '@/lib/server/blog-content';
+import { requireAdminUser } from '@/lib/server/admin';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
@@ -601,4 +602,27 @@ export async function adjustStock(
   revalidatePath('/kitchen', 'layout');
 
   return { ok: true, newQuantity: data as number };
+}
+
+export async function cancelStockNotification(
+  id: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  try {
+    await requireAdminUser();
+  } catch {
+    return { ok: false, error: 'Unauthorized' };
+  }
+
+  const { error } = await supabaseAdmin
+    .from('stock_notifications')
+    .update({ status: 'cancelled', updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .eq('status', 'pending');
+
+  if (error) {
+    return { ok: false, error: 'Failed to cancel signup' };
+  }
+
+  revalidatePath('/admin/notify-me');
+  return { ok: true };
 }
