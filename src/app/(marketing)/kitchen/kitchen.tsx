@@ -138,39 +138,47 @@ export default function Kitchen({ products }: KitchenProps) {
         </button>
       </div>
 
-      {/* Hero */}
-      <section
-        className="relative h-[60vh] flex items-center justify-center text-center overflow-hidden mt-4"
-        style={{
-          background: "linear-gradient(135deg, #FFFFFF 0%, #F5F5F5 50%, #EBEBEB 100%)",
-        }}
-      >
-        <style>{`.kitchen-hero-dark { background: linear-gradient(135deg, #0A0A0A 0%, #1A1A1A 50%, #0F0F0F 100%); }`}</style>
-        <div className="absolute inset-0 hidden dark:block kitchen-hero-dark" />
+      {/* Hero — full-bleed lifestyle image at full opacity, dark scrim
+          for text legibility, left-aligned stack matching the home
+          HeroSlider's visual language. */}
+      <section className="relative h-[55vh] min-h-[420px] overflow-hidden mt-4 bg-[#0A0A0A]">
         <ProductImage
           src={IMAGES.kitchenHero}
           alt="Kitchen Solutions"
-          className="absolute inset-0 w-full h-full opacity-30"
+          className="absolute inset-0 w-full h-full"
           loading="eager"
         />
-        <div className="relative px-4 max-w-2xl">
-          <p className="text-xs text-[#555555] dark:text-[#9A9A9A]">
-            <span
-              onClick={() => router.push("/")}
-              className="hover:text-[#D4A017] cursor-pointer hover:underline"
-            >
-              Home
-            </span>{" "}
-            / Kitchen Solutions
-          </p>
-          <h1 className="text-5xl font-bold text-[#0A0A0A] dark:text-[#F5F5F5] mt-4">
-            Kitchen Solutions
-          </h1>
-          <p className="text-lg text-[#555555] dark:text-[#9A9A9A] mt-4">
-            Explore Eryx hardware categories for baskets, shutters, hinges, pull-down
-            systems, corners, and wardrobe fittings.
-          </p>
-          <div className="w-16 h-0.5 bg-[#D4A017] mx-auto mt-4" />
+
+        {/* Single continuous scrim: dark at bottom-left, transparent to
+            top-right so the image dominates the upper-right quadrant. */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-black/85 via-black/50 to-transparent pointer-events-none" />
+
+        {/* Content stack — bottom-left, mirrors HeroSlider positioning */}
+        <div className="relative z-10 h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-end pb-10 sm:pb-14 lg:pb-16">
+          <div className="flex flex-col gap-3 sm:gap-4 max-w-2xl">
+            <p className="text-xs text-white/70">
+              <span
+                onClick={() => router.push("/")}
+                className="hover:text-[#D4A017] cursor-pointer hover:underline"
+              >
+                Home
+              </span>{" "}
+              / Kitchen Solutions
+            </p>
+            <div>
+              <span className="text-[10px] sm:text-xs tracking-[0.3em] uppercase text-[#D4A017]">
+                Kitchen Accessories
+              </span>
+              <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold leading-[1.05] text-white font-display mt-2 sm:mt-3">
+                Kitchen Solutions
+              </h1>
+            </div>
+            <p className="text-sm sm:text-base text-white/80 max-w-lg leading-relaxed">
+              Explore Eryx hardware categories for baskets, shutters, hinges, pull-down
+              systems, corners, and wardrobe fittings.
+            </p>
+            <div className="w-16 h-0.5 bg-[#D4A017] mt-1" />
+          </div>
         </div>
       </section>
 

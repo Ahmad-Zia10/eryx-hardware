@@ -9,7 +9,8 @@ import { useRouter } from "next/navigation";
 const SLIDES = [
   {
     id: 1,
-    image: "/products/hero/kitchen-hero-1.jpg",
+    // Modern beige+walnut modular kitchen with fridge
+    image: "/products/hero/slide-1-modular-kitchen.jpg",
     content: (
       <div className="flex flex-col gap-4 sm:gap-6 w-full max-w-2xl">
         <span className="text-[10px] sm:text-xs tracking-[0.3em] uppercase text-brand-gold">
@@ -33,7 +34,8 @@ const SLIDES = [
   },
   {
     id: 2,
-    image: "/products/hero/kitchen-hero-2.jpg",
+    // Light-wood kitchen with tiled backsplash
+    image: "/products/hero/slide-2-light-kitchen.jpg",
     content: (
       <div className="flex flex-col gap-4 sm:gap-6 w-full max-w-2xl">
         <span className="text-[10px] sm:text-xs tracking-[0.3em] uppercase text-brand-gold">
@@ -54,6 +56,92 @@ const SLIDES = [
             className="bg-brand-gold hover:bg-brand-bronze text-brand-dark font-semibold px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base transition duration-200 ease-in-out"
           >
             Shop Kitchen Accessories
+          </button>
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: 3,
+    // Basket product hero — the wicker basket with bread
+    image: "/products/hero/slide-3-basket.jpg",
+    content: (
+      <div className="flex flex-col gap-4 sm:gap-6 w-full max-w-2xl">
+        <span className="text-[10px] sm:text-xs tracking-[0.3em] uppercase text-brand-gold">
+          Basket Systems
+        </span>
+        <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold leading-[1.05] text-white font-display">
+          Every Item,
+          <br />
+          <span className="text-brand-gold">In Its Place</span>
+        </h1>
+        <p className="text-sm sm:text-lg text-brand-cream/80 max-w-lg">
+          Pull-out baskets and drawer systems built for the way modern
+          kitchens actually work.
+        </p>
+        <div className="flex flex-wrap gap-4 mt-1 sm:mt-2">
+          <button
+            onClick={() => window.location.href = "/kitchen?category=Basket"}
+            className="bg-brand-gold hover:bg-brand-bronze text-brand-dark font-semibold px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base transition duration-200 ease-in-out"
+          >
+            Explore Basket Systems
+          </button>
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: 4,
+    // Actual rolling-shutter product brand shot
+    image: "/products/rolling-shutter/rolling-shutter-1-brand.jpg",
+    content: (
+      <div className="flex flex-col gap-4 sm:gap-6 w-full max-w-2xl">
+        <span className="text-[10px] sm:text-xs tracking-[0.3em] uppercase text-brand-gold">
+          Rolling Shutter Systems
+        </span>
+        <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold leading-[1.05] text-white font-display">
+          Countertop
+          <br />
+          <span className="text-brand-gold">Clarity</span>
+        </h1>
+        <p className="text-sm sm:text-lg text-brand-cream/80 max-w-lg">
+          Appliance garages and rolling shutters that hide the mess and
+          keep the counter open.
+        </p>
+        <div className="flex flex-wrap gap-4 mt-1 sm:mt-2">
+          <button
+            onClick={() => window.location.href = "/kitchen?category=Rolling Shutter"}
+            className="bg-brand-gold hover:bg-brand-bronze text-brand-dark font-semibold px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base transition duration-200 ease-in-out"
+          >
+            Explore Rolling Shutters
+          </button>
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: 5,
+    // Actual hinges product shot
+    image: "/products/hinges-new/hinges-new-1.jpg",
+    content: (
+      <div className="flex flex-col gap-4 sm:gap-6 w-full max-w-2xl">
+        <span className="text-[10px] sm:text-xs tracking-[0.3em] uppercase text-brand-gold">
+          Hinges & Fittings
+        </span>
+        <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold leading-[1.05] text-white font-display">
+          Soft-Close,
+          <br />
+          <span className="text-brand-gold">Every Time</span>
+        </h1>
+        <p className="text-sm sm:text-lg text-brand-cream/80 max-w-lg">
+          German-engineered hinges rated for a lifetime of daily use.
+        </p>
+        <div className="flex flex-wrap gap-4 mt-1 sm:mt-2">
+          <button
+            onClick={() => window.location.href = "/kitchen?category=Hinges"}
+            className="bg-brand-gold hover:bg-brand-bronze text-brand-dark font-semibold px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base transition duration-200 ease-in-out"
+          >
+            Explore Hinges
           </button>
         </div>
       </div>

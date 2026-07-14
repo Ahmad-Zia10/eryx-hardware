@@ -131,7 +131,7 @@ export const IMAGES = {
   heroMain: productPath("gtpt", "gtpt-3-lifestyle.jpg"),
   heroAlt: productPath("glass-pull-down", "glass-pull-down-5-lifestyle.jpg"),
   heroTertiary: productPath("s-corner", "s-corner-3-lifestyle-collage.jpg"),
-  kitchenHero: productPath("s-corner", "s-corner-3-lifestyle-collage.jpg"),
+  kitchenHero: "/products/hero/kitchen-page-hero.jpg",
   categoriesFocusLarge: productPath("basket", "basket-5-brand.jpg"),
 };
 
