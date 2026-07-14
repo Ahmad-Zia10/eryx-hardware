@@ -1,6 +1,6 @@
 'use client';
 
-import { forwardRef, useState } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 import { Bell, CheckCircle2 } from 'lucide-react';
 
 interface NotifyMeFormProps {
@@ -17,6 +17,15 @@ const NotifyMeForm = forwardRef<HTMLInputElement, NotifyMeFormProps>(
     const [result, setResult] = useState<
       { subscribed: true; email: string; already: boolean } | null
     >(null);
+
+    // Re-sync when defaultEmail arrives (e.g. the PDP's auth effect
+    // resolves after this component has already mounted with '').
+    // Guarded on `!email` so we never stomp a value the user typed while
+    // the auth check was still in flight.
+    useEffect(() => {
+      if (defaultEmail && !email) setEmail(defaultEmail);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [defaultEmail]);
 
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
