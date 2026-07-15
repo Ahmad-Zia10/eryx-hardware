@@ -232,7 +232,7 @@ export default function AccountTabs({ profile, orders, reviews, supportRequests,
                       <StatusBadge status={order.status} />
                     </div>
                   </button>
-                  <div className="px-4 pb-3 -mt-1">
+                  <div className="px-4 pb-3 -mt-1 flex items-center gap-4">
                     <button
                       type="button"
                       onClick={() => setHelpOrderId(helpOrderId === order.id ? null : order.id)}
@@ -240,6 +240,14 @@ export default function AccountTabs({ profile, orders, reviews, supportRequests,
                     >
                       Need Help?
                     </button>
+                    {order.status === 'delivered' && (
+                      <Link
+                        href={`/account/orders/${order.id}/return`}
+                        className="text-xs text-[#D4A017] hover:text-[#E8B820] transition duration-200"
+                      >
+                        Return
+                      </Link>
+                    )}
                   </div>
                   {helpOrderId === order.id && (
                     <form onSubmit={submitHelpRequest} className="border-t border-[#D4D4D4] dark:border-[#2A2A2A] px-4 py-4 bg-[#F5F5F5] dark:bg-[#0A0A0A] space-y-3">
