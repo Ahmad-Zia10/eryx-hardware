@@ -8,6 +8,7 @@ import ProductEditModal from './ProductEditModal';
 import AddProductModal from './AddProductModal';
 import ProductParentEditModal from './ProductParentEditModal';
 import AddVariantModal from './AddVariantModal';
+import ProductCombinedEditModal from './ProductCombinedEditModal';
 import AdjustStockModal from '@/components/admin/AdjustStockModal';
 import { LOW_STOCK_THRESHOLD } from '@/constants';
 
@@ -52,6 +53,7 @@ export default function ProductsTable({ products }: { products: any[] }) {
   const [isAddVariantModalOpen, setIsAddVariantModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [stockVariant, setStockVariant] = useState<any | null>(null);
+  const [combinedEditContext, setCombinedEditContext] = useState<{ parent: any; variant: any } | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
   const filteredProducts = products.filter((p) => {
@@ -203,9 +205,37 @@ export default function ProductsTable({ products }: { products: any[] }) {
                         })()}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <span className={`px-2 py-0.5 text-xs font-medium rounded-sm ${parent.is_active ? 'bg-green-500/10 text-green-400 border border-green-500/30' : 'bg-red-500/10 text-red-400 border border-red-500/30'}`}>
-                          {parent.is_active ? 'Active' : 'Inactive'}
-                        </span>
+                        {(() => {
+                          // Public visibility requires BOTH parent.is_active AND
+                          // at least one variant that is is_active AND is_default —
+                          // getAllProducts() filters on the variant flags. The old
+                          // pill only reflected parent.is_active, which lied.
+                          const hasListedVariant = variants.some(
+                            (v: any) => v.is_active && v.is_default
+                          );
+                          if (!parent.is_active) {
+                            return (
+                              <span className="px-2 py-0.5 text-xs font-medium rounded-sm bg-red-500/10 text-red-400 border border-red-500/30">
+                                Inactive
+                              </span>
+                            );
+                          }
+                          if (!hasListedVariant) {
+                            return (
+                              <span
+                                className="px-2 py-0.5 text-xs font-medium rounded-sm bg-yellow-500/10 text-yellow-300 border border-yellow-500/30"
+                                title="Parent is active but no variant is both active and default. Open Edit → Variant tab to fix."
+                              >
+                                Not listed
+                              </span>
+                            );
+                          }
+                          return (
+                            <span className="px-2 py-0.5 text-xs font-medium rounded-sm bg-green-500/10 text-green-400 border border-green-500/30">
+                              Active
+                            </span>
+                          );
+                        })()}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm">
                         {parent.is_featured && (
@@ -216,14 +246,28 @@ export default function ProductsTable({ products }: { products: any[] }) {
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-right">
                         <div className="flex justify-end gap-2">
-                          <button
-                            type="button"
-                            onClick={() => { setSelectedParent(parent); setIsParentEditModalOpen(true); }}
-                            className="text-[#9A9A9A] hover:text-[#D4A017]"
-                            title="Edit product"
-                          >
-                            <Edit size={15} />
-                          </button>
+                          {variants.length === 1 ? (
+                            // Single-variant products use one combined modal
+                            // (Product + Variant tabs) so the two backing
+                            // `is_active` flags can't drift independently.
+                            <button
+                              type="button"
+                              onClick={() => setCombinedEditContext({ parent, variant: variants[0] })}
+                              className="text-[#9A9A9A] hover:text-[#D4A017]"
+                              title="Edit product"
+                            >
+                              <Edit size={15} />
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => { setSelectedParent(parent); setIsParentEditModalOpen(true); }}
+                              className="text-[#9A9A9A] hover:text-[#D4A017]"
+                              title="Edit product details (expand row to edit individual variants)"
+                            >
+                              <Edit size={15} />
+                            </button>
+                          )}
                           <button
                             type="button"
                             onClick={() => { setSelectedParent(parent); setIsAddVariantModalOpen(true); }}
@@ -233,24 +277,14 @@ export default function ProductsTable({ products }: { products: any[] }) {
                             <Plus size={15} />
                           </button>
                           {variants.length === 1 && (
-                            <>
-                              <button
-                                type="button"
-                                onClick={() => setStockVariant(variants[0])}
-                                className="text-[#9A9A9A] hover:text-[#D4A017]"
-                                title="Adjust stock"
-                              >
-                                <Package size={15} />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => openVariantEdit(parent, variants[0])}
-                                className="text-[#9A9A9A] hover:text-[#D4A017]"
-                                title="Edit variant"
-                              >
-                                <Edit size={15} />
-                              </button>
-                            </>
+                            <button
+                              type="button"
+                              onClick={() => setStockVariant(variants[0])}
+                              className="text-[#9A9A9A] hover:text-[#D4A017]"
+                              title="Adjust stock"
+                            >
+                              <Package size={15} />
+                            </button>
                           )}
                           <button
                             type="button"
@@ -404,6 +438,15 @@ export default function ProductsTable({ products }: { products: any[] }) {
         <AdjustStockModal
           variant={stockVariant}
           onClose={() => setStockVariant(null)}
+          onSuccess={() => router.refresh()}
+        />
+      )}
+
+      {combinedEditContext && (
+        <ProductCombinedEditModal
+          parent={combinedEditContext.parent}
+          variant={combinedEditContext.variant}
+          onClose={() => setCombinedEditContext(null)}
           onSuccess={() => router.refresh()}
         />
       )}

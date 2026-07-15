@@ -1,7 +1,7 @@
 import { supabaseAdmin } from '@/lib/supabase/server';
 import Link from 'next/link';
 
-import { Package, MessageSquare, Clock, AlertTriangle, TrendingUp } from 'lucide-react';
+import { Package, MessageSquare, Clock, AlertTriangle, TrendingUp, ShieldAlert } from 'lucide-react';
 
 export default async function AdminDashboard() {
   const [
@@ -10,15 +10,23 @@ export default async function AdminDashboard() {
     { count: pendingOrderCount },
     { count: needsReviewCount },
     { data: revenueData },
+    { data: invariantViolations },
   ] = await Promise.all([
     supabaseAdmin.from('products').select('*', { count: 'exact', head: true }).eq('is_active', true),
     supabaseAdmin.from('enquiries').select('*', { count: 'exact', head: true }).eq('status', 'new'),
     supabaseAdmin.from('orders').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
     supabaseAdmin.from('orders').select('*', { count: 'exact', head: true }).eq('needs_review', true),
     supabaseAdmin.from('orders').select('total').eq('status', 'paid'),
+    // Data-integrity check: any product missing an active default variant
+    // is invisible on the public site. The write paths (addProductVariant /
+    // removeProductVariant) guardrail this, but direct SQL edits, seed
+    // imports, or future write paths could still violate it — surface it
+    // here so it's caught at admin login, not from a customer support ticket.
+    supabaseAdmin.rpc('check_product_default_variant_invariant'),
   ]);
 
   const totalRevenue = revenueData?.reduce((sum, order) => sum + Number(order.total), 0) || 0;
+  const violations = (invariantViolations as { parent_id: string; parent_name: string; issue: string }[] | null) || [];
 
   return (
     <div className="space-y-8">
@@ -29,6 +37,40 @@ export default async function AdminDashboard() {
         </div>
         <div className="flex gap-3"></div>
       </div>
+
+      {violations.length > 0 && (
+        <div className="bg-red-500/10 border border-red-500/40 rounded-sm p-4 flex items-start gap-3">
+          <ShieldAlert className="text-red-400 shrink-0 mt-0.5" size={20} />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-red-300">
+              {violations.length} product{violations.length === 1 ? '' : 's'} not visible on the public site
+            </p>
+            <p className="text-xs text-red-300/80 mt-1">
+              Each of these products has no variant that is both active and marked as default —
+              the public catalogue filters them out. Open Edit → Variant tab to mark a variant active and default.
+            </p>
+            <ul className="mt-3 space-y-1 text-xs">
+              {violations.slice(0, 5).map((v) => (
+                <li key={v.parent_id} className="text-red-200">
+                  <span className="font-medium">{v.parent_name}</span>
+                  <span className="text-red-300/60"> — {v.issue}</span>
+                </li>
+              ))}
+              {violations.length > 5 && (
+                <li className="text-red-300/60 italic">
+                  … and {violations.length - 5} more.
+                </li>
+              )}
+            </ul>
+            <Link
+              href="/admin/products"
+              className="inline-block mt-3 text-xs font-semibold text-red-200 hover:text-red-100 underline"
+            >
+              Review in Products →
+            </Link>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <div className="bg-[#141414] border border-[#2A2A2A] rounded-sm p-6 hover:-translate-y-1 hover:shadow-md transition-all duration-200">

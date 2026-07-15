@@ -3,6 +3,10 @@
 import { createClient, supabaseAdmin } from '@/lib/supabase/server';
 import { emptyTiptapDocument, tiptapJsonToHtml } from '@/lib/server/blog-content';
 import { requireAdminUser } from '@/lib/server/admin';
+import {
+  updateParentProductInputSchema,
+  updateProductInputSchema,
+} from '@/lib/validations/product';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
@@ -13,33 +17,34 @@ export async function signOut() {
 }
 
 // updateProduct targets product_variants (the per-SKU row) for pricing/status fields.
-export async function updateProduct(id: string, data: {
-  mrp: number | null;
-  is_active: boolean;
-  is_featured: boolean;
-  is_on_sale: boolean;
-  discount_price: number | null;
-  external_price_url: string | null;
-}) {
+export async function updateProduct(id: string, data: unknown) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Unauthorized');
-  
+
   const { data: profile } = await supabaseAdmin
     .from('profiles').select('role').eq('id', user.id).single();
   if (profile?.role !== 'admin') throw new Error('Unauthorized');
 
-  // Update the variant row for SKU-level fields (price, sale, visibility)
+  const parsed = updateProductInputSchema.safeParse(data);
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? 'Invalid input');
+  }
+  const input = parsed.data;
+
+  // Update the variant row for SKU-level fields (price, sale, visibility).
+  // If the sale toggle is off, clear discount_price so a stale value can't
+  // leak back into the UI on the next toggle.
   const { error: variantError } = await supabaseAdmin
     .from('product_variants')
-    .update({ 
-      mrp: data.mrp, 
-      is_active: data.is_active, 
-      is_featured: data.is_featured,
-      is_on_sale: data.is_on_sale, 
-      discount_price: data.discount_price,
-      external_price_url: data.external_price_url,
-      updated_at: new Date().toISOString() 
+    .update({
+      mrp: input.mrp,
+      is_active: input.is_active,
+      is_featured: input.is_featured,
+      is_on_sale: input.is_on_sale,
+      discount_price: input.is_on_sale ? input.discount_price : null,
+      external_price_url: input.external_price_url,
+      updated_at: new Date().toISOString(),
     })
     .eq('id', id);
 
@@ -51,31 +56,30 @@ export async function updateProduct(id: string, data: {
 }
 
 // updateParentProduct targets the products table for shared concept-level fields.
-export async function updateParentProduct(id: string, data: {
-  name: string;
-  description: string | null;
-  category: string;
-  product_line: string;
-  is_featured: boolean;
-  is_active: boolean;
-}) {
+export async function updateParentProduct(id: string, data: unknown) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Unauthorized');
-  
+
   const { data: profile } = await supabaseAdmin
     .from('profiles').select('role').eq('id', user.id).single();
   if (profile?.role !== 'admin') throw new Error('Unauthorized');
 
+  const parsed = updateParentProductInputSchema.safeParse(data);
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? 'Invalid input');
+  }
+  const input = parsed.data;
+
   const { error } = await supabaseAdmin
     .from('products')
-    .update({ 
-      name: data.name,
-      description: data.description,
-      category: data.category,
-      product_line: data.product_line,
-      is_featured: data.is_featured,
-      is_active: data.is_active,
+    .update({
+      name: input.name,
+      description: input.description,
+      category: input.category,
+      product_line: input.product_line,
+      is_featured: input.is_featured,
+      is_active: input.is_active,
       updated_at: new Date().toISOString(),
     })
     .eq('id', id);
@@ -145,6 +149,26 @@ export async function addProductVariant(parentId: string, data: {
     throw new Error('Failed to add variant');
   }
 
+  // Guardrail: enforce the "every parent has at least one active default
+  // variant" invariant. Public listing filters on is_default=true AND
+  // is_active=true, so a parent without a matching variant silently
+  // disappears from the site. If we just inserted a variant into a
+  // parent that had zero active defaults, promote the new variant to
+  // default so the parent stays visible.
+  const { count: activeDefaultCount } = await supabaseAdmin
+    .from('product_variants')
+    .select('*', { count: 'exact', head: true })
+    .eq('product_id', parentId)
+    .eq('is_active', true)
+    .eq('is_default', true);
+
+  if ((activeDefaultCount || 0) === 0) {
+    await supabaseAdmin
+      .from('product_variants')
+      .update({ is_default: true, updated_at: new Date().toISOString() })
+      .eq('item_code', data.item_code);
+  }
+
   revalidatePath('/admin/products');
   revalidatePath('/kitchen');
 }
@@ -160,7 +184,7 @@ export async function removeProductVariant(id: string) {
 
   const { data: variant } = await supabaseAdmin
     .from('product_variants')
-    .select('product_id')
+    .select('product_id, is_default')
     .eq('id', id)
     .single();
 
@@ -198,6 +222,28 @@ export async function removeProductVariant(id: string) {
       .delete()
       .eq('id', id);
     if (error) throw new Error('Failed to delete variant');
+  }
+
+  // Guardrail: if we just removed the sole active default variant,
+  // promote another active variant to default so the parent stays
+  // listable. The "last active variant" guard above ensures at least
+  // one other active variant exists to be promoted.
+  if (variant.is_default) {
+    const { data: promotee } = await supabaseAdmin
+      .from('product_variants')
+      .select('id')
+      .eq('product_id', variant.product_id)
+      .eq('is_active', true)
+      .order('catalogue_sno', { ascending: true, nullsFirst: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (promotee?.id) {
+      await supabaseAdmin
+        .from('product_variants')
+        .update({ is_default: true, updated_at: new Date().toISOString() })
+        .eq('id', promotee.id);
+    }
   }
 
   revalidatePath('/admin/products');
