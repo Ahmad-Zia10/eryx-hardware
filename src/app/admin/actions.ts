@@ -7,6 +7,10 @@ import {
   updateParentProductInputSchema,
   updateProductInputSchema,
 } from '@/lib/validations/product';
+import {
+  addPromoCodeInputSchema,
+  updatePromoCodeInputSchema,
+} from '@/lib/validations/promo-code';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
@@ -326,16 +330,7 @@ export async function updateOrderStatus(id: string, status: string) {
   if (error) throw new Error('Update failed');
 }
 
-export async function addPromoCode(data: {
-  code: string;
-  discount_type: string;
-  discount_value: number;
-  min_order_value: number;
-  expires_at: string | null;
-  max_uses_per_user: number;
-  description?: string | null;
-  is_public?: boolean;
-}) {
+export async function addPromoCode(data: unknown) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Unauthorized');
@@ -344,17 +339,23 @@ export async function addPromoCode(data: {
     .from('profiles').select('role').eq('id', user.id).single();
   if (profile?.role !== 'admin') throw new Error('Unauthorized');
 
+  const parsed = addPromoCodeInputSchema.safeParse(data);
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? 'Invalid input');
+  }
+  const input = parsed.data;
+
   const { error } = await supabaseAdmin
     .from('promo_codes')
     .insert({
-      code: data.code.toUpperCase(),
-      discount_type: data.discount_type,
-      discount_value: data.discount_value,
-      min_order_value: data.min_order_value,
-      expires_at: data.expires_at || null,
-      max_uses_per_user: data.max_uses_per_user,
-      description: data.description?.trim() || null,
-      is_public: data.is_public ?? false,
+      code: input.code,
+      discount_type: input.discount_type,
+      discount_value: input.discount_value,
+      min_order_value: input.min_order_value,
+      expires_at: input.expires_at,
+      max_uses_per_user: input.max_uses_per_user,
+      description: input.description,
+      is_public: input.is_public,
       is_active: true,
     });
 
@@ -365,6 +366,86 @@ export async function addPromoCode(data: {
 
   revalidatePath('/admin/promo-codes');
   revalidatePath('/checkout');
+}
+
+export async function updatePromoCode(id: string, data: unknown) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Unauthorized');
+
+  const { data: profile } = await supabaseAdmin
+    .from('profiles').select('role').eq('id', user.id).single();
+  if (profile?.role !== 'admin') throw new Error('Unauthorized');
+
+  const parsed = updatePromoCodeInputSchema.safeParse(data);
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? 'Invalid input');
+  }
+  const input = parsed.data;
+
+  const { error } = await supabaseAdmin
+    .from('promo_codes')
+    .update({
+      code: input.code,
+      discount_type: input.discount_type,
+      discount_value: input.discount_value,
+      min_order_value: input.min_order_value,
+      expires_at: input.expires_at,
+      max_uses_per_user: input.max_uses_per_user,
+      description: input.description,
+      is_public: input.is_public,
+    })
+    .eq('id', id);
+
+  if (error) {
+    if (error.code === '23505') throw new Error('Promo code already exists');
+    throw new Error('Failed to update promo code');
+  }
+
+  revalidatePath('/admin/promo-codes');
+  revalidatePath('/checkout');
+}
+
+export async function deletePromoCode(
+  id: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: 'Unauthorized' };
+
+  const { data: profile } = await supabaseAdmin
+    .from('profiles').select('role').eq('id', user.id).single();
+  if (profile?.role !== 'admin') return { ok: false, error: 'Unauthorized' };
+
+  // Pre-flight guard alongside the FK RESTRICT constraint. Surfaces a
+  // clean message to the admin instead of a raw Postgres constraint
+  // violation, and keeps the "toggle inactive to retire" muscle memory
+  // aligned with removeProductVariant's history-safe pattern.
+  const { count: usageCount } = await supabaseAdmin
+    .from('promo_usages')
+    .select('*', { count: 'exact', head: true })
+    .eq('promo_code_id', id);
+
+  if ((usageCount || 0) > 0) {
+    return {
+      ok: false,
+      error:
+        'This code has been used on real orders. Toggle it inactive to retire it (delete would break the usage audit trail).',
+    };
+  }
+
+  const { error } = await supabaseAdmin
+    .from('promo_codes')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    return { ok: false, error: 'Failed to delete promo code' };
+  }
+
+  revalidatePath('/admin/promo-codes');
+  revalidatePath('/checkout');
+  return { ok: true };
 }
 
 export async function moderateReview(id: string, status: 'approved' | 'rejected') {

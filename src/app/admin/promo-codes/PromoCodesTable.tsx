@@ -2,18 +2,23 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Edit, Trash2 } from 'lucide-react';
 import { formatPrice } from '@/lib/catalogue-data';
-import { updatePromoCodeStatus } from '@/app/admin/actions';
+import { deletePromoCode, updatePromoCodeStatus } from '@/app/admin/actions';
 import AddPromoCodeModal from './AddPromoCodeModal';
+import EditPromoCodeModal from './EditPromoCodeModal';
 import { Toggle } from '@/components/ui/Toggle';
 
 export default function PromoCodesTable({ promoCodes }: { promoCodes: any[] }) {
   const router = useRouter();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingCode, setEditingCode] = useState<any | null>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const handleToggleStatus = async (id: string, currentStatus: boolean) => {
     setLoadingId(id);
+    setActionError(null);
     try {
       await updatePromoCodeStatus(id, !currentStatus);
       router.refresh();
@@ -23,6 +28,19 @@ export default function PromoCodesTable({ promoCodes }: { promoCodes: any[] }) {
     } finally {
       setLoadingId(null);
     }
+  };
+
+  const handleDelete = async (promo: any) => {
+    if (!window.confirm(`Delete promo code ${promo.code}? This cannot be undone.`)) return;
+    setLoadingId(promo.id);
+    setActionError(null);
+    const result = await deletePromoCode(promo.id);
+    setLoadingId(null);
+    if (!result.ok) {
+      setActionError(result.error);
+      return;
+    }
+    router.refresh();
   };
 
   return (
@@ -52,12 +70,13 @@ export default function PromoCodesTable({ promoCodes }: { promoCodes: any[] }) {
                 <th className="px-6 py-3 text-left text-xs tracking-widest uppercase text-[#9A9A9A]">Expires At</th>
                 <th className="px-6 py-3 text-left text-xs tracking-widest uppercase text-[#9A9A9A]">Public</th>
                 <th className="px-6 py-3 text-left text-xs tracking-widest uppercase text-[#9A9A9A]">Status</th>
+                <th className="px-6 py-3 text-right text-xs tracking-widest uppercase text-[#9A9A9A]">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#2A2A2A]">
               {!promoCodes || promoCodes.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center text-[#9A9A9A]">
+                  <td colSpan={8} className="px-6 py-8 text-center text-[#9A9A9A]">
                     No promo codes found. Create one to get started.
                   </td>
                 </tr>
@@ -106,6 +125,26 @@ export default function PromoCodesTable({ promoCodes }: { promoCodes: any[] }) {
                         />
                       </div>
                     </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className={`flex justify-end gap-3 items-center ${loadingId === promo.id ? 'opacity-50 pointer-events-none' : ''}`}>
+                        <button
+                          type="button"
+                          onClick={() => setEditingCode(promo)}
+                          className="text-[#9A9A9A] hover:text-[#D4A017]"
+                          title="Edit code"
+                        >
+                          <Edit size={15} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(promo)}
+                          className="text-[#9A9A9A] hover:text-red-400"
+                          title="Delete code (only if never used)"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))
               )}
@@ -114,13 +153,30 @@ export default function PromoCodesTable({ promoCodes }: { promoCodes: any[] }) {
         </div>
       </div>
 
+      {actionError && (
+        <div className="mt-4 bg-red-500/10 border border-red-500/30 text-red-400 p-3 rounded-sm text-sm">
+          {actionError}
+        </div>
+      )}
+
       {isAddModalOpen && (
-        <AddPromoCodeModal 
-          onClose={() => setIsAddModalOpen(false)} 
+        <AddPromoCodeModal
+          onClose={() => setIsAddModalOpen(false)}
           onSuccess={() => {
             setIsAddModalOpen(false);
             router.refresh();
-          }} 
+          }}
+        />
+      )}
+
+      {editingCode && (
+        <EditPromoCodeModal
+          promoCode={editingCode}
+          onClose={() => setEditingCode(null)}
+          onSuccess={() => {
+            setEditingCode(null);
+            router.refresh();
+          }}
         />
       )}
     </>
