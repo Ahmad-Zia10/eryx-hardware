@@ -189,12 +189,22 @@ export default function HeroSlider() {
             index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
           }`}
         >
-          {/* Product shots (slides marked fit: 'contain') use a dark
-              gradient wash behind the image so it doesn't letterbox
-              onto raw black on wide viewports. Lifestyle slides use
-              object-cover to fill the frame. */}
+          {/* Product shots (slides marked fit: 'contain') fill the
+              letterbox gap with a blurred + scaled copy of the same
+              image, so the extended backdrop naturally matches the
+              product's own color/lighting instead of a hardcoded
+              gradient that seams against the shot. Lifestyle slides
+              use object-cover to fill the frame directly. */}
           {slide.fit === "contain" && (
-            <div className="absolute inset-0 bg-gradient-to-b from-[#1a1a1a] via-[#2a2a2a] to-[#0a0a0a]" />
+            <Image
+              src={slide.image}
+              alt=""
+              fill
+              aria-hidden="true"
+              sizes="100vw"
+              quality={40}
+              className="object-cover object-center scale-110 blur-2xl opacity-70"
+            />
           )}
           <Image
             src={slide.image}
