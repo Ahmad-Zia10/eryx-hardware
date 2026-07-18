@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Download } from "lucide-react";
+import { Download, Globe, Award, Phone } from "lucide-react";
 import ProductImage from "@/components/ui/ProductImage";
 import ProductCard from "@/components/sections/ProductCard";
 import HeroSlider from "@/components/sections/HeroSlider";
@@ -38,6 +38,12 @@ const FOCUS_CARDS = [
     href: "/kitchen?category=Hinges",
     image: "/products/hinges-new/hinges-new-1.jpg",
   },
+];
+
+const TRUST_ITEMS = [
+  { icon: Globe, title: "Pan India Delivery", subtitle: "All major cities covered" },
+  { icon: Award, title: "Hardware Catalogue", subtitle: "Kitchen, wardrobe, fittings" },
+  { icon: Phone, title: "Expert Support", subtitle: "70111 84853" },
 ];
 
 // Server Component — no "use client" here. This now fetches real data
@@ -106,6 +112,22 @@ export default async function Home() {
               </div>
             </Link>
           ))}
+        </div>
+      </section>
+
+      <section className="bg-[#D4A017]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {TRUST_ITEMS.map(({ icon: Icon, title, subtitle }) => (
+              <div key={title} className="flex items-center gap-3">
+                <Icon className="text-[#0A0A0A]" size={24} />
+                <div>
+                  <p className="font-bold text-[#0A0A0A] text-sm">{title}</p>
+                  <p className="text-[#0A0A0A]/70 text-xs">{subtitle}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

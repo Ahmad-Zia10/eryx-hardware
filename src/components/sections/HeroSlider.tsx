@@ -63,8 +63,11 @@ const SLIDES = [
   },
   {
     id: 3,
-    // Basket product hero — the wicker basket with bread
-    image: "/products/hero/slide-3-basket.jpg",
+    // Actual basket product brand shot (square). Rendered with
+    // object-contain over a dark gradient so the whole product shows
+    // instead of being cropped by object-cover.
+    image: "/products/basket/basket-5-brand.jpg",
+    fit: "contain" as const,
     content: (
       <div className="flex flex-col gap-4 sm:gap-6 w-full max-w-2xl">
         <span className="text-[10px] sm:text-xs tracking-[0.3em] uppercase text-brand-gold">
@@ -92,8 +95,9 @@ const SLIDES = [
   },
   {
     id: 4,
-    // Actual rolling-shutter product brand shot
+    // Actual rolling-shutter product brand shot (square).
     image: "/products/rolling-shutter/rolling-shutter-1-brand.jpg",
+    fit: "contain" as const,
     content: (
       <div className="flex flex-col gap-4 sm:gap-6 w-full max-w-2xl">
         <span className="text-[10px] sm:text-xs tracking-[0.3em] uppercase text-brand-gold">
@@ -121,8 +125,11 @@ const SLIDES = [
   },
   {
     id: 5,
-    // Actual hinges product shot
+    // Actual hinges product shot (4:3-ish, low-res). object-contain
+    // avoids the massive close-up crop that object-cover produced on
+    // wide viewports.
     image: "/products/hinges-new/hinges-new-1.jpg",
+    fit: "contain" as const,
     content: (
       <div className="flex flex-col gap-4 sm:gap-6 w-full max-w-2xl">
         <span className="text-[10px] sm:text-xs tracking-[0.3em] uppercase text-brand-gold">
@@ -182,10 +189,13 @@ export default function HeroSlider() {
             index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
           }`}
         >
-          {/* Full-bleed lifestyle image via next/image so the browser
-              picks WebP/AVIF and the right srcset variant per viewport.
-              The CSS-background version this replaced always fetched the
-              raw source at whatever intrinsic size it had. */}
+          {/* Product shots (slides marked fit: 'contain') use a dark
+              gradient wash behind the image so it doesn't letterbox
+              onto raw black on wide viewports. Lifestyle slides use
+              object-cover to fill the frame. */}
+          {slide.fit === "contain" && (
+            <div className="absolute inset-0 bg-gradient-to-b from-[#1a1a1a] via-[#2a2a2a] to-[#0a0a0a]" />
+          )}
           <Image
             src={slide.image}
             alt=""
@@ -193,7 +203,11 @@ export default function HeroSlider() {
             priority={index === 0}
             sizes="100vw"
             quality={80}
-            className="object-cover object-center"
+            className={
+              slide.fit === "contain"
+                ? "object-contain object-center"
+                : "object-cover object-center"
+            }
           />
 
           {/* Bottom-left legibility scrim (Ozone-style): dark at the

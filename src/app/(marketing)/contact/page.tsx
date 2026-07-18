@@ -8,7 +8,6 @@ import {
   Package,
   HelpCircle,
   ArrowRight,
-  Building2,
 } from "lucide-react";
 import { SITE_CONFIG } from "@/constants";
 import ContactForm from "./ContactForm";
@@ -239,29 +238,29 @@ export default function ContactPage() {
             </div>
           </div>
 
-          {/* Right column: embedded Google Map of the head office.
-              Uses the shareable short-link through Google's public embed
-              path — no Maps API key required. The "Open in Google Maps"
-              link below sends the visitor to full directions. */}
-          <div className="relative z-10 flex flex-col gap-3 min-h-[220px]">
+          {/* Embedded Google Map — using the official "Share → Embed a map"
+              HTML from Google Maps. No API key needed. Wrapped in a card
+              with a subtle border + external link below for full-screen
+              directions. */}
+          <div className="relative z-10 flex flex-col gap-3 min-h-[280px]">
             <div className="relative flex-1 overflow-hidden rounded-sm border border-[#2A2A2A] bg-[#0F0F0F]">
               <iframe
                 title="Eryx Head Office location"
-                src="https://maps.google.com/maps?q=https%3A%2F%2Fmaps.app.goo.gl%2FWnKNt1cMGrnEuzn59&output=embed"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3507.895910390877!2d77.5311007!3d28.452553999999996!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390cc1ab4e066047%3A0x67935001040c1ada!2sModcasa%20Ventures-%20Boral%20Gypsum%2C%20Hindalco%20Aluminium!5e0!3m2!1sen!2sin!4v1784378499367!5m2!1sen!2sin"
                 loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                className="w-full h-full min-h-[220px] border-0"
+                referrerPolicy="strict-origin-when-cross-origin"
                 allowFullScreen
+                className="w-full h-full min-h-[280px] border-0"
               />
             </div>
             <a
               href="https://maps.app.goo.gl/WnKNt1cMGrnEuzn59?g_st=iw"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-xs text-[#D4A017] hover:text-[#E8B820] transition-colors self-start"
+              className="flex items-center gap-1.5 text-xs text-[#D4A017] hover:text-[#E8B820] transition-colors self-start"
             >
-              <Building2 size={14} />
               Open in Google Maps
+              <ArrowRight size={14} />
             </a>
           </div>
         </div>
