@@ -71,6 +71,54 @@ export default function RichTextEditor({
   const [error, setError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
+  // Whitelist of tags the server-side Tiptap extension set can render.
+  // Anything else in a paste gets unwrapped to its text content so the
+  // save never fails on unknown nodes.
+  const sanitizePastedHtml = (html: string) => {
+    if (typeof window === "undefined") return html;
+    const doc = new DOMParser().parseFromString(html, "text/html");
+
+    // Kill MSO conditionals, script/style, comments.
+    doc.querySelectorAll("script, style, meta, link, [role='comment']").forEach(
+      (n) => n.remove()
+    );
+
+    const allowedTags = new Set([
+      "P", "BR", "STRONG", "B", "EM", "I", "U",
+      "H1", "H2", "H3", "H4", "H5", "H6",
+      "UL", "OL", "LI",
+      "BLOCKQUOTE", "CODE", "PRE",
+      "A", "IMG",
+    ]);
+    const allowedAttrs: Record<string, Set<string>> = {
+      A: new Set(["href", "title"]),
+      IMG: new Set(["src", "alt", "title"]),
+    };
+
+    const walk = (node: Element) => {
+      // Iterate children first, then decide about the node itself, so
+      // we can unwrap a disallowed parent without losing text children.
+      Array.from(node.children).forEach(walk);
+
+      if (!allowedTags.has(node.tagName)) {
+        // Unwrap: replace this element with its child nodes.
+        const parent = node.parentNode;
+        if (parent) {
+          while (node.firstChild) parent.insertBefore(node.firstChild, node);
+          parent.removeChild(node);
+        }
+        return;
+      }
+      // Strip disallowed attributes.
+      const allowedForTag = allowedAttrs[node.tagName] ?? new Set<string>();
+      Array.from(node.attributes).forEach((attr) => {
+        if (!allowedForTag.has(attr.name)) node.removeAttribute(attr.name);
+      });
+    };
+    walk(doc.body);
+    return doc.body.innerHTML;
+  };
+
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -95,6 +143,11 @@ export default function RichTextEditor({
         class:
           "prose prose-invert max-w-none min-h-[280px] focus:outline-none text-sm text-[#F5F5F5]",
       },
+      // Strip everything the server-side generateHTML doesn't understand
+      // before it enters the doc. Prevents pasted Google Docs / Word HTML
+      // (with MSO conditionals, custom classes, tables, style attrs) from
+      // producing JSON that crashes the save action.
+      transformPastedHTML: (html) => sanitizePastedHtml(html),
     },
     onUpdate: ({ editor }) => onChange(editor.getJSON()),
   });
