@@ -11,6 +11,10 @@ import {
   addPromoCodeInputSchema,
   updatePromoCodeInputSchema,
 } from '@/lib/validations/promo-code';
+import {
+  faqCategoryInputSchema,
+  faqInputSchema,
+} from '@/lib/validations/faq';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
@@ -751,5 +755,307 @@ export async function cancelStockNotification(
   }
 
   revalidatePath('/admin/notify-me');
+  return { ok: true };
+}
+
+// ─── FAQ Categories ────────────────────────────────────────────────
+
+async function revalidateFaqSurfaces() {
+  revalidatePath('/admin/faqs');
+  revalidatePath('/faqs');
+  revalidatePath('/');
+}
+
+export async function addFaqCategory(
+  data: unknown
+): Promise<{ ok: true; id: string } | { ok: false; error: string }> {
+  try {
+    await requireAdminUser();
+  } catch {
+    return { ok: false, error: 'Unauthorized' };
+  }
+
+  const parsed = faqCategoryInputSchema.safeParse(data);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? 'Invalid input' };
+  }
+
+  // Compute next display_order as MAX + 1 so new categories land at the
+  // bottom. New rows never collide with existing ones.
+  const { data: maxRow } = await supabaseAdmin
+    .from('faq_categories')
+    .select('display_order')
+    .order('display_order', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const nextOrder = ((maxRow?.display_order as number | undefined) ?? -1) + 1;
+
+  const { data: inserted, error } = await supabaseAdmin
+    .from('faq_categories')
+    .insert({
+      name: parsed.data.name,
+      is_visible: parsed.data.is_visible,
+      display_order: nextOrder,
+    })
+    .select('id')
+    .single();
+
+  if (error || !inserted) {
+    return { ok: false, error: 'Failed to add category' };
+  }
+
+  await revalidateFaqSurfaces();
+  return { ok: true, id: inserted.id };
+}
+
+export async function updateFaqCategory(
+  id: string,
+  data: unknown
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  try {
+    await requireAdminUser();
+  } catch {
+    return { ok: false, error: 'Unauthorized' };
+  }
+
+  const parsed = faqCategoryInputSchema.safeParse(data);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? 'Invalid input' };
+  }
+
+  const { error } = await supabaseAdmin
+    .from('faq_categories')
+    .update({
+      name: parsed.data.name,
+      is_visible: parsed.data.is_visible,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', id);
+
+  if (error) {
+    return { ok: false, error: 'Failed to update category' };
+  }
+
+  await revalidateFaqSurfaces();
+  return { ok: true };
+}
+
+export async function deleteFaqCategory(
+  id: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  try {
+    await requireAdminUser();
+  } catch {
+    return { ok: false, error: 'Unauthorized' };
+  }
+
+  // Cascade on the FK removes child questions.
+  const { error } = await supabaseAdmin
+    .from('faq_categories')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    return { ok: false, error: 'Failed to delete category' };
+  }
+
+  await revalidateFaqSurfaces();
+  return { ok: true };
+}
+
+/**
+ * Swap this category's display_order with the immediate neighbour above
+ * (direction='up') or below (direction='down'). No-op if we're already at
+ * the edge in that direction.
+ */
+export async function reorderFaqCategory(
+  id: string,
+  direction: 'up' | 'down'
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  try {
+    await requireAdminUser();
+  } catch {
+    return { ok: false, error: 'Unauthorized' };
+  }
+
+  const { data: me } = await supabaseAdmin
+    .from('faq_categories')
+    .select('id, display_order')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (!me) return { ok: false, error: 'Category not found' };
+
+  const { data: neighbour } = await supabaseAdmin
+    .from('faq_categories')
+    .select('id, display_order')
+    .order('display_order', { ascending: direction === 'down' })
+    [direction === 'up' ? 'lt' : 'gt']('display_order', me.display_order as number)
+    .limit(1)
+    .maybeSingle();
+
+  if (!neighbour) {
+    // Already at the edge — treat as a no-op success.
+    return { ok: true };
+  }
+
+  // Swap the two display_order values. Not transactional (Supabase JS
+  // client doesn't expose one) but acceptable — worst case a concurrent
+  // reorder produces a duplicate display_order that the admin can fix
+  // with another click. Uniqueness isn't enforced at the schema level
+  // for exactly this reason.
+  await supabaseAdmin
+    .from('faq_categories')
+    .update({ display_order: neighbour.display_order })
+    .eq('id', me.id);
+  await supabaseAdmin
+    .from('faq_categories')
+    .update({ display_order: me.display_order })
+    .eq('id', neighbour.id);
+
+  await revalidateFaqSurfaces();
+  return { ok: true };
+}
+
+// ─── FAQ Questions ─────────────────────────────────────────────────
+
+export async function addFaq(
+  data: unknown
+): Promise<{ ok: true; id: string } | { ok: false; error: string }> {
+  try {
+    await requireAdminUser();
+  } catch {
+    return { ok: false, error: 'Unauthorized' };
+  }
+
+  const parsed = faqInputSchema.safeParse(data);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? 'Invalid input' };
+  }
+
+  const { data: maxRow } = await supabaseAdmin
+    .from('faqs')
+    .select('display_order')
+    .eq('category_id', parsed.data.category_id)
+    .order('display_order', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const nextOrder = ((maxRow?.display_order as number | undefined) ?? -1) + 1;
+
+  const { data: inserted, error } = await supabaseAdmin
+    .from('faqs')
+    .insert({
+      category_id: parsed.data.category_id,
+      question: parsed.data.question,
+      answer: parsed.data.answer,
+      is_visible: parsed.data.is_visible,
+      display_order: nextOrder,
+    })
+    .select('id')
+    .single();
+
+  if (error || !inserted) {
+    return { ok: false, error: 'Failed to add question' };
+  }
+
+  await revalidateFaqSurfaces();
+  return { ok: true, id: inserted.id };
+}
+
+export async function updateFaq(
+  id: string,
+  data: unknown
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  try {
+    await requireAdminUser();
+  } catch {
+    return { ok: false, error: 'Unauthorized' };
+  }
+
+  const parsed = faqInputSchema.safeParse(data);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? 'Invalid input' };
+  }
+
+  const { error } = await supabaseAdmin
+    .from('faqs')
+    .update({
+      category_id: parsed.data.category_id,
+      question: parsed.data.question,
+      answer: parsed.data.answer,
+      is_visible: parsed.data.is_visible,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', id);
+
+  if (error) {
+    return { ok: false, error: 'Failed to update question' };
+  }
+
+  await revalidateFaqSurfaces();
+  return { ok: true };
+}
+
+export async function deleteFaq(
+  id: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  try {
+    await requireAdminUser();
+  } catch {
+    return { ok: false, error: 'Unauthorized' };
+  }
+
+  const { error } = await supabaseAdmin.from('faqs').delete().eq('id', id);
+  if (error) {
+    return { ok: false, error: 'Failed to delete question' };
+  }
+
+  await revalidateFaqSurfaces();
+  return { ok: true };
+}
+
+/**
+ * Swap this question's display_order with the immediate neighbour above
+ * or below, scoped to the question's own category.
+ */
+export async function reorderFaq(
+  id: string,
+  direction: 'up' | 'down'
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  try {
+    await requireAdminUser();
+  } catch {
+    return { ok: false, error: 'Unauthorized' };
+  }
+
+  const { data: me } = await supabaseAdmin
+    .from('faqs')
+    .select('id, category_id, display_order')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (!me) return { ok: false, error: 'Question not found' };
+
+  const { data: neighbour } = await supabaseAdmin
+    .from('faqs')
+    .select('id, display_order')
+    .eq('category_id', me.category_id as string)
+    .order('display_order', { ascending: direction === 'down' })
+    [direction === 'up' ? 'lt' : 'gt']('display_order', me.display_order as number)
+    .limit(1)
+    .maybeSingle();
+
+  if (!neighbour) return { ok: true };
+
+  await supabaseAdmin
+    .from('faqs')
+    .update({ display_order: neighbour.display_order })
+    .eq('id', me.id);
+  await supabaseAdmin
+    .from('faqs')
+    .update({ display_order: me.display_order })
+    .eq('id', neighbour.id);
+
+  await revalidateFaqSurfaces();
   return { ok: true };
 }
