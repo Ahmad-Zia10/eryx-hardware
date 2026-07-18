@@ -11,14 +11,8 @@ import {
   Building2,
 } from "lucide-react";
 import { SITE_CONFIG } from "@/constants";
-import {
-  InstagramIcon,
-  FacebookIcon,
-  YoutubeIcon,
-  LinkedinIcon,
-  PinterestIcon,
-} from "@/components/ui/SocialIcons";
 import ContactForm from "./ContactForm";
+import FollowUsSection from "@/components/sections/FollowUsSection";
 
 // Cards linking to the specialised enquiry surfaces. All routes already
 // exist; the placeholder body copy can be edited freely once we have
@@ -65,14 +59,6 @@ const ACTION_CARDS = [
       "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&auto=format&fit=crop&q=75",
   },
 ];
-
-const SOCIAL_ICONS = {
-  instagram: InstagramIcon,
-  facebook: FacebookIcon,
-  youtube: YoutubeIcon,
-  linkedin: LinkedinIcon,
-  pinterest: PinterestIcon,
-} as const;
 
 export default function ContactPage() {
   return (
@@ -253,63 +239,35 @@ export default function ContactPage() {
             </div>
           </div>
 
-          {/* Right column: reserved for a future map or building photo.
-              Kept as a soft gold-accent card so the layout doesn't feel
-              lopsided until the real asset lands.
-              TODO(contact-info): swap for an embedded map or exterior shot. */}
-          <div className="relative z-10 flex items-center justify-center bg-[#0F0F0F] border border-[#2A2A2A] rounded-sm min-h-[220px] p-8 text-center">
-            <div>
-              <Building2 className="text-[#D4A017] mx-auto mb-3" size={32} />
-              <p className="text-sm text-[#9A9A9A]">
-                Location map coming soon
-              </p>
-              <p className="text-xs text-[#6B6B6B] mt-1">
-                Drop by after calling ahead — we love visitors.
-              </p>
+          {/* Right column: embedded Google Map of the head office.
+              Uses the shareable short-link through Google's public embed
+              path — no Maps API key required. The "Open in Google Maps"
+              link below sends the visitor to full directions. */}
+          <div className="relative z-10 flex flex-col gap-3 min-h-[220px]">
+            <div className="relative flex-1 overflow-hidden rounded-sm border border-[#2A2A2A] bg-[#0F0F0F]">
+              <iframe
+                title="Eryx Head Office location"
+                src="https://maps.google.com/maps?q=https%3A%2F%2Fmaps.app.goo.gl%2FWnKNt1cMGrnEuzn59&output=embed"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="w-full h-full min-h-[220px] border-0"
+                allowFullScreen
+              />
             </div>
+            <a
+              href="https://maps.app.goo.gl/WnKNt1cMGrnEuzn59?g_st=iw"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-xs text-[#D4A017] hover:text-[#E8B820] transition-colors self-start"
+            >
+              <Building2 size={14} />
+              Open in Google Maps
+            </a>
           </div>
         </div>
       </section>
 
-      {/* ─── Follow Us ─────────────────────────────────────────────── */}
-      <section className="bg-[#F7F5F2] dark:bg-[#141414] border-t border-[#E8E4DD] dark:border-[#2A2A2A] py-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
-            <h2 className="font-serif text-2xl text-[#1A1A1A] dark:text-[#F5F5F5]">
-              Follow Us
-            </h2>
-            <p className="text-sm text-[#6B6B6B] dark:text-[#9A9A9A] mt-2">
-              Stay updated on new launches, events, and exhibition updates.
-            </p>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            {(
-              Object.entries(SITE_CONFIG.socialLinks) as [
-                keyof typeof SOCIAL_ICONS,
-                { handle: string; url: string }
-              ][]
-            ).map(([platform, { handle, url }]) => {
-              const Icon = SOCIAL_ICONS[platform];
-              return (
-                <a
-                  key={platform}
-                  href={url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex flex-col items-center gap-3 p-6 bg-white dark:bg-[#1A1A1A] border border-[#E8E4DD] dark:border-[#2A2A2A] hover:border-[#D4A017] hover:shadow-md transition duration-200 ease-in-out rounded-sm group"
-                >
-                  <div className="w-12 h-12 flex items-center justify-center rounded-full bg-[#F7F5F2] dark:bg-[#2A2A2A] group-hover:scale-110 transition-transform duration-200">
-                    {Icon && <Icon size={28} />}
-                  </div>
-                  <span className="text-xs text-[#6B6B6B] dark:text-[#9A9A9A] text-center">
-                    {handle}
-                  </span>
-                </a>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+      <FollowUsSection />
     </main>
   );
 }

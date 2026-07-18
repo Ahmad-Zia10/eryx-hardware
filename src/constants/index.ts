@@ -12,7 +12,7 @@ export const SITE_CONFIG = {
   division: "A Division of Modular India",
   socialLinks: {
     instagram: { handle: "@eryxhardware", url: "https://instagram.com/eryxhardware" },
-    facebook: { handle: "@eryxhardware", url: "https://facebook.com/eryxhardware" },
+    facebook: { handle: "@eryxhardware", url: "https://www.facebook.com/profile.php?id=61583317822029" },
     youtube: { handle: "@eryxhardware", url: "https://youtube.com/@eryxhardware" },
     linkedin: { handle: "@eryxhardware", url: "https://linkedin.com/company/eryxhardware" },
     pinterest: { handle: "@eryxhardware", url: "https://pin.it/oh2Qr3AZS" },
