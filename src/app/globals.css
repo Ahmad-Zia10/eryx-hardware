@@ -6,9 +6,14 @@
    there is no separate config file in this project, by design. */
 
 @theme {
-  --font-serif: "Cormorant Garamond", serif;
-  --font-sans: "Inter", sans-serif;
+  /* Fonts loaded via next/font in layout.tsx expose these CSS vars.
+     Fallback values kick in when JS is disabled or before font-swap
+     completes. Kept in sync with the brand kit mapping. */
+  --font-sans: var(--font-sans, "Inter", sans-serif);
+  --font-serif: var(--font-serif, "Libre Baskerville", "Georgia", serif);
   --font-display: var(--font-display, "Prata", serif);
+  --font-heading: var(--font-heading, "Marcellus", "Prata", serif);
+  --font-accent: var(--font-accent, "Fraunces", "Georgia", serif);
 
   /* Brand Kit Colors */
   --color-brand-navy: #012761;

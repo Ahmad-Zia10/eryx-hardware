@@ -1,9 +1,33 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+
+// The outlined CTA cycles between these three labels every ROTATE_MS,
+// all pointing at Modular India's public site. Reserves the button's
+// width for the longest label so the layout doesn't shift each swap.
+const ROTATING_LABELS = ["Kitchen Solutions", "Modular India", "Click Here"] as const;
+const ROTATE_MS = 2000;
+const MODULAR_INDIA_URL = "https://www.modularindia.com";
 
 export default function HeroActions() {
   const router = useRouter();
+  const [labelIndex, setLabelIndex] = useState(0);
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    // Fade out → swap label → fade in. Keeps the layout stable and
+    // avoids the jarring instant-swap you'd get with plain setState.
+    const interval = setInterval(() => {
+      setVisible(false);
+      const swap = setTimeout(() => {
+        setLabelIndex((i) => (i + 1) % ROTATING_LABELS.length);
+        setVisible(true);
+      }, 200);
+      return () => clearTimeout(swap);
+    }, ROTATE_MS);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="flex flex-wrap gap-4 mt-2">
@@ -13,12 +37,21 @@ export default function HeroActions() {
       >
         Explore Products
       </button>
-      <button
-        onClick={() => router.push("/kitchen?category=Basket")}
-        className="border border-white/50 text-white hover:border-brand-gold hover:text-brand-gold font-semibold px-8 py-4 transition duration-200 ease-in-out"
+      <a
+        href={MODULAR_INDIA_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={`${ROTATING_LABELS[labelIndex]} — visit Modular India`}
+        className="relative border border-white/50 text-white hover:border-brand-gold hover:text-brand-gold font-semibold px-8 py-4 transition duration-200 ease-in-out inline-flex items-center justify-center min-w-[220px]"
       >
-        Kitchen Solutions
-      </button>
+        <span
+          className={`transition-opacity duration-200 ease-in-out ${
+            visible ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          {ROTATING_LABELS[labelIndex]}
+        </span>
+      </a>
     </div>
   );
 }

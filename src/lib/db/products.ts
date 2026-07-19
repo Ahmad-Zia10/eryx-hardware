@@ -151,17 +151,34 @@ function getReviewAuthorName(profile: any): string {
 }
 
 /**
- * Returns all active products — one row per parent, using the default variant
- * for price/image/code. Shape is identical to the old products table query,
- * so all existing consumers (PLP, search, home) work without change.
+ * Returns all active default variants (one row per parent).
+ *
+ * Optional `productLine` filter restricts to a specific line — the
+ * /kitchen page passes 'kitchen' so wardrobe SKUs don't leak in, and
+ * /wardrobe passes 'wardrobe'. Omit for surfaces that want everything
+ * (e.g. search, admin).
+ *
+ * `product_line` is denormalised onto `product_variants` (see
+ * catalog-and-variants.md), so we filter on the variant column and
+ * avoid a join.
  */
-export async function getAllProducts(): Promise<DbProduct[]> {
-  const { data, error } = await supabaseAdmin
+export async function getAllProducts(
+  productLine?: "kitchen" | "wardrobe" | "hardware"
+): Promise<DbProduct[]> {
+  let query = supabaseAdmin
     .from("product_variants")
     .select("*, product_images(image_url, display_order, is_primary)")
     .eq("is_default", true)
-    .eq("is_active", true)
-    .order("catalogue_sno", { ascending: true, nullsFirst: false });
+    .eq("is_active", true);
+
+  if (productLine) {
+    query = query.eq("product_line", productLine);
+  }
+
+  const { data, error } = await query.order("catalogue_sno", {
+    ascending: true,
+    nullsFirst: false,
+  });
 
   if (error) {
     console.error("getAllProducts failed:", error.message);
@@ -175,6 +192,41 @@ export async function getProductBySlug(slug: string): Promise<DbProduct | null> 
   // Slug is derived from item_code. Fetch the matching default variant.
   const all = await getAllProducts();
   return all.find((p) => p.slug === slug) || null;
+}
+
+/**
+ * Active default variants that are currently on sale AND have a valid
+ * discount_price set. Used by /deals.
+ *
+ * A variant is "on sale" only when `is_on_sale = true` AND
+ * `discount_price` is not null AND `discount_price < mrp`. The final
+ * check is a client-side filter because Postgres can't compare two
+ * numeric columns cheaply through PostgREST — the row set is tiny so
+ * this is fine.
+ */
+export async function getDiscountedProducts(): Promise<DbProduct[]> {
+  const { data, error } = await supabaseAdmin
+    .from("product_variants")
+    .select("*, product_images(image_url, display_order, is_primary)")
+    .eq("is_default", true)
+    .eq("is_active", true)
+    .eq("is_on_sale", true)
+    .not("discount_price", "is", null)
+    .order("catalogue_sno", { ascending: true, nullsFirst: false });
+
+  if (error) {
+    console.error("getDiscountedProducts failed:", error.message);
+    return [];
+  }
+
+  return (data || [])
+    .filter(
+      (row: any) =>
+        typeof row.mrp === "number" &&
+        typeof row.discount_price === "number" &&
+        row.discount_price < row.mrp
+    )
+    .map(mapVariantRow);
 }
 
 export async function getProductsByCategory(

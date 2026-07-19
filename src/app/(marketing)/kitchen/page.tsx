@@ -13,7 +13,7 @@ import { getAllProducts } from "@/lib/db/products";
 // prerendered/static routes. This is an App Router rule, not a
 // stylistic choice.
 export default async function KitchenPage() {
-  const products = await getAllProducts();
+  const products = await getAllProducts("kitchen");
 
   return (
     <Suspense>

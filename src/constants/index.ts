@@ -38,8 +38,8 @@ export const NAV_LINKS: NavLink[] = [
   { label: "Home", href: "/" },
   { label: "About Us", href: "/about" },
   { label: "Kitchen Accessories", href: "/kitchen" },
-  { label: "Wardrobe Accessories", href: "/wardrobe", comingSoon: true },
-  { label: "Deals & Offers", href: "/deals", comingSoon: true },
+  { label: "Wardrobe Accessories", href: "/wardrobe" },
+  { label: "Deals & Offers", href: "/deals" },
   { label: "Blog", href: "/blog" },
   { label: "Contact Us", href: "/contact" },
 ];
