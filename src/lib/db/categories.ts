@@ -1,0 +1,80 @@
+import "server-only";
+import { supabaseAdmin } from "@/lib/supabase/server";
+
+export type ProductLine = "kitchen" | "wardrobe" | "hardware";
+
+export type CategoryEntry = {
+  name: string;
+  slug: string;
+  count: number;
+};
+
+export type CategoryGroup = {
+  productLine: ProductLine;
+  categories: CategoryEntry[];
+};
+
+function slugify(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+// Fixed order for the mega-menu columns. Product lines that have no
+// active categories still appear as a header + empty-state (rendered
+// by ProductsMegaMenu), so the menu shape is stable regardless of
+// current inventory.
+const PRODUCT_LINE_ORDER: ProductLine[] = ["kitchen", "wardrobe", "hardware"];
+
+/**
+ * Group active default variants by product_line + category, with a
+ * usage count. Powers the nav mega-menu.
+ *
+ * Uses supabaseAdmin to bypass RLS — no auth needed since this is
+ * public catalogue data feeding a public nav.
+ *
+ * Returns product lines in a fixed order (kitchen → wardrobe → hardware)
+ * so the mega-menu column order never shifts based on inventory. Within
+ * each line, categories are sorted by count desc (most-used first),
+ * then name for ties.
+ */
+export async function getCategoriesByProductLine(): Promise<CategoryGroup[]> {
+  const { data, error } = await supabaseAdmin
+    .from("product_variants")
+    .select("product_line, category")
+    .eq("is_active", true)
+    .eq("is_default", true);
+
+  if (error) {
+    console.error("[getCategoriesByProductLine] fetch failed:", error.message);
+    return PRODUCT_LINE_ORDER.map((line) => ({
+      productLine: line,
+      categories: [],
+    }));
+  }
+
+  // Group + count client-side. Trivial cost — at most ~200 rows.
+  const buckets = new Map<ProductLine, Map<string, number>>();
+  for (const line of PRODUCT_LINE_ORDER) {
+    buckets.set(line, new Map());
+  }
+
+  for (const row of data || []) {
+    const line = row.product_line as ProductLine | null | undefined;
+    const category = row.category as string | null | undefined;
+    if (!line || !category) continue;
+    if (!PRODUCT_LINE_ORDER.includes(line)) continue;
+    const bucket = buckets.get(line);
+    if (!bucket) continue;
+    bucket.set(category, (bucket.get(category) || 0) + 1);
+  }
+
+  return PRODUCT_LINE_ORDER.map((line) => {
+    const bucket = buckets.get(line)!;
+    const categories: CategoryEntry[] = Array.from(bucket.entries())
+      .map(([name, count]) => ({ name, slug: slugify(name), count }))
+      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+    return { productLine: line, categories };
+  });
+}

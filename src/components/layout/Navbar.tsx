@@ -19,40 +19,28 @@ import { createClient } from "@/lib/supabase/client";
 import { useTheme } from "@/context/ThemeContext";
 import { useCart } from "@/context/CartContext";
 import { useUI } from "@/context/UIContext";
-import { CATALOG_CATEGORIES } from "@/lib/catalogue-data";
 import SearchOverlay from "./SearchOverlay";
+import ProductsMegaMenu from "./ProductsMegaMenu";
+import type { CategoryGroup, ProductLine } from "@/lib/db/categories";
 
 const NAV_LINKS = [
   { label: "Kitchen Accessories", href: "/kitchen" },
-  { label: "Wardrobe Accessories", href: "/coming-soon/wardrobe" },
-  { label: "Deals & Offers", href: "/coming-soon/deals" },
+  { label: "Wardrobe Accessories", href: "/wardrobe" },
+  { label: "Deals & Offers", href: "/deals" },
   { label: "Blog", href: "/blog" },
 ];
 
-function ProductsMenu({ onNavigate }: { onNavigate: () => void }) {
-  return (
-    <div className="absolute left-0 top-full w-72 bg-white dark:bg-[#111111] text-[#0A0A0A] dark:text-white border border-[#D4D4D4] dark:border-[#2A2A2A] shadow-2xl py-2">
-      {CATALOG_CATEGORIES.map((category) => (
-        <Link
-          key={category.slug}
-          href={`/kitchen?category=${encodeURIComponent(category.name)}`}
-          onClick={onNavigate}
-          className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-[#F5F5F5] dark:hover:bg-[#1F1F1F] hover:text-[#D4A017] transition duration-200 ease-in-out"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={category.image}
-            alt=""
-            className="w-10 h-10 rounded-full object-cover bg-[#EBEBEB] dark:bg-[#2A2A2A]"
-            loading="lazy"
-          />
-          <span className="flex-1">{category.name}</span>
-          <span className="text-[#D4A017]">›</span>
-        </Link>
-      ))}
-    </div>
-  );
-}
+const MOBILE_PRODUCT_LINE_LABELS: Record<ProductLine, string> = {
+  kitchen: "Kitchen",
+  wardrobe: "Wardrobe",
+  hardware: "Hardware",
+};
+
+const MOBILE_PRODUCT_LINE_HREF: Record<ProductLine, string> = {
+  kitchen: "/kitchen",
+  wardrobe: "/wardrobe",
+  hardware: "/kitchen",
+};
 
 // Mirrors react-router's <NavLink isActive> behavior — Next.js has no
 // built-in equivalent, so we compare the current pathname ourselves.
@@ -62,7 +50,11 @@ function navLinkClass(isActive: boolean) {
   }`;
 }
 
-export default function Navbar() {
+export default function Navbar({
+  categoryGroups = [],
+}: {
+  categoryGroups?: CategoryGroup[];
+}) {
   const { isDark, toggleTheme } = useTheme();
   const { cartCount } = useCart();
   const { openCartDrawer } = useUI();
@@ -70,6 +62,37 @@ export default function Navbar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [productsOpen, setProductsOpen] = useState(false);
+  // Hover-with-forgiveness pattern for the Products mega-menu. Open on
+  // hover after 150ms (avoid accidental triggers), close after 250ms
+  // (lets the cursor traverse from trigger → panel without a flash-close).
+  const productsHoverRef = useRef<{ open: ReturnType<typeof setTimeout> | null; close: ReturnType<typeof setTimeout> | null }>({
+    open: null,
+    close: null,
+  });
+
+  const openProductsWithDelay = () => {
+    if (productsHoverRef.current.close) {
+      clearTimeout(productsHoverRef.current.close);
+      productsHoverRef.current.close = null;
+    }
+    if (productsHoverRef.current.open) return;
+    productsHoverRef.current.open = setTimeout(() => {
+      setProductsOpen(true);
+      productsHoverRef.current.open = null;
+    }, 150);
+  };
+
+  const closeProductsWithDelay = () => {
+    if (productsHoverRef.current.open) {
+      clearTimeout(productsHoverRef.current.open);
+      productsHoverRef.current.open = null;
+    }
+    if (productsHoverRef.current.close) return;
+    productsHoverRef.current.close = setTimeout(() => {
+      setProductsOpen(false);
+      productsHoverRef.current.close = null;
+    }, 250);
+  };
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
@@ -151,8 +174,8 @@ export default function Navbar() {
 
           <div
             className="relative"
-            onMouseEnter={() => setProductsOpen(true)}
-            onMouseLeave={() => setProductsOpen(false)}
+            onMouseEnter={openProductsWithDelay}
+            onMouseLeave={closeProductsWithDelay}
           >
             <button
               onClick={() => setProductsOpen((open) => !open)}
@@ -160,7 +183,14 @@ export default function Navbar() {
             >
               Products <ChevronDown size={14} />
             </button>
-            {productsOpen && <ProductsMenu onNavigate={closeMenus} />}
+            {productsOpen && (
+              <ProductsMegaMenu
+                categoryGroups={categoryGroups}
+                onNavigate={closeMenus}
+                onMouseEnter={openProductsWithDelay}
+                onMouseLeave={closeProductsWithDelay}
+              />
+            )}
           </div>
 
           {NAV_LINKS.map((link) => (
@@ -283,23 +313,45 @@ export default function Navbar() {
               <ChevronDown size={14} className={productsOpen ? "rotate-180" : ""} />
             </button>
             {productsOpen && (
-              <div className="grid grid-cols-2 gap-2 py-3 border-b border-[#D4D4D4] dark:border-[#2A2A2A]">
-                {CATALOG_CATEGORIES.map((category) => (
-                  <Link
-                    key={category.slug}
-                    href={`/kitchen?category=${encodeURIComponent(category.name)}`}
-                    onClick={closeMenus}
-                    className="flex items-center gap-2 text-xs text-[#555555] dark:text-[#9A9A9A]"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={category.image}
-                      alt=""
-                      className="w-8 h-8 rounded-full object-cover"
-                    />
-                    {category.name}
-                  </Link>
-                ))}
+              <div className="py-3 border-b border-[#D4D4D4] dark:border-[#2A2A2A] space-y-4">
+                {categoryGroups
+                  .filter(
+                    (g) => g.productLine === "kitchen" || g.productLine === "wardrobe"
+                  )
+                  .map((group) => (
+                    <div key={group.productLine}>
+                      <p className="text-[10px] tracking-[0.3em] uppercase text-[#D4A017] font-semibold mb-2">
+                        {MOBILE_PRODUCT_LINE_LABELS[group.productLine]}
+                      </p>
+                      {group.categories.length > 0 ? (
+                        <div className="grid grid-cols-2 gap-x-3 gap-y-2">
+                          {group.categories.map((cat) => (
+                            <Link
+                              key={cat.slug}
+                              href={`${MOBILE_PRODUCT_LINE_HREF[group.productLine]}?category=${encodeURIComponent(cat.name)}`}
+                              onClick={closeMenus}
+                              className="text-xs text-[#555555] dark:text-[#9A9A9A] hover:text-[#D4A017]"
+                            >
+                              {cat.name}{" "}
+                              <span className="text-[#9A9A9A]">({cat.count})</span>
+                            </Link>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-[#6B6B6B] dark:text-[#9A9A9A]">
+                          Range coming soon —{" "}
+                          <Link
+                            href="/contact"
+                            onClick={closeMenus}
+                            className="text-[#D4A017]"
+                          >
+                            contact us
+                          </Link>
+                          .
+                        </p>
+                      )}
+                    </div>
+                  ))}
               </div>
             )}
             {NAV_LINKS.map((link) => (

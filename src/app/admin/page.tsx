@@ -51,9 +51,20 @@ export default async function AdminDashboard() {
             </p>
             <ul className="mt-3 space-y-1 text-xs">
               {violations.slice(0, 5).map((v) => (
-                <li key={v.parent_id} className="text-red-200">
-                  <span className="font-medium">{v.parent_name}</span>
-                  <span className="text-red-300/60"> — {v.issue}</span>
+                <li key={v.parent_id} className="text-red-200 flex items-baseline gap-2">
+                  <Link
+                    href={`/admin/products?edit=${v.parent_id}`}
+                    className="font-medium underline decoration-red-500/30 hover:decoration-red-300 hover:text-red-100 transition-colors"
+                  >
+                    {v.parent_name}
+                  </Link>
+                  <span className="text-red-300/60">— {v.issue}</span>
+                  <Link
+                    href={`/admin/products?edit=${v.parent_id}`}
+                    className="ml-auto text-[10px] tracking-widest uppercase text-red-300 hover:text-red-100"
+                  >
+                    Fix →
+                  </Link>
                 </li>
               ))}
               {violations.length > 5 && (

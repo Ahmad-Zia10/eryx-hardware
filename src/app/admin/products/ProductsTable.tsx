@@ -1,7 +1,7 @@
 'use client';
 
-import { Fragment, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Fragment, useEffect, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Search, ChevronDown, ChevronUp, Edit, Plus, Trash2, Package } from 'lucide-react';
 import { deleteParentProduct, removeProductVariant } from '@/app/admin/actions';
 import ProductEditModal from './ProductEditModal';
@@ -44,6 +44,7 @@ function stockToneClass(qty: number): string {
 
 export default function ProductsTable({ products }: { products: any[] }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedParents, setExpandedParents] = useState<Set<string>>(new Set());
   const [selectedVariant, setSelectedVariant] = useState<any | null>(null);
@@ -55,6 +56,38 @@ export default function ProductsTable({ products }: { products: any[] }) {
   const [stockVariant, setStockVariant] = useState<any | null>(null);
   const [combinedEditContext, setCombinedEditContext] = useState<{ parent: any; variant: any } | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+
+  // Deep-link handler: /admin/products?edit=<parent_id> opens the edit
+  // modal for that product directly. Powers the "Fix →" links on the
+  // dashboard's invariant-violation banner so admins don't have to
+  // hunt for each broken product.
+  //
+  // Single-variant products open in the Combined Edit modal (Product +
+  // Variant tabs) — the invariant checker practically only flags
+  // single-variant products where the sole variant isn't active/default.
+  // Multi-variant products fall back to the parent edit modal.
+  //
+  // Once-per-mount guard prevents re-opening on router.refresh(), and
+  // we clear the search param after opening so refresh doesn't loop.
+  const editHandledRef = useRef(false);
+  useEffect(() => {
+    if (editHandledRef.current) return;
+    const editParam = searchParams.get('edit');
+    if (!editParam) return;
+
+    const parent = products.find((p) => p.id === editParam);
+    if (!parent) return;
+
+    editHandledRef.current = true;
+    const variants = parent.product_variants || [];
+    if (variants.length === 1) {
+      setCombinedEditContext({ parent, variant: variants[0] });
+    } else {
+      setSelectedParent(parent);
+      setIsParentEditModalOpen(true);
+    }
+    router.replace('/admin/products');
+  }, [searchParams, products, router]);
 
   const filteredProducts = products.filter((p) => {
     const term = searchTerm.toLowerCase();
