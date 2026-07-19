@@ -160,7 +160,7 @@ export default function Navbar({
   };
 
   return (
-    <nav className="sticky top-9.25 z-40 bg-white dark:bg-[#0A0A0A] border-b border-[#D4D4D4] dark:border-[#2A2A2A]">
+    <nav className="sticky top-9.25 z-40 bg-white dark:bg-[#0A0A0A] border-b border-[#D4D4D4] dark:border-[#2A2A2A] relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 shrink-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -173,7 +173,6 @@ export default function Navbar({
           </Link>
 
           <div
-            className="relative"
             onMouseEnter={openProductsWithDelay}
             onMouseLeave={closeProductsWithDelay}
           >
@@ -183,14 +182,6 @@ export default function Navbar({
             >
               Products <ChevronDown size={14} />
             </button>
-            {productsOpen && (
-              <ProductsMegaMenu
-                categoryGroups={categoryGroups}
-                onNavigate={closeMenus}
-                onMouseEnter={openProductsWithDelay}
-                onMouseLeave={closeProductsWithDelay}
-              />
-            )}
           </div>
 
           {NAV_LINKS.map((link) => (
@@ -301,6 +292,26 @@ export default function Navbar({
           </button>
         </div>
       </div>
+
+      {/* Desktop-only mega menu — rendered at nav level (not inside the button's
+          wrapper) so its absolute positioning binds to <nav>. This keeps the
+          panel centered within the max-w-7xl content area on wide viewports
+          instead of getting clipped when anchored to the narrow Products
+          trigger. */}
+      {productsOpen && (
+        <div
+          className="hidden lg:block"
+          onMouseEnter={openProductsWithDelay}
+          onMouseLeave={closeProductsWithDelay}
+        >
+          <ProductsMegaMenu
+            categoryGroups={categoryGroups}
+            onNavigate={closeMenus}
+            onMouseEnter={openProductsWithDelay}
+            onMouseLeave={closeProductsWithDelay}
+          />
+        </div>
+      )}
 
       {mobileOpen && (
         <div className="lg:hidden border-t border-[#D4D4D4] dark:border-[#2A2A2A] bg-white dark:bg-[#0A0A0A]">
