@@ -10,32 +10,46 @@ import {
   PinterestIcon,
 } from "@/components/ui/SocialIcons";
 
+// The footer is an always-dark surface in both themes, so it uses the
+// warm brand-dark + literal light-on-dark colors rather than the
+// adaptive surface/ink tokens.
+const footerLink =
+  "text-sm text-white/55 hover:text-brand-cream transition duration-200 ease-in-out";
+
+const SOCIALS = [
+  { label: "Instagram", url: SITE_CONFIG.socialLinks.instagram.url, Icon: InstagramIcon },
+  { label: "Facebook", url: SITE_CONFIG.socialLinks.facebook.url, Icon: FacebookIcon },
+  { label: "YouTube", url: SITE_CONFIG.socialLinks.youtube.url, Icon: YoutubeIcon },
+  { label: "LinkedIn", url: SITE_CONFIG.socialLinks.linkedin.url, Icon: LinkedinIcon },
+  { label: "Pinterest", url: SITE_CONFIG.socialLinks.pinterest.url, Icon: PinterestIcon },
+];
+
 export default function Footer() {
   return (
-    <footer id="footer" className="bg-[#1A1A1A] border-t border-[#2A2A2A]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <footer id="footer" className="bg-brand-dark border-t border-white/10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           {/* Brand */}
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-[#D4A017] text-2xl font-bold">▲</span>
-              <span className="font-bold text-2xl tracking-widest text-[#F5F5F5]">
+              <span className="text-gold text-2xl font-bold">▲</span>
+              <span className="font-bold text-2xl tracking-widest text-white">
                 ERYX
               </span>
             </div>
-            <p className="text-sm text-[#9A9A9A]">
+            <p className="text-sm text-white/55 leading-relaxed">
               Precision Hardware for Modern Homes. A Division of Modular India.
             </p>
             <div className="flex flex-col gap-2 text-sm">
               <a
                 href="tel:+917011184853"
-                className="flex items-center gap-2 text-[#9A9A9A] hover:text-[#D4A017] transition duration-200 ease-in-out"
+                className="flex items-center gap-2 text-white/55 hover:text-gold transition duration-200 ease-in-out"
               >
                 <Phone size={14} /> 70111 84853
               </a>
               <a
                 href="mailto:Info@modularindia.com"
-                className="flex items-center gap-2 text-[#9A9A9A] hover:text-[#D4A017] transition duration-200 ease-in-out"
+                className="flex items-center gap-2 text-white/55 hover:text-gold transition duration-200 ease-in-out"
               >
                 <Mail size={14} /> Info@modularindia.com
               </a>
@@ -43,107 +57,59 @@ export default function Footer() {
                 href="https://eryxhardware.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-[#9A9A9A] hover:text-[#D4A017] transition duration-200 ease-in-out"
+                className="flex items-center gap-2 text-white/55 hover:text-gold transition duration-200 ease-in-out"
               >
                 <Globe size={14} /> eryxhardware.com
               </a>
             </div>
             <div className="flex gap-4 mt-2">
-              <a
-                href={SITE_CONFIG.socialLinks.instagram.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Instagram"
-                className="hover:opacity-80 transition-opacity duration-200"
-              >
-                <InstagramIcon size={20} />
-              </a>
-              <a
-                href={SITE_CONFIG.socialLinks.facebook.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Facebook"
-                className="hover:opacity-80 transition-opacity duration-200"
-              >
-                <FacebookIcon size={20} />
-              </a>
-              <a
-                href={SITE_CONFIG.socialLinks.youtube.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="YouTube"
-                className="hover:opacity-80 transition-opacity duration-200"
-              >
-                <YoutubeIcon size={20} />
-              </a>
-              <a
-                href={SITE_CONFIG.socialLinks.linkedin.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="LinkedIn"
-                className="hover:opacity-80 transition-opacity duration-200"
-              >
-                <LinkedinIcon size={20} />
-              </a>
-              <a
-                href={SITE_CONFIG.socialLinks.pinterest.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Pinterest"
-                className="hover:opacity-80 transition-opacity duration-200"
-              >
-                <PinterestIcon size={20} />
-              </a>
+              {SOCIALS.map(({ label, url, Icon }) => (
+                <a
+                  key={label}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  className="opacity-90 hover:opacity-100 hover:-translate-y-0.5 transition duration-200"
+                >
+                  <Icon size={20} />
+                </a>
+              ))}
             </div>
           </div>
 
           {/* Quick Links */}
           <div className="flex flex-col gap-3">
-            <h4 className="text-xs tracking-widest uppercase text-[#D4A017]">
+            <h4 className="text-xs tracking-widest uppercase text-gold">
               Quick Links
             </h4>
-            <Link
-              href="/kitchen"
-              className="text-sm text-[#9A9A9A] hover:text-[#F5F5F5] transition duration-200 ease-in-out"
-            >
+            <Link href="/kitchen" className={footerLink}>
               Kitchen Solutions
             </Link>
-            <Link
-              href="/coming-soon/wardrobe"
-              className="text-sm text-[#9A9A9A] hover:text-[#F5F5F5] transition duration-200 ease-in-out"
-            >
+            <Link href="/wardrobe" className={footerLink}>
               Wardrobe Solutions
             </Link>
-            <Link
-              href="/coming-soon/hardware"
-              className="text-sm text-[#9A9A9A] hover:text-[#F5F5F5] transition duration-200 ease-in-out"
-            >
+            <Link href="/coming-soon/hardware" className={footerLink}>
               Hardware
             </Link>
-            <Link
-              href="/coming-soon/deals"
-              className="text-sm text-[#9A9A9A] hover:text-[#F5F5F5] transition duration-200 ease-in-out"
-            >
+            <Link href="/deals" className={footerLink}>
               Deals &amp; Offers
             </Link>
-            <Link
-              href="/dealer-enquiry"
-              className="text-sm text-[#9A9A9A] hover:text-[#F5F5F5] transition duration-200 ease-in-out"
-            >
-              Dealer Enquiry
+            <Link href="/bulk-enquiry" className={footerLink}>
+              Bulk Enquiry
             </Link>
           </div>
 
           {/* Kitchen */}
           <div className="flex flex-col gap-3">
-            <h4 className="text-xs tracking-widest uppercase text-[#D4A017]">
+            <h4 className="text-xs tracking-widest uppercase text-gold">
               Kitchen
             </h4>
             {CATEGORIES.map((cat) => (
               <Link
                 key={cat}
                 href={`/kitchen?category=${encodeURIComponent(cat)}`}
-                className="text-sm text-[#9A9A9A] hover:text-[#F5F5F5] transition duration-200 ease-in-out"
+                className={footerLink}
               >
                 {cat}
               </Link>
@@ -152,59 +118,37 @@ export default function Footer() {
 
           {/* Company */}
           <div className="flex flex-col gap-3">
-            <h4 className="text-xs tracking-widest uppercase text-[#D4A017]">
+            <h4 className="text-xs tracking-widest uppercase text-gold">
               Company
             </h4>
-            <Link
-              href="/about"
-              className="text-sm text-[#9A9A9A] hover:text-[#F5F5F5] transition duration-200 ease-in-out"
-            >
+            <Link href="/about" className={footerLink}>
               About Us
             </Link>
-            <Link
-              href="/contact"
-              className="text-sm text-[#9A9A9A] hover:text-[#F5F5F5] transition duration-200 ease-in-out"
-            >
+            <Link href="/contact" className={footerLink}>
               Contact Us
             </Link>
-
-            <Link
-              href="/faqs"
-              className="text-sm text-[#9A9A9A] hover:text-[#F5F5F5] transition duration-200 ease-in-out"
-            >
+            <Link href="/faqs" className={footerLink}>
               FAQs
             </Link>
-            <Link
-              href="/blog"
-              className="text-sm text-[#9A9A9A] hover:text-[#F5F5F5] transition duration-200 ease-in-out"
-            >
+            <Link href="/blog" className={footerLink}>
               Blog
             </Link>
             <a
               href={SITE_CONFIG.catalogueUrl}
               download="Eryx-Hardware-Catalogue.pdf"
-              className="text-sm text-[#9A9A9A] hover:text-[#F5F5F5] transition duration-200 ease-in-out flex items-center gap-1"
+              className={`${footerLink} flex items-center gap-1`}
             >
               <Download size={12} />
               Catalogues
             </a>
-            <Link
-              href="/bulk-enquiry"
-              className="text-sm text-[#9A9A9A] hover:text-[#F5F5F5] transition duration-200 ease-in-out"
-            >
-              Bulk Enquiry
-            </Link>
-            <Link
-              href="/dealer-enquiry"
-              className="text-sm text-[#9A9A9A] hover:text-[#F5F5F5] transition duration-200 ease-in-out"
-            >
+            <Link href="/dealer-enquiry" className={footerLink}>
               Dealer Enquiry
             </Link>
           </div>
         </div>
 
-        <div className="border-t border-[#2A2A2A] pt-4 mt-8">
-          <p className="text-center text-xs text-[#9A9A9A]">
+        <div className="border-t border-white/10 pt-5 mt-10">
+          <p className="text-center text-xs text-white/45">
             Copyright © 2026, Eryx Hardware · A Division of Modular India. All
             Rights Reserved.
           </p>
