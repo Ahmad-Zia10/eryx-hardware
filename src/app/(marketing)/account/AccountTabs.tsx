@@ -156,20 +156,20 @@ export default function AccountTabs({
 
   return (
     <div>
-      <div className="flex border-b border-[#D4D4D4] dark:border-[#2A2A2A] mb-8">
+      <div className="flex border-b border-line mb-8">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`relative px-6 py-3 text-sm font-medium border-b-2 transition duration-200 ease-in-out ${
               activeTab === tab.id
-                ? 'border-[#D4A017] text-[#D4A017]'
-                : 'border-transparent text-[#555555] dark:text-[#9A9A9A] hover:text-[#0A0A0A] dark:hover:text-[#F5F5F5]'
+                ? 'border-gold text-gold-deep'
+                : 'border-transparent text-ink-muted hover:text-ink'
             }`}
           >
             {tab.label}
             {tab.badge ? (
-              <span className="ml-2 inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-[#D4A017] text-[#0A0A0A] text-[10px] font-bold align-middle">
+              <span className="ml-2 inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-gold text-on-gold text-[10px] font-bold align-middle">
                 {tab.badge}
               </span>
             ) : null}
@@ -179,79 +179,79 @@ export default function AccountTabs({
 
       {activeTab === 'overview' && (
         <div className="space-y-8">
-          <div className="bg-white dark:bg-[#141414] border border-[#D4D4D4] dark:border-[#2A2A2A] rounded-sm p-6 flex items-center gap-6">
+          <div className="bg-surface-raised border border-line rounded-card p-6 flex items-center gap-6">
             {avatarUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={avatarUrl} alt="" className="w-16 h-16 rounded-full object-cover" />
             ) : (
-              <div className="w-16 h-16 rounded-full bg-[#D4A017] text-[#0A0A0A] flex items-center justify-center text-2xl font-bold">
+              <div className="w-16 h-16 rounded-full bg-gold text-on-gold flex items-center justify-center text-2xl font-bold">
                 {avatarInitial}
               </div>
             )}
             <div>
-              <h2 className="text-xl font-semibold text-[#0A0A0A] dark:text-[#F5F5F5]">{displayName}</h2>
-              <p className="text-sm text-[#555555] dark:text-[#9A9A9A]">{profile.email}</p>
-              <p className="text-xs text-[#555555] dark:text-[#9A9A9A] mt-1">
+              <h2 className="text-xl font-semibold text-ink">{displayName}</h2>
+              <p className="text-sm text-ink-muted">{profile.email}</p>
+              <p className="text-xs text-ink-muted mt-1">
                 Member since {new Date(profile.created_at).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}
               </p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-white dark:bg-[#141414] border border-[#D4D4D4] dark:border-[#2A2A2A] rounded-sm p-5">
-              <p className="text-xs tracking-widest uppercase text-[#9A9A9A]">Total Orders</p>
-              <p className="text-2xl font-bold text-[#0A0A0A] dark:text-[#F5F5F5] mt-1">{orders.length}</p>
+            <div className="bg-surface-raised border border-line rounded-card p-5">
+              <p className="text-xs tracking-widest uppercase text-ink-faint">Total Orders</p>
+              <p className="text-2xl font-bold text-ink mt-1">{orders.length}</p>
             </div>
-            <div className="bg-white dark:bg-[#141414] border border-[#D4D4D4] dark:border-[#2A2A2A] rounded-sm p-5">
-              <p className="text-xs tracking-widest uppercase text-[#9A9A9A]">Total Spent</p>
-              <p className="text-2xl font-bold text-[#0A0A0A] dark:text-[#F5F5F5] mt-1">₹{totalSpent.toLocaleString('en-IN')}</p>
+            <div className="bg-surface-raised border border-line rounded-card p-5">
+              <p className="text-xs tracking-widest uppercase text-ink-faint">Total Spent</p>
+              <p className="text-2xl font-bold text-ink mt-1">₹{totalSpent.toLocaleString('en-IN')}</p>
             </div>
-            <div className="bg-white dark:bg-[#141414] border border-[#D4D4D4] dark:border-[#2A2A2A] rounded-sm p-5">
-              <p className="text-xs tracking-widest uppercase text-[#9A9A9A]">Pending Orders</p>
-              <p className="text-2xl font-bold text-[#0A0A0A] dark:text-[#F5F5F5] mt-1">{pendingOrders}</p>
+            <div className="bg-surface-raised border border-line rounded-card p-5">
+              <p className="text-xs tracking-widest uppercase text-ink-faint">Pending Orders</p>
+              <p className="text-2xl font-bold text-ink mt-1">{pendingOrders}</p>
             </div>
           </div>
 
           {pendingReviewCount > 0 && (
             <button
               onClick={() => setActiveTab('reviews')}
-              className="w-full text-left bg-[#FFF9EB] dark:bg-[#1F1A0F] border border-[#D4A017]/40 rounded-sm p-4 flex items-center gap-3 hover:border-[#D4A017] transition duration-200"
+              className="w-full text-left bg-gold-tint border border-gold/40 rounded-card p-4 flex items-center gap-3 hover:border-gold transition duration-200"
             >
-              <Star size={18} className="fill-[#D4A017] text-[#D4A017] shrink-0" />
-              <span className="text-sm text-[#0A0A0A] dark:text-[#F5F5F5]">
+              <Star size={18} className="fill-gold text-gold shrink-0" />
+              <span className="text-sm text-ink">
                 You have <strong>{pendingReviewCount}</strong> {pendingReviewCount === 1 ? 'product' : 'products'} waiting to be reviewed.
-                <span className="text-[#D4A017] font-semibold ml-1">Write a review →</span>
+                <span className="text-gold-deep font-semibold ml-1">Write a review →</span>
               </span>
             </button>
           )}
 
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-[#0A0A0A] dark:text-[#F5F5F5]">Recent Orders</h3>
+              <h3 className="text-lg font-semibold text-ink">Recent Orders</h3>
               {orders.length > 0 && (
                 <button
                   onClick={() => setActiveTab('orders')}
-                  className="text-sm text-[#D4A017] hover:text-[#E8B820] transition duration-200"
+                  className="text-sm text-gold-deep hover:text-gold transition duration-200"
                 >
                   View All Orders →
                 </button>
               )}
             </div>
             {recentOrders.length === 0 ? (
-              <p className="text-sm text-[#555555] dark:text-[#9A9A9A]">No orders yet.</p>
+              <p className="text-sm text-ink-muted">No orders yet.</p>
             ) : (
               <div className="space-y-3">
                 {recentOrders.map((order) => (
                   <div
                     key={order.id}
-                    className="bg-white dark:bg-[#141414] border border-[#D4D4D4] dark:border-[#2A2A2A] rounded-sm p-4 flex items-center justify-between"
+                    className="bg-surface-raised border border-line rounded-card p-4 flex items-center justify-between"
                   >
                     <div>
-                      <p className="font-mono text-sm text-[#0A0A0A] dark:text-[#F5F5F5]">#{order.id.split('-')[0].toUpperCase()}</p>
-                      <p className="text-xs text-[#555555] dark:text-[#9A9A9A]">{formatDate(order.created_at)}</p>
+                      <p className="font-mono text-sm text-ink">#{order.id.split('-')[0].toUpperCase()}</p>
+                      <p className="text-xs text-ink-muted">{formatDate(order.created_at)}</p>
                     </div>
                     <div className="text-right flex items-center gap-3">
-                      <p className="text-sm font-semibold text-[#0A0A0A] dark:text-[#F5F5F5]">₹{Number(order.total).toLocaleString('en-IN')}</p>
+                      <p className="text-sm font-semibold text-ink">₹{Number(order.total).toLocaleString('en-IN')}</p>
                       <StatusBadge status={order.status} />
                     </div>
                   </div>
@@ -266,7 +266,7 @@ export default function AccountTabs({
         <div>
           {orders.length === 0 ? (
             <EmptyState
-              icon={<Package size={40} className="text-[#D4D4D4] dark:text-[#3A3A3A]" />}
+              icon={<Package size={40} className="text-line-strong" />}
               title="No orders yet"
               body="When you place an order, it will show up here with tracking and support options."
               cta={{ href: '/kitchen', label: 'Start Shopping' }}
@@ -279,28 +279,28 @@ export default function AccountTabs({
                 return (
                   <div
                     key={order.id}
-                    className="bg-white dark:bg-[#141414] border border-[#D4D4D4] dark:border-[#2A2A2A] rounded-sm overflow-hidden"
+                    className="bg-surface-raised border border-line rounded-card overflow-hidden"
                   >
                     {/* Header row */}
                     <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-3">
-                          <span className="font-mono text-sm font-medium text-[#0A0A0A] dark:text-[#F5F5F5]">
+                          <span className="font-mono text-sm font-medium text-ink">
                             #{order.id.split('-')[0].toUpperCase()}
                           </span>
                           <StatusBadge status={order.status} />
                         </div>
-                        <span className="text-xs text-[#555555] dark:text-[#9A9A9A]">
+                        <span className="text-xs text-ink-muted">
                           {formatDate(order.created_at)} · {getItemsSummary(order)}
                         </span>
                       </div>
                       <div className="flex items-center gap-4">
-                        <span className="text-sm font-semibold text-[#0A0A0A] dark:text-[#F5F5F5]">
+                        <span className="text-sm font-semibold text-ink">
                           ₹{Number(order.total).toLocaleString('en-IN')}
                         </span>
                         <button
                           onClick={() => setExpandedOrderId(isExpanded ? null : order.id)}
-                          className="flex items-center gap-1 text-xs text-[#555555] dark:text-[#9A9A9A] hover:text-[#D4A017] transition duration-200"
+                          className="flex items-center gap-1 text-xs text-ink-muted hover:text-gold-deep transition duration-200"
                           aria-expanded={isExpanded}
                         >
                           Details
@@ -311,7 +311,7 @@ export default function AccountTabs({
 
                     {/* Expanded items */}
                     {isExpanded && order.order_items?.length > 0 && (
-                      <div className="border-t border-[#D4D4D4] dark:border-[#2A2A2A] bg-[#FAFAFA] dark:bg-[#0F0F0F] divide-y divide-[#EDEDED] dark:divide-[#222222]">
+                      <div className="border-t border-line bg-surface-sunken divide-y divide-line">
                         {order.order_items.map((item) => {
                           const slug = item.item_code ? slugify(item.item_code) : null;
                           const reviewable = isDelivered && reviewableItems.some((r) => r.variantId === item.variant_id);
@@ -326,23 +326,23 @@ export default function AccountTabs({
                                 {slug ? (
                                   <Link
                                     href={`/kitchen/${slug}`}
-                                    className="text-sm text-[#0A0A0A] dark:text-[#F5F5F5] hover:text-[#D4A017] transition-colors truncate block"
+                                    className="text-sm text-ink hover:text-gold-deep transition-colors truncate block"
                                   >
                                     {item.product_name}
                                   </Link>
                                 ) : (
-                                  <span className="text-sm text-[#0A0A0A] dark:text-[#F5F5F5] truncate block">{item.product_name}</span>
+                                  <span className="text-sm text-ink truncate block">{item.product_name}</span>
                                 )}
-                                <span className="text-xs text-[#9A9A9A] font-mono">{item.item_code} · Qty {item.quantity}</span>
+                                <span className="text-xs text-ink-faint font-mono">{item.item_code} · Qty {item.quantity}</span>
                               </div>
                               <div className="flex items-center gap-3 shrink-0">
-                                <span className="text-sm text-[#0A0A0A] dark:text-[#F5F5F5]">
+                                <span className="text-sm text-ink">
                                   ₹{Number(item.price_at_purchase).toLocaleString('en-IN')}
                                 </span>
                                 {reviewable && (
                                   <button
                                     onClick={() => setActiveTab('reviews')}
-                                    className="inline-flex items-center gap-1 text-xs font-semibold text-[#D4A017] hover:text-[#E8B820] transition duration-200 whitespace-nowrap"
+                                    className="inline-flex items-center gap-1 text-xs font-semibold text-gold-deep hover:text-gold transition duration-200 whitespace-nowrap"
                                   >
                                     <Star size={12} />
                                     Review
@@ -362,14 +362,14 @@ export default function AccountTabs({
                     )}
 
                     {/* Footer actions */}
-                    <div className="border-t border-[#D4D4D4] dark:border-[#2A2A2A] px-4 py-2.5 flex items-center gap-4 bg-white dark:bg-[#141414]">
+                    <div className="border-t border-line px-4 py-2.5 flex items-center gap-4 bg-surface-raised">
                       <button
                         type="button"
                         onClick={() => {
                           setHelpOrderId(helpOrderId === order.id ? null : order.id);
                           setHelpMessage(null);
                         }}
-                        className="inline-flex items-center gap-1.5 text-xs text-[#555555] dark:text-[#9A9A9A] hover:text-[#D4A017] transition duration-200"
+                        className="inline-flex items-center gap-1.5 text-xs text-ink-muted hover:text-gold-deep transition duration-200"
                       >
                         <LifeBuoy size={13} />
                         Need help?
@@ -377,7 +377,7 @@ export default function AccountTabs({
                       {isDelivered && (
                         <Link
                           href={`/account/orders/${order.id}/return`}
-                          className="inline-flex items-center gap-1.5 text-xs text-[#555555] dark:text-[#9A9A9A] hover:text-[#D4A017] transition duration-200"
+                          className="inline-flex items-center gap-1.5 text-xs text-ink-muted hover:text-gold-deep transition duration-200"
                         >
                           <RotateCcw size={13} />
                           Return
@@ -389,14 +389,14 @@ export default function AccountTabs({
                     {helpOrderId === order.id && (
                       <form
                         onSubmit={submitHelpRequest}
-                        className="border-t border-[#D4D4D4] dark:border-[#2A2A2A] px-4 py-4 bg-[#F5F5F5] dark:bg-[#0A0A0A] space-y-3"
+                        className="border-t border-line px-4 py-4 bg-surface-sunken space-y-3"
                       >
                         <input type="hidden" name="order_id" value={order.id} />
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <select
                             name="reason"
                             required
-                            className="bg-white dark:bg-[#141414] border border-[#D4D4D4] dark:border-[#2A2A2A] px-3 py-2 rounded-sm text-sm text-[#0A0A0A] dark:text-[#F5F5F5]"
+                            className="bg-surface-raised border border-line px-3 py-2 rounded-control text-sm text-ink"
                           >
                             <option value="order_not_received">Order not received</option>
                             <option value="wrong_item">Wrong item received</option>
@@ -408,7 +408,7 @@ export default function AccountTabs({
                             name="attachment"
                             type="file"
                             accept="image/jpeg,image/png,image/webp"
-                            className="text-sm text-[#555555] dark:text-[#9A9A9A] file:mr-3 file:py-1.5 file:px-3 file:rounded-sm file:border-0 file:text-xs file:font-semibold file:bg-[#D4A017] file:text-[#0A0A0A]"
+                            className="text-sm text-ink-muted file:mr-3 file:py-1.5 file:px-3 file:rounded-control file:border-0 file:text-xs file:font-semibold file:bg-gold file:text-on-gold"
                           />
                         </div>
                         <textarea
@@ -418,11 +418,11 @@ export default function AccountTabs({
                           maxLength={2000}
                           rows={3}
                           placeholder="Tell us what happened"
-                          className="w-full bg-white dark:bg-[#141414] border border-[#D4D4D4] dark:border-[#2A2A2A] px-3 py-2 rounded-sm text-sm text-[#0A0A0A] dark:text-[#F5F5F5]"
+                          className="w-full bg-surface-raised border border-line px-3 py-2 rounded-control text-sm text-ink"
                         />
                         <button
                           disabled={helpSubmitting}
-                          className="bg-[#D4A017] hover:bg-[#E8B820] text-[#0A0A0A] font-semibold px-4 py-2 text-sm rounded-sm disabled:opacity-50 transition duration-200"
+                          className="bg-gold hover:bg-gold-bright text-on-gold font-semibold px-4 py-2 text-sm rounded-control disabled:opacity-50 transition duration-200"
                         >
                           {helpSubmitting ? 'Submitting...' : 'Submit Request'}
                         </button>
@@ -434,28 +434,28 @@ export default function AccountTabs({
             </div>
           )}
           {helpMessage && (
-            <p className="text-sm text-[#0A0A0A] dark:text-[#F5F5F5] mt-4 bg-[#FFF9EB] dark:bg-[#1F1A0F] border border-[#D4A017]/40 rounded-sm px-4 py-3">
+            <p className="text-sm text-ink mt-4 bg-gold-tint border border-gold/40 rounded-card px-4 py-3">
               {helpMessage}
             </p>
           )}
           {supportRequests.length > 0 && (
             <div className="mt-10">
-              <h3 className="text-lg font-semibold text-[#0A0A0A] dark:text-[#F5F5F5] mb-4">Your help requests</h3>
+              <h3 className="text-lg font-semibold text-ink mb-4">Your help requests</h3>
               <div className="space-y-3">
                 {supportRequests.map((request) => (
-                  <div key={request.id} className="bg-white dark:bg-[#141414] border border-[#D4D4D4] dark:border-[#2A2A2A] rounded-sm p-4">
+                  <div key={request.id} className="bg-surface-raised border border-line rounded-card p-4">
                     <div className="flex items-center justify-between gap-3">
                       <div>
-                        <p className="font-mono text-xs text-[#555555] dark:text-[#9A9A9A]">
+                        <p className="font-mono text-xs text-ink-muted">
                           #{request.id.split('-')[0].toUpperCase()} · Order #{request.order_id.split('-')[0].toUpperCase()}
                         </p>
-                        <p className="text-sm text-[#0A0A0A] dark:text-[#F5F5F5] mt-1 capitalize">
+                        <p className="text-sm text-ink mt-1 capitalize">
                           {request.reason.replace(/_/g, ' ')}
                         </p>
                       </div>
                       <StatusBadge status={request.status} />
                     </div>
-                    <p className="text-sm text-[#555555] dark:text-[#9A9A9A] mt-3 whitespace-pre-wrap">{request.message}</p>
+                    <p className="text-sm text-ink-muted mt-3 whitespace-pre-wrap">{request.message}</p>
                   </div>
                 ))}
               </div>
@@ -489,12 +489,12 @@ function EmptyState({
   return (
     <div className="text-center py-16 flex flex-col items-center">
       <div className="mb-4">{icon}</div>
-      <p className="text-lg font-semibold text-[#0A0A0A] dark:text-[#F5F5F5]">{title}</p>
-      <p className="text-sm text-[#555555] dark:text-[#9A9A9A] mt-1 max-w-sm">{body}</p>
+      <p className="text-lg font-semibold text-ink">{title}</p>
+      <p className="text-sm text-ink-muted mt-1 max-w-sm">{body}</p>
       {cta && (
         <Link
           href={cta.href}
-          className="mt-6 inline-flex items-center gap-2 bg-[#D4A017] hover:bg-[#E8B820] text-[#0A0A0A] font-semibold px-8 py-3 rounded-sm transition duration-200 ease-in-out"
+          className="mt-6 inline-flex items-center gap-2 bg-gold hover:bg-gold-bright text-on-gold font-semibold px-8 py-3 rounded-control transition duration-200 ease-in-out"
         >
           <ShoppingBag size={16} />
           {cta.label}
@@ -519,15 +519,15 @@ function ReviewsTab({
     <div className="space-y-10">
       <section>
         <div className="flex items-center gap-2 mb-4">
-          <h3 className="text-lg font-semibold text-[#0A0A0A] dark:text-[#F5F5F5]">Awaiting your review</h3>
+          <h3 className="text-lg font-semibold text-ink">Awaiting your review</h3>
           {reviewableItems.length > 0 && (
-            <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-[#D4A017] text-[#0A0A0A] text-[10px] font-bold">
+            <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-gold text-on-gold text-[10px] font-bold">
               {reviewableItems.length}
             </span>
           )}
         </div>
         {reviewableItems.length === 0 ? (
-          <p className="text-sm text-[#555555] dark:text-[#9A9A9A]">
+          <p className="text-sm text-ink-muted">
             Nothing to review right now. Delivered products you haven&apos;t reviewed will appear here.
           </p>
         ) : (
@@ -540,9 +540,9 @@ function ReviewsTab({
       </section>
 
       <section>
-        <h3 className="text-lg font-semibold text-[#0A0A0A] dark:text-[#F5F5F5] mb-4">Your reviews</h3>
+        <h3 className="text-lg font-semibold text-ink mb-4">Your reviews</h3>
         {reviews.length === 0 ? (
-          <p className="text-sm text-[#555555] dark:text-[#9A9A9A]">You haven&apos;t submitted any reviews yet.</p>
+          <p className="text-sm text-ink-muted">You haven&apos;t submitted any reviews yet.</p>
         ) : (
           <div className="space-y-4">
             {reviews.map((review) => (
@@ -593,27 +593,27 @@ function PendingReviewCard({ item, onSubmitted }: { item: ReviewableItem; onSubm
   };
 
   return (
-    <div className="bg-white dark:bg-[#141414] border border-[#D4D4D4] dark:border-[#2A2A2A] rounded-sm p-5">
+    <div className="bg-surface-raised border border-line rounded-card p-5">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           {slug ? (
             <Link
               href={`/kitchen/${slug}`}
-              className="font-medium text-[#0A0A0A] dark:text-[#F5F5F5] hover:text-[#D4A017] transition-colors"
+              className="font-medium text-ink hover:text-gold-deep transition-colors"
             >
               {item.productName}
             </Link>
           ) : (
-            <span className="font-medium text-[#0A0A0A] dark:text-[#F5F5F5]">{item.productName}</span>
+            <span className="font-medium text-ink">{item.productName}</span>
           )}
-          <p className="text-xs text-[#9A9A9A] mt-0.5">
+          <p className="text-xs text-ink-faint mt-0.5">
             Delivered {formatDate(item.deliveredAt)} · Order #{item.orderId.split('-')[0].toUpperCase()}
           </p>
         </div>
         {!open && (
           <button
             onClick={() => setOpen(true)}
-            className="inline-flex items-center gap-1.5 bg-[#D4A017] hover:bg-[#E8B820] text-[#0A0A0A] font-semibold px-4 py-2 text-sm rounded-sm transition duration-200 shrink-0"
+            className="inline-flex items-center gap-1.5 bg-gold hover:bg-gold-bright text-on-gold font-semibold px-4 py-2 text-sm rounded-control transition duration-200 shrink-0"
           >
             <Star size={14} />
             Write a review
@@ -622,9 +622,9 @@ function PendingReviewCard({ item, onSubmitted }: { item: ReviewableItem; onSubm
       </div>
 
       {open && (
-        <form onSubmit={submit} className="mt-4 pt-4 border-t border-[#EDEDED] dark:border-[#222222] space-y-3">
+        <form onSubmit={submit} className="mt-4 pt-4 border-t border-line space-y-3">
           <div>
-            <label className="block text-xs tracking-widest uppercase text-[#9A9A9A] mb-1.5">Your rating</label>
+            <label className="block text-xs tracking-widest uppercase text-ink-faint mb-1.5">Your rating</label>
             <StarRating value={rating} onChange={setRating} size={24} label="Your rating" />
           </div>
           <input
@@ -633,7 +633,7 @@ function PendingReviewCard({ item, onSubmitted }: { item: ReviewableItem; onSubm
             onChange={(e) => setTitle(e.target.value)}
             maxLength={120}
             placeholder="Add a headline (optional)"
-            className="w-full bg-white dark:bg-[#0F0F0F] border border-[#D4D4D4] dark:border-[#2A2A2A] px-3 py-2 rounded-sm text-sm text-[#0A0A0A] dark:text-[#F5F5F5]"
+            className="w-full bg-surface border border-line px-3 py-2 rounded-control text-sm text-ink"
           />
           <textarea
             value={text}
@@ -641,20 +641,20 @@ function PendingReviewCard({ item, onSubmitted }: { item: ReviewableItem; onSubm
             maxLength={2000}
             rows={3}
             placeholder="Share what you liked or didn't (optional)"
-            className="w-full bg-white dark:bg-[#0F0F0F] border border-[#D4D4D4] dark:border-[#2A2A2A] px-3 py-2 rounded-sm text-sm text-[#0A0A0A] dark:text-[#F5F5F5]"
+            className="w-full bg-surface border border-line px-3 py-2 rounded-control text-sm text-ink"
           />
           {error && <p className="text-sm text-red-500">{error}</p>}
           <div className="flex items-center gap-3">
             <button
               disabled={submitting}
-              className="bg-[#D4A017] hover:bg-[#E8B820] text-[#0A0A0A] font-semibold px-4 py-2 text-sm rounded-sm disabled:opacity-50 transition duration-200"
+              className="bg-gold hover:bg-gold-bright text-on-gold font-semibold px-4 py-2 text-sm rounded-control disabled:opacity-50 transition duration-200"
             >
               {submitting ? 'Submitting...' : 'Submit review'}
             </button>
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="text-sm text-[#555555] dark:text-[#9A9A9A] hover:text-[#0A0A0A] dark:hover:text-[#F5F5F5] transition duration-200"
+              className="text-sm text-ink-muted hover:text-ink transition duration-200"
             >
               Cancel
             </button>
@@ -722,18 +722,18 @@ function SubmittedReviewCard({ review, onChanged }: { review: Review; onChanged:
   };
 
   return (
-    <div className="bg-white dark:bg-[#141414] border border-[#D4D4D4] dark:border-[#2A2A2A] rounded-sm p-5">
+    <div className="bg-surface-raised border border-line rounded-card p-5">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
         <div className="min-w-0">
           {productSlug ? (
             <Link
               href={`/kitchen/${productSlug}`}
-              className="font-medium text-[#0A0A0A] dark:text-[#F5F5F5] hover:text-[#D4A017] transition duration-200"
+              className="font-medium text-ink hover:text-gold-deep transition duration-200"
             >
               {review.product?.name || 'Unknown Product'}
             </Link>
           ) : (
-            <span className="font-medium text-[#0A0A0A] dark:text-[#F5F5F5]">{review.product?.name || 'Unknown Product'}</span>
+            <span className="font-medium text-ink">{review.product?.name || 'Unknown Product'}</span>
           )}
           {!editing && <div className="mt-1.5"><StarRating value={review.rating} size={16} /></div>}
         </div>
@@ -744,12 +744,12 @@ function SubmittedReviewCard({ review, onChanged }: { review: Review; onChanged:
 
       {!editing ? (
         <>
-          {review.title && <p className="mt-3 text-sm font-semibold text-[#0A0A0A] dark:text-[#F5F5F5]">{review.title}</p>}
+          {review.title && <p className="mt-3 text-sm font-semibold text-ink">{review.title}</p>}
           {review.review_text && (
-            <p className="mt-1 text-sm text-[#555555] dark:text-[#9A9A9A] whitespace-pre-wrap">{review.review_text}</p>
+            <p className="mt-1 text-sm text-ink-muted whitespace-pre-wrap">{review.review_text}</p>
           )}
           <div className="mt-3 flex items-center justify-between gap-3">
-            <p className="text-xs text-[#9A9A9A]">
+            <p className="text-xs text-ink-faint">
               {formatDate(review.created_at)}
               {edited && ' · edited'}
             </p>
@@ -759,14 +759,14 @@ function SubmittedReviewCard({ review, onChanged }: { review: Review; onChanged:
                   setEditing(true);
                   setError('');
                 }}
-                className="inline-flex items-center gap-1 text-xs text-[#555555] dark:text-[#9A9A9A] hover:text-[#D4A017] transition duration-200"
+                className="inline-flex items-center gap-1 text-xs text-ink-muted hover:text-gold-deep transition duration-200"
               >
                 <PencilLine size={13} />
                 Edit
               </button>
               {confirmDelete ? (
                 <span className="inline-flex items-center gap-2 text-xs">
-                  <span className="text-[#555555] dark:text-[#9A9A9A]">Delete?</span>
+                  <span className="text-ink-muted">Delete?</span>
                   <button
                     onClick={remove}
                     disabled={busy}
@@ -776,7 +776,7 @@ function SubmittedReviewCard({ review, onChanged }: { review: Review; onChanged:
                   </button>
                   <button
                     onClick={() => setConfirmDelete(false)}
-                    className="text-[#555555] dark:text-[#9A9A9A] hover:text-[#0A0A0A] dark:hover:text-[#F5F5F5]"
+                    className="text-ink-muted hover:text-ink"
                   >
                     No
                   </button>
@@ -784,7 +784,7 @@ function SubmittedReviewCard({ review, onChanged }: { review: Review; onChanged:
               ) : (
                 <button
                   onClick={() => setConfirmDelete(true)}
-                  className="inline-flex items-center gap-1 text-xs text-[#555555] dark:text-[#9A9A9A] hover:text-red-500 transition duration-200"
+                  className="inline-flex items-center gap-1 text-xs text-ink-muted hover:text-red-500 transition duration-200"
                 >
                   <Trash2 size={13} />
                   Delete
@@ -795,9 +795,9 @@ function SubmittedReviewCard({ review, onChanged }: { review: Review; onChanged:
           {error && <p className="text-sm text-red-500 mt-2">{error}</p>}
         </>
       ) : (
-        <form onSubmit={save} className="mt-4 pt-4 border-t border-[#EDEDED] dark:border-[#222222] space-y-3">
+        <form onSubmit={save} className="mt-4 pt-4 border-t border-line space-y-3">
           <div>
-            <label className="block text-xs tracking-widest uppercase text-[#9A9A9A] mb-1.5">Your rating</label>
+            <label className="block text-xs tracking-widest uppercase text-ink-faint mb-1.5">Your rating</label>
             <StarRating value={rating} onChange={setRating} size={24} label="Your rating" />
           </div>
           <input
@@ -806,7 +806,7 @@ function SubmittedReviewCard({ review, onChanged }: { review: Review; onChanged:
             onChange={(e) => setTitle(e.target.value)}
             maxLength={120}
             placeholder="Add a headline (optional)"
-            className="w-full bg-white dark:bg-[#0F0F0F] border border-[#D4D4D4] dark:border-[#2A2A2A] px-3 py-2 rounded-sm text-sm text-[#0A0A0A] dark:text-[#F5F5F5]"
+            className="w-full bg-surface border border-line px-3 py-2 rounded-control text-sm text-ink"
           />
           <textarea
             value={text}
@@ -814,14 +814,14 @@ function SubmittedReviewCard({ review, onChanged }: { review: Review; onChanged:
             maxLength={2000}
             rows={3}
             placeholder="Share what you liked or didn't (optional)"
-            className="w-full bg-white dark:bg-[#0F0F0F] border border-[#D4D4D4] dark:border-[#2A2A2A] px-3 py-2 rounded-sm text-sm text-[#0A0A0A] dark:text-[#F5F5F5]"
+            className="w-full bg-surface border border-line px-3 py-2 rounded-control text-sm text-ink"
           />
-          <p className="text-xs text-[#9A9A9A]">Editing sends your review back for approval before it shows publicly.</p>
+          <p className="text-xs text-ink-faint">Editing sends your review back for approval before it shows publicly.</p>
           {error && <p className="text-sm text-red-500">{error}</p>}
           <div className="flex items-center gap-3">
             <button
               disabled={busy}
-              className="bg-[#D4A017] hover:bg-[#E8B820] text-[#0A0A0A] font-semibold px-4 py-2 text-sm rounded-sm disabled:opacity-50 transition duration-200"
+              className="bg-gold hover:bg-gold-bright text-on-gold font-semibold px-4 py-2 text-sm rounded-control disabled:opacity-50 transition duration-200"
             >
               {busy ? 'Saving...' : 'Save changes'}
             </button>
@@ -834,7 +834,7 @@ function SubmittedReviewCard({ review, onChanged }: { review: Review; onChanged:
                 setText(review.review_text || '');
                 setError('');
               }}
-              className="text-sm text-[#555555] dark:text-[#9A9A9A] hover:text-[#0A0A0A] dark:hover:text-[#F5F5F5] transition duration-200"
+              className="text-sm text-ink-muted hover:text-ink transition duration-200"
             >
               Cancel
             </button>
@@ -854,7 +854,7 @@ function ReviewStatusPill({ status }: { status: string }) {
   const entry = map[status] || map.pending;
   return (
     <span
-      className={`px-2 py-0.5 text-xs font-medium rounded-sm ${entry.cls}`}
+      className={`px-2 py-0.5 text-xs font-medium rounded-control ${entry.cls}`}
       title={
         status === 'pending'
           ? 'Waiting for admin approval before it appears on the product page.'

@@ -92,7 +92,7 @@ export default async function AccountPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="font-serif text-3xl text-[#0A0A0A] dark:text-[#F5F5F5] mb-8">My Account</h1>
+      <h1 className="font-serif text-3xl text-ink mb-8">My Account</h1>
       <AccountTabs
         profile={profile || { full_name: null, email: user.email || '', created_at: user.created_at }}
         orders={(orders as any[]) || []}
