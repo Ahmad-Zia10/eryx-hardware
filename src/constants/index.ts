@@ -34,6 +34,16 @@ export const SERVICEABLE_PINCODES = [
   "411", // Pune
 ];
 
+// Single source of truth for serviceability — shared by the PDP
+// PincodeChecker and the checkout pincode field so the two never drift.
+// Returns true only for a well-formed 6-digit pincode whose prefix is
+// covered. Note: this is a client-side convenience gate, not a security
+// boundary — real serviceability is confirmed by ops.
+export function isServiceablePincode(pincode: string): boolean {
+  if (!/^\d{6}$/.test(pincode)) return false;
+  return SERVICEABLE_PINCODES.some((prefix) => pincode.startsWith(prefix));
+}
+
 export const NAV_LINKS: NavLink[] = [
   { label: "Home", href: "/" },
   { label: "About Us", href: "/about" },

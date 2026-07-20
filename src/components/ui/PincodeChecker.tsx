@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
-import { SERVICEABLE_PINCODES } from "@/constants";
+import { isServiceablePincode } from "@/constants";
 
 export default function PincodeChecker() {
   const [pincode, setPincode] = useState("");
@@ -20,8 +20,7 @@ export default function PincodeChecker() {
 
     setStatus("checking");
     setTimeout(() => {
-      const isServiceable = SERVICEABLE_PINCODES.some((prefix) => pincode.startsWith(prefix));
-      setStatus(isServiceable ? "serviceable" : "unserviceable");
+      setStatus(isServiceablePincode(pincode) ? "serviceable" : "unserviceable");
     }, 300);
   };
 
@@ -30,8 +29,8 @@ export default function PincodeChecker() {
   };
 
   return (
-    <div className="mt-8 border-t border-b border-[#E8E4DD] dark:border-[#2A2A2A] py-6">
-      <h3 className="font-semibold text-[#0A0A0A] dark:text-[#F5F5F5] mb-3 text-sm">
+    <div className="mt-8 border-t border-b border-line py-6">
+      <h3 className="font-semibold text-ink mb-3 text-sm">
         Check Delivery Availability
       </h3>
       <div className="flex gap-2">
@@ -42,12 +41,12 @@ export default function PincodeChecker() {
           onChange={(e) => setPincode(e.target.value.replace(/\D/g, ""))}
           onKeyDown={handleKeyDown}
           placeholder="Enter 6-digit Pincode"
-          className="flex-1 border border-[#D4D4D4] dark:border-[#2A2A2A] bg-transparent text-[#0A0A0A] dark:text-[#F5F5F5] px-4 py-2 text-sm focus:outline-none focus:border-[#D4A017] transition"
+          className="flex-1 border border-line-strong bg-surface text-ink px-4 py-2 text-sm rounded-control focus:outline-none focus:border-gold transition"
         />
         <button
           onClick={handleCheck}
           disabled={status === "checking" || pincode.length !== 6}
-          className="bg-[#1A1A1A] dark:bg-[#F5F5F5] text-white dark:text-[#0A0A0A] px-6 py-2 text-sm font-semibold hover:opacity-90 transition disabled:opacity-50 min-w-[100px] flex justify-center items-center"
+          className="bg-ink text-surface px-6 py-2 text-sm font-semibold rounded-control hover:opacity-90 transition disabled:opacity-50 min-w-[100px] flex justify-center items-center"
         >
           {status === "checking" ? <Loader2 size={16} className="animate-spin" /> : "Check"}
         </button>

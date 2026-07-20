@@ -1,9 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
 import { createClient } from '@/lib/supabase/client';
 import { formatPrice, getEffectivePrice } from '@/lib/pricing';
+import { isServiceablePincode } from '@/constants';
+import { CheckCircle2, Lock, XCircle } from 'lucide-react';
 import Script from 'next/script';
 
 type OutOfStockItem = {
@@ -27,6 +30,11 @@ function formatDiscountBadge(code: AvailableCode): string {
   return `${formatPrice(code.discount_value)} off`;
 }
 
+// Shared control styling — matches the enquiry/dealer forms.
+const inputClass =
+  'w-full bg-surface border border-line-strong px-3.5 py-2.5 rounded-control text-sm text-ink placeholder:text-ink-faint focus:border-gold outline-none transition-colors duration-200';
+const labelClass = 'block text-sm font-medium text-ink mb-1.5';
+
 export default function CheckoutPage() {
   const { items, cartTotal, clearCart, removeItem } = useCart();
   const [isLoading, setIsLoading] = useState(false);
@@ -43,10 +51,14 @@ export default function CheckoutPage() {
     name: '',
     phone: '',
     email: '',
-    address: '',
+    addressLine1: '',
+    addressLine2: '',
     city: '',
+    state: '',
     pincode: '',
   });
+  // Serviceability is checked on blur; null = not yet checked.
+  const [pincodeServiceable, setPincodeServiceable] = useState<boolean | null>(null);
 
   const supabase = createClient();
 
@@ -92,6 +104,19 @@ export default function CheckoutPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handlePincodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Digits only, max 6 — reset the serviceability verdict as they type.
+    const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+    setFormData({ ...formData, pincode: value });
+    setPincodeServiceable(null);
+  };
+
+  const handlePincodeBlur = () => {
+    if (formData.pincode.length === 6) {
+      setPincodeServiceable(isServiceablePincode(formData.pincode));
+    }
+  };
+
   const handleApplyPromo = async () => {
     if (!promoCode) return;
     setPromoLoading(true);
@@ -118,6 +143,19 @@ export default function CheckoutPage() {
     setIsLoading(true);
     setOutOfStock([]);
 
+    // Compose the structured address into the single shipping_address
+    // column the orders table + create_order_with_items RPC expect. The
+    // form collects line1/line2/state separately (needed for the future
+    // logistics + GST work) but the DB schema for that is a separate
+    // migration — until then we keep the full address in one field.
+    const composedAddress = [
+      formData.addressLine1,
+      formData.addressLine2,
+      formData.state && `${formData.state}`,
+    ]
+      .filter(Boolean)
+      .join(', ');
+
     try {
       // 1. Create order on backend
       const res = await fetch('/api/checkout/create-order', {
@@ -128,7 +166,14 @@ export default function CheckoutPage() {
             code: item.product.code,
             quantity: item.quantity
           })),
-          shippingDetails: formData,
+          shippingDetails: {
+            name: formData.name,
+            phone: formData.phone,
+            email: formData.email,
+            address: composedAddress,
+            city: formData.city,
+            pincode: formData.pincode,
+          },
           promoCode: appliedPromo?.code,
         }),
       });
@@ -184,23 +229,35 @@ export default function CheckoutPage() {
   if (items.length === 0) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center p-4">
-        <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-4">Your cart is empty</h2>
-        <a href="/" className="text-[#D4A017] hover:underline">Continue shopping</a>
+        <h2 className="font-serif text-2xl text-ink mb-4">Your cart is empty</h2>
+        <Link href="/kitchen" className="text-gold-deep hover:text-gold hover:underline">
+          Continue shopping
+        </Link>
       </div>
     );
   }
 
+  const total = cartTotal - (appliedPromo?.discount_amount || 0);
+
   return (
     <>
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
-      
+
       <div className="max-w-4xl mx-auto px-4 py-12 md:py-20">
-        <h1 className="text-3xl font-bold text-neutral-900 dark:text-white mb-8">Checkout</h1>
-        
+        <h1 className="font-serif text-3xl md:text-4xl text-ink mb-8">Checkout</h1>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-          {/* Cart Summary */}
-          <div>
-            <h2 className="text-xl font-semibold mb-4 text-neutral-800 dark:text-neutral-200 border-b border-neutral-200 dark:border-neutral-800 pb-2">Order Summary</h2>
+          {/* Order Summary */}
+          <div className="md:sticky md:top-28 self-start">
+            <div className="flex items-center justify-between mb-4 border-b border-line pb-2">
+              <h2 className="text-xl font-semibold text-ink">Order Summary</h2>
+              <Link
+                href="/cart"
+                className="text-xs text-gold-deep hover:text-gold transition-colors duration-200"
+              >
+                Edit cart
+              </Link>
+            </div>
             <div className="space-y-4">
               {items.map((item) => {
                 const price = getEffectivePrice(item.product);
@@ -208,26 +265,26 @@ export default function CheckoutPage() {
                 return (
                 <div
                   key={item.product.slug}
-                  className={`flex flex-col text-sm rounded p-2 ${
-                    stale ? 'border border-red-500 bg-red-50 dark:bg-red-950/30' : ''
+                  className={`flex flex-col text-sm rounded-control p-2 ${
+                    stale ? 'border border-red-500 bg-red-500/10' : ''
                   }`}
                 >
-                  <div className="flex justify-between">
-                    <div className="flex gap-4">
-                      <div className="w-16 h-16 bg-neutral-100 dark:bg-neutral-800 rounded shrink-0 overflow-hidden">
+                  <div className="flex justify-between gap-3">
+                    <div className="flex gap-4 min-w-0">
+                      <div className="w-16 h-16 bg-surface-sunken rounded-control shrink-0 overflow-hidden">
                         <img src={item.product.image} alt={item.product.name} className="w-full h-full object-cover" />
                       </div>
-                      <div>
-                        <p className="font-medium text-neutral-900 dark:text-white">{item.product.name}</p>
-                        <p className="text-neutral-500 dark:text-neutral-400">Qty: {item.quantity}</p>
+                      <div className="min-w-0">
+                        <p className="font-medium text-ink truncate">{item.product.name}</p>
+                        <p className="text-ink-muted">Qty: {item.quantity}</p>
                       </div>
                     </div>
-                    <div className="text-neutral-900 dark:text-white font-medium">
+                    <div className="text-ink font-medium whitespace-nowrap">
                       {typeof price === 'number' ? formatPrice(price * item.quantity) : 'Price on request'}
                     </div>
                   </div>
                   {stale && (
-                    <div className="mt-2 flex items-center justify-between text-xs text-red-700 dark:text-red-400">
+                    <div className="mt-2 flex items-center justify-between text-xs text-red-600 dark:text-red-400">
                       <span>
                         {stale.available === 0
                           ? 'Out of stock — remove to continue.'
@@ -252,17 +309,17 @@ export default function CheckoutPage() {
 
             <div className="mt-8">
               <div className="flex gap-2">
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={promoCode}
                   onChange={(e) => setPromoCode(e.target.value)}
                   placeholder="Enter Promo Code"
-                  className="flex-1 px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-md bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:outline-none focus:border-[#D4A017]"
+                  className={inputClass}
                 />
-                <button 
+                <button
                   onClick={handleApplyPromo}
                   disabled={promoLoading || !promoCode}
-                  className="bg-neutral-900 dark:bg-neutral-800 text-white px-4 py-2 rounded-md hover:bg-neutral-800 transition disabled:opacity-50"
+                  className="bg-ink text-surface px-5 py-2 rounded-control text-sm font-medium hover:opacity-90 transition disabled:opacity-40 whitespace-nowrap"
                   type="button"
                 >
                   {promoLoading ? '...' : 'Apply'}
@@ -272,32 +329,32 @@ export default function CheckoutPage() {
 
               {availableCodes.length > 0 && (
                 <div className="mt-4">
-                  <p className="text-xs uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mb-2">
+                  <p className="text-xs uppercase tracking-widest text-ink-muted mb-2">
                     Available codes
                   </p>
                   <ul className="space-y-2">
                     {availableCodes.map((code) => {
                       const selected = promoCode.toUpperCase() === code.code.toUpperCase();
                       const muted = !code.eligible;
-                      const rowClass = `flex items-center justify-between gap-3 rounded-md border px-3 py-2 text-sm ${
+                      const rowClass = `flex items-center justify-between gap-3 rounded-control border px-3 py-2 text-sm ${
                         muted
-                          ? 'opacity-60 cursor-not-allowed border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/40'
-                          : 'border-neutral-200 dark:border-neutral-800 hover:border-[#D4A017] cursor-pointer'
-                      } ${selected ? 'ring-1 ring-[#D4A017]' : ''}`;
+                          ? 'opacity-60 cursor-not-allowed border-line bg-surface-sunken'
+                          : 'border-line hover:border-gold cursor-pointer'
+                      } ${selected ? 'ring-1 ring-gold' : ''}`;
 
                       const inner = (
                         <>
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
-                              <span className="font-mono font-semibold text-[#D4A017]">
+                              <span className="font-mono font-semibold text-gold-deep">
                                 {code.code}
                               </span>
-                              <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                              <span className="text-xs text-ink-muted">
                                 {formatDiscountBadge(code)}
                               </span>
                             </div>
                             {code.description && (
-                              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 truncate">
+                              <p className="text-xs text-ink-muted mt-0.5 truncate">
                                 {code.description}
                               </p>
                             )}
@@ -307,7 +364,7 @@ export default function CheckoutPage() {
                               className={`text-xs whitespace-nowrap ${
                                 code.eligible
                                   ? 'text-amber-600 dark:text-amber-400'
-                                  : 'text-neutral-500 dark:text-neutral-400'
+                                  : 'text-ink-muted'
                               }`}
                             >
                               {code.ineligibility_reason}
@@ -339,9 +396,9 @@ export default function CheckoutPage() {
                 </div>
               )}
             </div>
-            
-            <div className="mt-6 pt-4 border-t border-neutral-200 dark:border-neutral-800">
-              <div className="flex justify-between text-neutral-600 dark:text-neutral-400 mb-2 text-sm">
+
+            <div className="mt-6 pt-4 border-t border-line">
+              <div className="flex justify-between text-ink-muted mb-2 text-sm">
                 <span>Subtotal</span>
                 <span>{formatPrice(cartTotal)}</span>
               </div>
@@ -351,57 +408,112 @@ export default function CheckoutPage() {
                   <span>-{formatPrice(appliedPromo.discount_amount)}</span>
                 </div>
               )}
-              <div className="flex justify-between font-bold text-lg text-neutral-900 dark:text-white pt-2 border-t border-neutral-100 dark:border-neutral-800">
-                <span>Total</span>
-                <span>{formatPrice(cartTotal - (appliedPromo?.discount_amount || 0))}</span>
+              <div className="flex justify-between text-ink-muted mb-2 text-sm">
+                <span>Shipping</span>
+                <span className="text-green-600 dark:text-green-500 font-medium">Free</span>
               </div>
+              <div className="flex justify-between font-bold text-lg text-ink pt-2 border-t border-line">
+                <span>Total</span>
+                <span>{formatPrice(total)}</span>
+              </div>
+              <p className="text-xs text-ink-faint mt-2">
+                Taxes included where applicable.
+              </p>
             </div>
           </div>
 
-          {/* Checkout Form */}
+          {/* Shipping + Payment */}
           <div>
-            <h2 className="text-xl font-semibold mb-4 text-neutral-800 dark:text-neutral-200 border-b border-neutral-200 dark:border-neutral-800 pb-2">Shipping Details</h2>
+            <h2 className="text-xl font-semibold mb-4 text-ink border-b border-line pb-2">Shipping Details</h2>
             <form onSubmit={handlePayment} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Full Name</label>
-                <input required type="text" name="name" value={formData.name} onChange={handleInputChange} className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-md bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#D4A017] focus:outline-none" />
+                <label htmlFor="co-name" className={labelClass}>
+                  Full Name <span className="text-gold-deep">*</span>
+                </label>
+                <input id="co-name" required type="text" name="name" value={formData.name} onChange={handleInputChange} className={inputClass} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Email</label>
-                  <input required type="email" name="email" value={formData.email} readOnly={!!user} onChange={handleInputChange} className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-md bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white cursor-not-allowed focus:outline-none" />
+                  <label htmlFor="co-email" className={labelClass}>Email</label>
+                  <input id="co-email" required type="email" name="email" value={formData.email} readOnly={!!user} onChange={handleInputChange} className={`${inputClass} ${user ? 'bg-surface-sunken cursor-not-allowed' : ''}`} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Phone</label>
-                  <input required type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-md bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#D4A017] focus:outline-none" />
+                  <label htmlFor="co-phone" className={labelClass}>
+                    Phone <span className="text-gold-deep">*</span>
+                  </label>
+                  <input id="co-phone" required type="tel" name="phone" pattern="^[0-9+\-\s()]{8,20}$" value={formData.phone} onChange={handleInputChange} className={inputClass} />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Address</label>
-                <textarea required name="address" rows={2} value={formData.address} onChange={handleInputChange} className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-md bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#D4A017] focus:outline-none"></textarea>
+                <label htmlFor="co-addr1" className={labelClass}>
+                  Address line 1 <span className="text-gold-deep">*</span>
+                </label>
+                <input id="co-addr1" required type="text" name="addressLine1" value={formData.addressLine1} onChange={handleInputChange} placeholder="House / flat no., building, street" className={inputClass} />
+              </div>
+              <div>
+                <label htmlFor="co-addr2" className={labelClass}>
+                  Address line 2 <span className="text-ink-faint font-normal">(optional)</span>
+                </label>
+                <input id="co-addr2" type="text" name="addressLine2" value={formData.addressLine2} onChange={handleInputChange} placeholder="Area, landmark" className={inputClass} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">City</label>
-                  <input required type="text" name="city" value={formData.city} onChange={handleInputChange} className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-md bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#D4A017] focus:outline-none" />
+                  <label htmlFor="co-city" className={labelClass}>
+                    City <span className="text-gold-deep">*</span>
+                  </label>
+                  <input id="co-city" required type="text" name="city" value={formData.city} onChange={handleInputChange} className={inputClass} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Pincode</label>
-                  <input required type="text" name="pincode" value={formData.pincode} onChange={handleInputChange} className="w-full px-4 py-2 border border-neutral-300 dark:border-neutral-700 rounded-md bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:ring-[#D4A017] focus:outline-none" />
+                  <label htmlFor="co-state" className={labelClass}>
+                    State <span className="text-gold-deep">*</span>
+                  </label>
+                  <input id="co-state" required type="text" name="state" value={formData.state} onChange={handleInputChange} className={inputClass} />
                 </div>
               </div>
-              
+              <div>
+                <label htmlFor="co-pincode" className={labelClass}>
+                  Pincode <span className="text-gold-deep">*</span>
+                </label>
+                <input
+                  id="co-pincode"
+                  required
+                  type="text"
+                  inputMode="numeric"
+                  name="pincode"
+                  value={formData.pincode}
+                  onChange={handlePincodeChange}
+                  onBlur={handlePincodeBlur}
+                  placeholder="6-digit pincode"
+                  className={inputClass}
+                />
+                {pincodeServiceable === true && (
+                  <p className="flex items-center gap-1.5 text-xs text-green-600 dark:text-green-500 mt-1.5">
+                    <CheckCircle2 size={13} /> We deliver here — estimated 5–7 business days.
+                  </p>
+                )}
+                {pincodeServiceable === false && (
+                  <p className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 mt-1.5">
+                    <XCircle size={13} /> We don&apos;t deliver to this pincode yet — our team will reach out to arrange it.
+                  </p>
+                )}
+              </div>
+
               <button
                 type="submit"
                 disabled={isLoading || outOfStock.length > 0}
-                className="w-full mt-6 bg-[#D4A017] hover:bg-[#B8860B] text-white font-bold py-3 px-4 rounded-md transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex justify-center"
+                className="w-full mt-2 bg-gold hover:bg-gold-bright text-on-gold font-bold py-3.5 px-4 rounded-control transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex justify-center"
               >
                 {isLoading
                   ? 'Processing...'
                   : outOfStock.length > 0
                     ? 'Resolve stock issues to continue'
-                    : `Pay ${formatPrice(cartTotal - (appliedPromo?.discount_amount || 0))}`}
+                    : `Pay ${formatPrice(total)}`}
               </button>
+
+              <div className="flex items-center justify-center gap-1.5 text-xs text-ink-muted">
+                <Lock size={12} />
+                <span>Secured by Razorpay · UPI, Cards &amp; Netbanking</span>
+              </div>
             </form>
           </div>
         </div>
