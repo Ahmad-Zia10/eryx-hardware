@@ -104,7 +104,11 @@ Recorded from the earlier production-readiness audit; safe to defer, none active
 
 ## UI overhaul — remaining follow-ups (July 2026)
 
-- **Account pages (`AccountTabs`, avatar, Expired badge tone, return-request form) still unstyled** — deliberately skipped because uncommitted reviews-lifecycle work sits in those files. Restyle after that work lands.
+- **Account pages restyled** (done — AccountTabs, account page, return page migrated to tokens; StatusBadge inactive states now render as a quiet neutral chip instead of near-black). ✅
+- **Checkout + cart drawer restyled** (done). Cart drawer: pluralization, PDP links, Escape-close, tokens. Checkout: structured address form, pincode serviceability check, Razorpay trust line, shipping row, tokens.
+- **⚠️ DEFERRED SCHEMA WORK — structured shipping address.** The checkout form now collects Address line 1 / line 2 / City / **State** / Pincode, but the `orders` table still only has `shipping_address` (text), `shipping_city`, `shipping_pincode` — the form **composes line1+line2+state into `shipping_address`**. When Shiprocket/GST work starts, add real columns (`shipping_address_line2`, `shipping_state`) via migration AND update `create_order_with_items` (p_ params) AND the create-order API route AND checkout page to stop composing. All three are coupled (see orders-and-payments.md). Until then, State is captured but only inside the address text blob.
+- **`isServiceablePincode(pincode)` lives in `src/constants/index.ts`** — shared by PincodeChecker (PDP) and checkout. Prefix-match against `SERVICEABLE_PINCODES`; client-side convenience gate only, not enforced server-side. Checkout shows a soft warning for unserviceable pincodes but does NOT block the order.
 - **Admin panel untouched by the token migration** (out of scope per the overhaul brief); many marketing files still carry old hardcoded hexes with matching values — migrate opportunistically when touching them.
 - **Contact page head-office address is still missing** — placeholder block removed (it leaked `[Street address line 1]` to production); TODO(contact-info) in `contact/page.tsx` awaits the real address from the team.
 - **PDP (`kitchen/[slug]/ProductDetail.tsx`) not yet restyled** — has ~26 old-gold hex references; next candidate for the card/token treatment.
+- **Raw OAuth display name shows unfiltered** (e.g. `21BEC036 Ahmad zia`) on the account header AND prefilled into checkout Full Name. One fix at the profile-save source would clean up both surfaces.
