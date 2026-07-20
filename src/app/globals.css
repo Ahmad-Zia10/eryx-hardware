@@ -7,21 +7,86 @@
 
 @theme {
   /* Fonts loaded via next/font in layout.tsx expose these CSS vars.
-     Fallback values kick in when JS is disabled or before font-swap
-     completes. Kept in sync with the brand kit mapping. */
-  --font-sans: var(--font-sans, "Inter", sans-serif);
-  --font-serif: var(--font-serif, "Libre Baskerville", "Georgia", serif);
-  --font-display: var(--font-display, "Prata", serif);
-  --font-heading: var(--font-heading, "Marcellus", "Prata", serif);
-  --font-accent: var(--font-accent, "Fraunces", "Georgia", serif);
+     Two families only (performance budget): Inter for body/UI,
+     Fraunces for every serif role. The four serif tokens are kept as
+     distinct names because ~50 files use the utilities, but they all
+     resolve to Fraunces — consolidation happened here, not in the
+     components. */
+  --font-sans: var(--font-inter, Inter), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-fraunces, Fraunces), Georgia, serif;
+  --font-display: var(--font-fraunces, Fraunces), Georgia, serif;
+  --font-heading: var(--font-fraunces, Fraunces), Georgia, serif;
+  --font-accent: var(--font-fraunces, Fraunces), Georgia, serif;
 
-  /* Brand Kit Colors */
+  /* Brand Kit Colors.
+     brand-gold is intentionally the muted #D4A017 rather than the
+     brand kit's raw #fec201 — the bright yellow is reserved for the
+     logo artwork; UI surfaces and CTAs use the calmer gold so the
+     accent reads premium instead of neon. */
   --color-brand-navy: #012761;
-  --color-brand-gold: #fec201;
+  --color-brand-gold: #d4a017;
   --color-brand-muted: #9ea4b5;
-  --color-brand-dark: #1B1611;
+  --color-brand-dark: #1b1611;
   --color-brand-bronze: #b48214;
   --color-brand-cream: #fff3c2;
+
+  /* Gold ramp — the ONLY accent family. Use `gold` for fills and
+     interactive accents, `gold-bright` for hover, `gold-deep` for
+     pressed/borders on gold, `on-gold` for text sitting on gold. */
+  --color-gold: #d4a017;
+  --color-gold-bright: #e8b820;
+  --color-gold-deep: #b48214;
+  --color-on-gold: #1b1611;
+
+  /* Radius system: controls (buttons, inputs, badges) stay crisp,
+     cards are softly rounded, chips/tags are pills. Use these three
+     — avoid ad-hoc rounded-sm/md/lg per component. */
+  --radius-control: 0.125rem;
+  --radius-card: 0.375rem;
+  --radius-pill: 9999px;
+}
+
+/* ─── Semantic, theme-adaptive tokens ──────────────────────────────
+   These flip automatically with the `.dark` class, so components use
+   `bg-surface text-ink border-line` with NO dark: prefix needed.
+   Migrate components to these as they're touched; new code must not
+   hardcode hex neutrals. */
+:root {
+  --surface: #ffffff; /* page background */
+  --surface-raised: #ffffff; /* cards, drawers, modals */
+  --surface-sunken: #f5f4f0; /* image wells, alt section bands */
+  --ink: #0a0a0a; /* primary text */
+  --ink-muted: #555555; /* secondary text */
+  --ink-faint: #9a9a9a; /* tertiary text, placeholders */
+  --line: #e2e2e2; /* hairline borders */
+  --line-strong: #d4d4d4; /* input borders, emphasized rules */
+  --gold-tint: #faf6ea; /* soft gold wash backgrounds */
+}
+
+.dark {
+  --surface: #0a0a0a;
+  --surface-raised: #141414;
+  --surface-sunken: #1a1a1a;
+  --ink: #f5f5f5;
+  --ink-muted: #9a9a9a;
+  --ink-faint: #6e6e6e;
+  --line: #262626;
+  --line-strong: #2a2a2a;
+  --gold-tint: rgba(212, 160, 23, 0.08);
+}
+
+/* `inline` makes utilities emit var(--surface) directly, so the
+   values above cascade through the .dark flip at runtime. */
+@theme inline {
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-gold-tint: var(--gold-tint);
 }
 
 /* Tailwind v4 needs an explicit custom variant for class-based dark
@@ -48,6 +113,34 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Keyboard focus: one consistent gold ring everywhere. Mouse clicks
+   don't trigger it (focus-visible), so this is zero visual cost for
+   pointer users and a big win for keyboard users. */
+:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--color-gold);
+  color: var(--color-on-gold);
+}
+
+/* Respect reduced-motion: collapse transitions/animations to
+   near-zero instead of `none` so JS transitionend handlers still fire. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}
+
 /* hide scrollbar for horizontal scroll strips */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
@@ -57,11 +150,11 @@ body {
   scrollbar-width: none;
 }
 
-/* range slider thumb color */
+/* range slider + checkbox accent follows the gold token */
 input[type="range"] {
-  accent-color: #d4a017;
+  accent-color: var(--color-gold);
 }
 
 input[type="checkbox"] {
-  accent-color: #d4a017;
+  accent-color: var(--color-gold);
 }
