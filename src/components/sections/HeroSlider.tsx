@@ -3,8 +3,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import HeroActions from "./HeroActions";
-import { useRouter } from "next/navigation";
+
+const slideCta =
+  "bg-gold hover:bg-gold-bright text-on-gold font-semibold px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base rounded-control transition duration-200 ease-in-out inline-block";
 
 const SLIDES = [
   {
@@ -13,7 +16,7 @@ const SLIDES = [
     image: "/products/hero/slide-1-modular-kitchen.jpg",
     content: (
       <div className="flex flex-col gap-4 sm:gap-6 w-full max-w-2xl">
-        <span className="text-[10px] sm:text-xs tracking-[0.3em] uppercase text-brand-gold">
+        <span className="text-[10px] sm:text-xs tracking-[0.3em] uppercase text-gold">
           A Division of Modular India
         </span>
         <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold leading-[1.05] text-white font-display">
@@ -21,7 +24,7 @@ const SLIDES = [
           <br />
           Hardware for
           <br />
-          <span className="text-brand-gold">Modular Spaces</span>
+          <span className="text-gold">Modular Spaces</span>
         </h1>
         <p className="text-sm sm:text-lg text-brand-cream/80 max-w-lg">
           Hinges, fittings, sliding systems, baskets, pull-downs, shutters, and
@@ -38,25 +41,22 @@ const SLIDES = [
     image: "/products/hero/slide-2-light-kitchen.jpg",
     content: (
       <div className="flex flex-col gap-4 sm:gap-6 w-full max-w-2xl">
-        <span className="text-[10px] sm:text-xs tracking-[0.3em] uppercase text-brand-gold">
+        <span className="text-[10px] sm:text-xs tracking-[0.3em] uppercase text-gold">
           Premium Kitchen Solutions
         </span>
         <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold leading-[1.05] text-white font-display">
           Kitchen Hardware,
           <br />
-          Engineered <span className="text-brand-gold">Right</span>
+          Engineered <span className="text-gold">Right</span>
         </h1>
         <p className="text-sm sm:text-lg text-brand-cream/80 max-w-lg">
           Discover a complete range of intelligent kitchen storage systems designed
           to maximize space and ease of use.
         </p>
         <div className="flex flex-wrap gap-4 mt-1 sm:mt-2">
-          <button
-            onClick={() => window.location.href = "/kitchen"}
-            className="bg-brand-gold hover:bg-brand-bronze text-brand-dark font-semibold px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base transition duration-200 ease-in-out"
-          >
+          <Link href="/kitchen" className={slideCta}>
             Shop Kitchen Accessories
-          </button>
+          </Link>
         </div>
       </div>
     ),
@@ -70,25 +70,22 @@ const SLIDES = [
     fit: "contain" as const,
     content: (
       <div className="flex flex-col gap-4 sm:gap-6 w-full max-w-2xl">
-        <span className="text-[10px] sm:text-xs tracking-[0.3em] uppercase text-brand-gold">
+        <span className="text-[10px] sm:text-xs tracking-[0.3em] uppercase text-gold">
           Basket Systems
         </span>
         <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold leading-[1.05] text-white font-display">
           Every Item,
           <br />
-          <span className="text-brand-gold">In Its Place</span>
+          <span className="text-gold">In Its Place</span>
         </h1>
         <p className="text-sm sm:text-lg text-brand-cream/80 max-w-lg">
           Pull-out baskets and drawer systems built for the way modern
           kitchens actually work.
         </p>
         <div className="flex flex-wrap gap-4 mt-1 sm:mt-2">
-          <button
-            onClick={() => window.location.href = "/kitchen?category=Basket"}
-            className="bg-brand-gold hover:bg-brand-bronze text-brand-dark font-semibold px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base transition duration-200 ease-in-out"
-          >
+          <Link href="/kitchen?category=Basket" className={slideCta}>
             Explore Basket Systems
-          </button>
+          </Link>
         </div>
       </div>
     ),
@@ -100,25 +97,22 @@ const SLIDES = [
     fit: "contain" as const,
     content: (
       <div className="flex flex-col gap-4 sm:gap-6 w-full max-w-2xl">
-        <span className="text-[10px] sm:text-xs tracking-[0.3em] uppercase text-brand-gold">
+        <span className="text-[10px] sm:text-xs tracking-[0.3em] uppercase text-gold">
           Rolling Shutter Systems
         </span>
         <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold leading-[1.05] text-white font-display">
           Countertop
           <br />
-          <span className="text-brand-gold">Clarity</span>
+          <span className="text-gold">Clarity</span>
         </h1>
         <p className="text-sm sm:text-lg text-brand-cream/80 max-w-lg">
           Appliance garages and rolling shutters that hide the mess and
           keep the counter open.
         </p>
         <div className="flex flex-wrap gap-4 mt-1 sm:mt-2">
-          <button
-            onClick={() => window.location.href = "/kitchen?category=Rolling Shutter"}
-            className="bg-brand-gold hover:bg-brand-bronze text-brand-dark font-semibold px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base transition duration-200 ease-in-out"
-          >
+          <Link href="/kitchen?category=Rolling Shutter" className={slideCta}>
             Explore Rolling Shutters
-          </button>
+          </Link>
         </div>
       </div>
     ),
@@ -132,24 +126,21 @@ const SLIDES = [
     fit: "contain" as const,
     content: (
       <div className="flex flex-col gap-4 sm:gap-6 w-full max-w-2xl">
-        <span className="text-[10px] sm:text-xs tracking-[0.3em] uppercase text-brand-gold">
-          Hinges & Fittings
+        <span className="text-[10px] sm:text-xs tracking-[0.3em] uppercase text-gold">
+          Hinges &amp; Fittings
         </span>
         <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold leading-[1.05] text-white font-display">
           Soft-Close,
           <br />
-          <span className="text-brand-gold">Every Time</span>
+          <span className="text-gold">Every Time</span>
         </h1>
         <p className="text-sm sm:text-lg text-brand-cream/80 max-w-lg">
           German-engineered hinges rated for a lifetime of daily use.
         </p>
         <div className="flex flex-wrap gap-4 mt-1 sm:mt-2">
-          <button
-            onClick={() => window.location.href = "/kitchen?category=Hinges"}
-            className="bg-brand-gold hover:bg-brand-bronze text-brand-dark font-semibold px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base transition duration-200 ease-in-out"
-          >
+          <Link href="/kitchen?category=Hinges" className={slideCta}>
             Explore Hinges
-          </button>
+          </Link>
         </div>
       </div>
     ),
@@ -159,7 +150,6 @@ const SLIDES = [
 export default function HeroSlider() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const router = useRouter();
 
   const nextSlide = useCallback(() => {
     setCurrentSlide((prev) => (prev === SLIDES.length - 1 ? 0 : prev + 1));
@@ -175,9 +165,20 @@ export default function HeroSlider() {
     return () => clearInterval(timer);
   }, [isPaused, nextSlide]);
 
+  // Only the active slide and its two neighbours mount their images
+  // and content. Previously all five slides (plus the blurred backdrop
+  // copies) rendered on first paint, so every hero image downloaded
+  // immediately. Neighbours stay mounted so the crossfade in either
+  // direction has a fully-loaded frame to fade to.
+  const len = SLIDES.length;
+  const isNear = (index: number) =>
+    index === currentSlide ||
+    index === (currentSlide + 1) % len ||
+    index === (currentSlide - 1 + len) % len;
+
   return (
     <section
-      className="relative w-full h-[calc(100vh-104px)] min-h-[520px] sm:min-h-[600px] overflow-hidden bg-brand-dark group"
+      className="relative w-full h-[calc(88vh-104px)] min-h-[520px] sm:min-h-[600px] overflow-hidden bg-brand-dark group"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
@@ -189,50 +190,71 @@ export default function HeroSlider() {
             index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
           }`}
         >
-          {/* Product shots (slides marked fit: 'contain') fill the
-              letterbox gap with a blurred + scaled copy of the same
-              image, so the extended backdrop naturally matches the
-              product's own color/lighting instead of a hardcoded
-              gradient that seams against the shot. Lifestyle slides
-              use object-cover to fill the frame directly. */}
-          {slide.fit === "contain" && (
-            <Image
-              src={slide.image}
-              alt=""
-              fill
-              aria-hidden="true"
-              sizes="100vw"
-              quality={40}
-              className="object-cover object-center scale-110 blur-2xl opacity-70"
-            />
+          {isNear(index) && (
+            <>
+              {/* Product shots (slides marked fit: 'contain') fill the
+                  letterbox gap with a blurred + scaled copy of the same
+                  image, so the extended backdrop naturally matches the
+                  product's own color/lighting instead of a hardcoded
+                  gradient that seams against the shot. Lifestyle slides
+                  use object-cover to fill the frame directly. */}
+              {slide.fit === "contain" && (
+                <Image
+                  src={slide.image}
+                  alt=""
+                  fill
+                  aria-hidden="true"
+                  sizes="100vw"
+                  quality={40}
+                  className="object-cover object-center scale-110 blur-2xl opacity-70"
+                />
+              )}
+              <Image
+                src={slide.image}
+                alt=""
+                fill
+                priority={index === 0}
+                sizes="100vw"
+                quality={80}
+                className={
+                  slide.fit === "contain"
+                    ? "object-contain object-center"
+                    : "object-cover object-center"
+                }
+              />
+
+              {/* Bottom-left legibility scrim (Ozone-style): dark at the
+                  bottom, transparent at the top so the image dominates.
+                  Second wash on the left gives horizontal contrast for the
+                  text stack without washing out the right side. */}
+              <div className="absolute inset-0 bg-gradient-to-t from-brand-dark/85 via-brand-dark/30 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-r from-brand-dark/60 via-transparent to-transparent" />
+
+              {/* Content — bottom-left stack */}
+              <div className="relative z-20 h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-end pb-14 sm:pb-16 lg:pb-20">
+                {slide.content}
+              </div>
+            </>
           )}
-          <Image
-            src={slide.image}
-            alt=""
-            fill
-            priority={index === 0}
-            sizes="100vw"
-            quality={80}
-            className={
-              slide.fit === "contain"
-                ? "object-contain object-center"
-                : "object-cover object-center"
-            }
-          />
-
-          {/* Bottom-left legibility scrim (Ozone-style): dark at the
-              bottom, transparent at the top so the image dominates.
-              Second wash on the left gives horizontal contrast for the
-              text stack without washing out the right side. */}
-          <div className="absolute inset-0 bg-gradient-to-t from-brand-dark/85 via-brand-dark/30 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-brand-dark/60 via-transparent to-transparent" />
-
-          {/* Content — bottom-left stack */}
-          <div className="relative z-20 h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-end pb-12 sm:pb-16 lg:pb-20">
-            {slide.content}
-          </div>
         </div>
       ))}
+
+      {/* Slide indicators */}
+      <div className="absolute bottom-5 sm:bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2">
+        {SLIDES.map((slide, index) => (
+          <button
+            key={slide.id}
+            onClick={() => setCurrentSlide(index)}
+            aria-label={`Go to slide ${index + 1}`}
+            aria-current={index === currentSlide}
+            className={`h-1.5 rounded-pill transition-all duration-300 ${
+              index === currentSlide
+                ? "w-6 bg-gold"
+                : "w-1.5 bg-white/40 hover:bg-white/70"
+            }`}
+          />
+        ))}
+      </div>
 
       {/* Navigation Arrows — minimal, edge-hugging, hover-reveal */}
       <button

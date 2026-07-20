@@ -7,6 +7,9 @@ interface ProductImageProps {
   alt: string;
   className?: string;
   loading?: "lazy" | "eager";
+  // "contain" shows the full product (mixed-crop source shots render
+  // uniformly); default "cover" fills the frame.
+  fit?: "cover" | "contain";
 }
 
 export default function ProductImage({
@@ -14,6 +17,7 @@ export default function ProductImage({
   alt,
   className = "",
   loading = "lazy",
+  fit = "cover",
 }: ProductImageProps) {
   const [errored, setErrored] = useState(false);
 
@@ -34,7 +38,7 @@ export default function ProductImage({
       alt={alt}
       loading={loading}
       onError={() => setErrored(true)}
-      className={`object-cover ${className}`}
+      className={`${fit === "contain" ? "object-contain" : "object-cover"} ${className}`}
     />
   );
 }

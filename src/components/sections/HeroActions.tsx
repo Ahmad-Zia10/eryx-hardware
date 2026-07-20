@@ -33,7 +33,7 @@ export default function HeroActions() {
     <div className="flex flex-wrap gap-4 mt-2">
       <button
         onClick={() => router.push("/kitchen")}
-        className="bg-brand-gold hover:bg-brand-bronze text-brand-dark font-semibold px-8 py-4 transition duration-200 ease-in-out"
+        className="bg-gold hover:bg-gold-bright text-on-gold font-semibold px-8 py-4 rounded-control transition duration-200 ease-in-out"
       >
         Explore Products
       </button>
@@ -42,7 +42,7 @@ export default function HeroActions() {
         target="_blank"
         rel="noopener noreferrer"
         aria-label={`${ROTATING_LABELS[labelIndex]} — visit Modular India`}
-        className="relative border border-white/50 text-white hover:border-brand-gold hover:text-brand-gold font-semibold px-8 py-4 transition duration-200 ease-in-out inline-flex items-center justify-center min-w-[220px]"
+        className="relative border border-white/50 text-white hover:border-gold hover:text-gold font-semibold px-8 py-4 rounded-control transition duration-200 ease-in-out inline-flex items-center justify-center min-w-[220px]"
       >
         <span
           className={`transition-opacity duration-200 ease-in-out ${
