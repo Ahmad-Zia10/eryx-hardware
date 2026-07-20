@@ -16,6 +16,13 @@ type Line = {
   note: string;
 };
 
+// Shared control styling — visible labels + these classes are the
+// standard for public forms (placeholder-only inputs fail a11y: the
+// "label" disappears the moment the user types).
+const inputClass =
+  "w-full bg-surface border border-line-strong px-3.5 py-2.5 rounded-control text-sm text-ink placeholder:text-ink-faint focus:border-gold outline-none transition-colors duration-200";
+const labelClass = "block text-sm font-medium text-ink mb-1.5";
+
 export default function BulkEnquiryForm({ products }: { products: ProductOption[] }) {
   const searchParams = useSearchParams();
 
@@ -92,9 +99,9 @@ export default function BulkEnquiryForm({ products }: { products: ProductOption[
 
   if (success) {
     return (
-      <div className="border border-[#D4D4D4] dark:border-[#2A2A2A] rounded-sm p-8 bg-white dark:bg-[#141414]">
+      <div className="border border-line rounded-card p-8 bg-surface-raised">
         <h2 className="font-serif text-2xl mb-3">Bulk enquiry received</h2>
-        <p className="text-sm text-[#555555] dark:text-[#9A9A9A]">Our sales team will review your requirement and contact you soon.</p>
+        <p className="text-sm text-ink-muted">Our sales team will review your requirement and contact you soon.</p>
       </div>
     );
   }
@@ -104,10 +111,10 @@ export default function BulkEnquiryForm({ products }: { products: ProductOption[
       {error && <div className="bg-red-500/10 border border-red-500/30 text-red-500 p-3 rounded-sm text-sm">{error}</div>}
       <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
 
-      <section className="border border-[#D4D4D4] dark:border-[#2A2A2A] rounded-sm p-5 space-y-4">
+      <section className="border border-line rounded-card p-5 space-y-4">
         <h2 className="font-semibold">Products</h2>
         {preselectedVariantId && (
-          <p className="text-xs text-[#D4A017]">
+          <p className="text-xs text-gold-deep">
             Pre-selected from product page. Add more products or update the line below.
           </p>
         )}
@@ -117,7 +124,8 @@ export default function BulkEnquiryForm({ products }: { products: ProductOption[
               value={line.product_id}
               onChange={(event) => updateLine(index, { product_id: event.target.value })}
               required
-              className="bg-white dark:bg-[#141414] border border-[#D4D4D4] dark:border-[#2A2A2A] px-3 py-2 rounded-sm"
+              aria-label="Product"
+              className={inputClass}
             >
               <option value="">Select product</option>
               {products.map((product) => (
@@ -129,19 +137,21 @@ export default function BulkEnquiryForm({ products }: { products: ProductOption[
               min={1}
               value={line.quantity}
               onChange={(event) => updateLine(index, { quantity: Number(event.target.value) })}
-              className="bg-transparent border border-[#D4D4D4] dark:border-[#2A2A2A] px-3 py-2 rounded-sm"
+              aria-label="Quantity"
+              className={inputClass}
             />
             <input
               value={line.note}
               onChange={(event) => updateLine(index, { note: event.target.value })}
               placeholder="Line note (optional)"
-              className="bg-transparent border border-[#D4D4D4] dark:border-[#2A2A2A] px-3 py-2 rounded-sm"
+              aria-label="Line note"
+              className={inputClass}
             />
             <button
               type="button"
               onClick={() => setLines((current) => current.filter((_, lineIndex) => lineIndex !== index))}
               disabled={lines.length === 1}
-              className="border border-[#D4D4D4] dark:border-[#2A2A2A] px-3 py-2 rounded-sm disabled:opacity-50"
+              className="border border-line-strong text-ink-muted hover:border-gold hover:text-gold-deep px-3 py-2 rounded-control disabled:opacity-50 transition-colors duration-200"
             >
               Remove
             </button>
@@ -150,22 +160,47 @@ export default function BulkEnquiryForm({ products }: { products: ProductOption[
         <button
           type="button"
           onClick={() => setLines((current) => [...current, { product_id: "", quantity: 1, note: "" }])}
-          className="text-sm text-[#D4A017] hover:text-[#E8B820]"
+          className="text-sm text-gold-deep hover:text-gold transition-colors duration-200"
         >
           Add another product
         </button>
       </section>
 
       <section className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <input name="customer_name" required placeholder="Full name *" className="bg-transparent border border-[#D4D4D4] dark:border-[#2A2A2A] px-4 py-2.5 rounded-sm" />
-        <input name="company_name" placeholder="Company name" className="bg-transparent border border-[#D4D4D4] dark:border-[#2A2A2A] px-4 py-2.5 rounded-sm" />
-        <input name="email" type="email" required placeholder="Email *" className="bg-transparent border border-[#D4D4D4] dark:border-[#2A2A2A] px-4 py-2.5 rounded-sm" />
-        <input name="phone" required pattern="^[0-9+\-\s()]{8,20}$" placeholder="Phone *" className="bg-transparent border border-[#D4D4D4] dark:border-[#2A2A2A] px-4 py-2.5 rounded-sm" />
+        <div>
+          <label htmlFor="be-name" className={labelClass}>
+            Full name <span className="text-gold-deep">*</span>
+          </label>
+          <input id="be-name" name="customer_name" required className={inputClass} />
+        </div>
+        <div>
+          <label htmlFor="be-company" className={labelClass}>
+            Company name
+          </label>
+          <input id="be-company" name="company_name" className={inputClass} />
+        </div>
+        <div>
+          <label htmlFor="be-email" className={labelClass}>
+            Email <span className="text-gold-deep">*</span>
+          </label>
+          <input id="be-email" name="email" type="email" required className={inputClass} />
+        </div>
+        <div>
+          <label htmlFor="be-phone" className={labelClass}>
+            Phone <span className="text-gold-deep">*</span>
+          </label>
+          <input id="be-phone" name="phone" required pattern="^[0-9+\-\s()]{8,20}$" className={inputClass} />
+        </div>
       </section>
 
-      <textarea name="message" rows={5} maxLength={2000} placeholder="Message (optional)" className="w-full bg-transparent border border-[#D4D4D4] dark:border-[#2A2A2A] px-4 py-2.5 rounded-sm" />
+      <div>
+        <label htmlFor="be-message" className={labelClass}>
+          Message <span className="text-ink-faint font-normal">(optional)</span>
+        </label>
+        <textarea id="be-message" name="message" rows={5} maxLength={2000} className={inputClass} />
+      </div>
 
-      <button disabled={isSubmitting} className="bg-[#D4A017] hover:bg-[#E8B820] text-[#0A0A0A] font-semibold px-6 py-3 rounded-sm disabled:opacity-50">
+      <button disabled={isSubmitting} className="bg-gold hover:bg-gold-bright text-on-gold font-semibold px-6 py-3 rounded-control disabled:opacity-50 transition duration-200 ease-in-out">
         {isSubmitting ? "Submitting..." : "Submit Bulk Enquiry"}
       </button>
     </form>

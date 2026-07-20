@@ -212,13 +212,12 @@ export default function ContactPage() {
             </h2>
             <p className="text-sm text-[#9A9A9A] mt-1">{SITE_CONFIG.division}</p>
 
-            {/* TODO(contact-info): replace with the confirmed head-office address. */}
-            <address className="not-italic text-sm text-[#C4C4C4] mt-6 space-y-1 leading-relaxed">
-              <p>[Street address line 1]</p>
-              <p>[Street address line 2]</p>
-              <p>[City] – [PIN]</p>
-              <p>India</p>
-            </address>
+            {/* TODO(contact-info): add the confirmed head-office address
+                here when the team supplies it. The bracketed placeholder
+                lines that used to render here were visible to customers
+                in production, so the block is omitted until the real
+                address exists — phone, email, and the map pin below
+                already locate the office. */}
 
             <div className="mt-6 space-y-2 text-sm">
               <a
