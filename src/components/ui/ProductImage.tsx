@@ -20,7 +20,7 @@ export default function ProductImage({
   if (!src || errored) {
     return (
       <div
-        className={`flex items-center justify-center bg-[#EBEBEB] dark:bg-[#1A1A1A] text-[#555555] dark:text-[#9A9A9A] text-sm ${className}`}
+        className={`flex items-center justify-center bg-surface-sunken text-ink-muted text-sm ${className}`}
       >
         Image unavailable
       </div>
