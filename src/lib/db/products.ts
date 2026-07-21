@@ -42,6 +42,7 @@ export interface DbProduct extends CatalogueProduct {
   id: string;             // variant UUID — kept for backward-compat
   parentId: string;       // parent products.id
   variantId: string;      // explicit alias for id
+  product_line?: string;  // 'kitchen' | 'wardrobe' | 'hardware' (denormalised on variant)
   variants?: ProductVariant[];
   variantCount?: number;
   external_price_url?: string | null;
@@ -98,6 +99,7 @@ function mapVariantRow(pv: any): DbProduct {
     id: pv.id,                // variant UUID (backward-compat)
     variantId: pv.id,
     parentId: pv.product_id,
+    product_line: pv.product_line,
   };
 }
 

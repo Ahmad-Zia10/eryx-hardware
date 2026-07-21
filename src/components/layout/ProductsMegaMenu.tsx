@@ -42,7 +42,7 @@ type ExploreLink = {
 };
 
 const EXPLORE_LINKS: ExploreLink[] = [
-  { label: "All products", description: "Browse the full catalogue", href: "/kitchen", Icon: ShoppingBag },
+  { label: "All products", description: "Browse the full catalogue", href: "/products", Icon: ShoppingBag },
   { label: "Deals & Offers", description: "Discounts on select SKUs", href: "/deals", Icon: Tag },
   { label: "Bulk enquiry", description: "Trade & project pricing", href: "/bulk-enquiry", Icon: Sparkles },
   { label: "Contact us", description: "Talk to our team", href: "/contact", Icon: PhoneCall },
@@ -93,7 +93,7 @@ export default function ProductsMegaMenu({
               <span className="text-[#D4A017] font-semibold">Free shipping</span> on orders over ₹5,000 · Pan-India delivery
             </p>
             <Link
-              href="/kitchen"
+              href="/products"
               onClick={onNavigate}
               className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0A0A0A] dark:text-[#F5F5F5] hover:text-[#D4A017] transition-colors"
             >
