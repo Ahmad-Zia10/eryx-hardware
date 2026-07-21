@@ -6,7 +6,7 @@ import { useCart } from '@/context/CartContext';
 import { createClient } from '@/lib/supabase/client';
 import { formatPrice, getEffectivePrice } from '@/lib/pricing';
 import { isServiceablePincode } from '@/constants';
-import { CheckCircle2, Lock, XCircle } from 'lucide-react';
+import { CheckCircle2, Lock, XCircle, X } from 'lucide-react';
 import Script from 'next/script';
 
 type OutOfStockItem = {
@@ -173,6 +173,13 @@ export default function CheckoutPage() {
     } finally {
       setPromoLoading(false);
     }
+  };
+
+  const handleRemovePromo = () => {
+    setAppliedPromo(null);
+    setPromoCode('');
+    setPromoError('');
+    sessionStorage.removeItem(PROMO_STORAGE_KEY);
   };
 
   const handlePayment = async (e: React.FormEvent) => {
@@ -347,11 +354,33 @@ export default function CheckoutPage() {
             </div>
 
             <div className="mt-8">
+              {appliedPromo ? (
+                <div className="flex items-center justify-between gap-3 rounded-control border border-green-500/40 bg-green-500/10 px-3 py-2">
+                  <div className="min-w-0">
+                    <span className="font-mono font-semibold text-green-600 dark:text-green-500 text-sm">
+                      {appliedPromo.code}
+                    </span>
+                    <p className="text-xs text-ink-muted">
+                      applied · -{formatPrice(appliedPromo.discount_amount)}
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleRemovePromo}
+                    aria-label="Remove promo code"
+                    className="text-ink-muted hover:text-red-500 transition duration-200 shrink-0"
+                    type="button"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ) : (
+              <>
               <div className="flex gap-2">
                 <input
                   type="text"
                   value={promoCode}
                   onChange={(e) => setPromoCode(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleApplyPromo()}
                   placeholder="Enter Promo Code"
                   className={inputClass}
                 />
@@ -433,6 +462,8 @@ export default function CheckoutPage() {
                     })}
                   </ul>
                 </div>
+              )}
+              </>
               )}
             </div>
 
