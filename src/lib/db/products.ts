@@ -188,6 +188,35 @@ export async function getAllProducts(
   return (data || []).map(mapVariantRow);
 }
 
+/**
+ * Fetch specific variants by id, in the order the ids were given. Powers the
+ * wishlist page, which stores saved variant ids and needs to render them
+ * newest-first. Unlike the listing queries this does NOT filter on
+ * is_default — a shopper can save any specific variant. Inactive variants are
+ * dropped (a soft-deleted SKU shouldn't render as a live product card).
+ */
+export async function getProductsByVariantIds(ids: string[]): Promise<DbProduct[]> {
+  if (!ids.length) return [];
+
+  const { data, error } = await supabaseAdmin
+    .from("product_variants")
+    .select("*, product_images(image_url, display_order, is_primary)")
+    .in("id", ids)
+    .eq("is_active", true);
+
+  if (error) {
+    console.error("getProductsByVariantIds failed:", error.message);
+    return [];
+  }
+
+  const mapped = (data || []).map(mapVariantRow);
+  // Preserve caller order (the ids arrive newest-saved first).
+  const order = new Map(ids.map((id, i) => [id, i]));
+  return mapped.sort(
+    (a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0)
+  );
+}
+
 export async function getProductBySlug(slug: string): Promise<DbProduct | null> {
   // Slug is derived from item_code. Fetch the matching default variant.
   const all = await getAllProducts();

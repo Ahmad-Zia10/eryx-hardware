@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Minus, Plus, ShoppingCart, Truck, ShieldCheck, Award, ExternalLink, Star, Layers } from "lucide-react";
 import ProductImage from "@/components/ui/ProductImage";
 import ProductCard from "@/components/sections/ProductCard";
+import WishlistButton from "@/components/ui/WishlistButton";
 import PincodeChecker from "@/components/ui/PincodeChecker";
 import NotifyMeForm from "@/components/sections/NotifyMeForm";
 import { useCart } from "@/context/CartContext";
@@ -465,17 +466,25 @@ export default function ProductDetail({
             </div>
           </div>
 
-          <button
-            onClick={handleAddToCart}
-            disabled={outOfStock}
-            className={`w-full py-3 font-semibold flex items-center justify-center gap-2 transition duration-200 ease-in-out ${
-              outOfStock
-                ? "bg-[#D4D4D4] dark:bg-[#2A2A2A] text-[#9A9A9A] cursor-not-allowed"
-                : "bg-[#0A0A0A] dark:bg-[#1A1A1A] text-white hover:opacity-90"
-            }`}
-          >
-            <ShoppingCart size={18} /> {outOfStock ? "Out of Stock" : "Add to Cart"}
-          </button>
+          <div className="flex items-stretch gap-3">
+            <button
+              onClick={handleAddToCart}
+              disabled={outOfStock}
+              className={`flex-1 py-3 font-semibold flex items-center justify-center gap-2 transition duration-200 ease-in-out ${
+                outOfStock
+                  ? "bg-[#D4D4D4] dark:bg-[#2A2A2A] text-[#9A9A9A] cursor-not-allowed"
+                  : "bg-[#0A0A0A] dark:bg-[#1A1A1A] text-white hover:opacity-90"
+              }`}
+            >
+              <ShoppingCart size={18} /> {outOfStock ? "Out of Stock" : "Add to Cart"}
+            </button>
+            <WishlistButton
+              variant="inline"
+              size={20}
+              variantId={liveProduct.variantId ?? liveProduct.id}
+              className="px-4 shrink-0"
+            />
+          </div>
 
           {outOfStock ? (
             <div

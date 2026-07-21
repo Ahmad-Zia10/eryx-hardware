@@ -1,5 +1,6 @@
 import { CartProvider } from '@/context/CartContext';
 import { UIProvider } from '@/context/UIContext';
+import { WishlistProvider } from '@/context/WishlistContext';
 import AnnouncementBar from '@/components/layout/AnnouncementBar';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -18,13 +19,15 @@ export default async function MarketingLayout({ children } :  {
   return (
     <CartProvider>
       <UIProvider>
-        <AnnouncementBar />
-        <Navbar categoryGroups={categoryGroups} />
-        <main>{children}</main>
-        <Footer />
-        <CartDrawer />
-        <EnquiryModal />
-        <Toast />
+        <WishlistProvider>
+          <AnnouncementBar />
+          <Navbar categoryGroups={categoryGroups} />
+          <main>{children}</main>
+          <Footer />
+          <CartDrawer />
+          <EnquiryModal />
+          <Toast />
+        </WishlistProvider>
       </UIProvider>
     </CartProvider>
   );

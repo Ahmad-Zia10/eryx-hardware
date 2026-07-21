@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Bell, ShoppingCart, Star } from "lucide-react";
 import ProductImage from "@/components/ui/ProductImage";
+import WishlistButton from "@/components/ui/WishlistButton";
 import { useCart } from "@/context/CartContext";
 import { useUI } from "@/context/UIContext";
 import { formatPrice, getEffectivePrice, hasActiveDiscount } from "@/lib/pricing";
@@ -67,6 +68,9 @@ export default function ProductCard({ product, className = "", averageRating, re
             </span>
           )
         )}
+        {/* Wishlist heart — top-right, always visible so saving is one tap
+            on mobile too. Sits opposite the Sale/Out-of-Stock badge. */}
+        <WishlistButton variantId={variantId} className="absolute top-3 right-3" />
         {/* Primary action floats on the image. Mobile: always visible
             (no hover). Desktop: revealed on card hover / keyboard focus. */}
         {outOfStock ? (

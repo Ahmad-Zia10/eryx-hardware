@@ -10,6 +10,7 @@ import {
   Sun,
   User,
   ShoppingCart,
+  Heart,
   Menu,
   X,
   LogOut,
@@ -19,6 +20,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useTheme } from "@/context/ThemeContext";
 import { useCart } from "@/context/CartContext";
 import { useUI } from "@/context/UIContext";
+import { useWishlist } from "@/context/WishlistContext";
 import SearchOverlay from "./SearchOverlay";
 import ProductsMegaMenu from "./ProductsMegaMenu";
 import type { CategoryGroup, ProductLine } from "@/lib/db/categories";
@@ -60,6 +62,7 @@ export default function Navbar({
   const { isDark, toggleTheme } = useTheme();
   const { cartCount } = useCart();
   const { openCartDrawer } = useUI();
+  const { wishlistCount } = useWishlist();
   const router = useRouter();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -273,6 +276,18 @@ export default function Navbar({
               </div>
             )}
           </div>
+          <Link
+            href="/wishlist"
+            className="relative text-ink-muted hover:text-gold transition duration-200 ease-in-out"
+            aria-label="Wishlist"
+          >
+            <Heart size={20} />
+            {wishlistCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-gold text-on-gold text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-pill">
+                {wishlistCount}
+              </span>
+            )}
+          </Link>
           <button
             onClick={openCartDrawer}
             className="relative text-ink-muted hover:text-gold transition duration-200 ease-in-out"
