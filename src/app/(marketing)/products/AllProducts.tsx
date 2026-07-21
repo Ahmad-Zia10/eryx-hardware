@@ -234,7 +234,7 @@ export default function AllProducts({ products }: AllProductsProps) {
       {/* Hero */}
       <section className="relative h-[50vh] min-h-[380px] overflow-hidden mt-4 bg-brand-dark">
         <ProductImage
-          src={IMAGES.heroMain}
+          src={IMAGES.allProductsHero}
           alt="All Eryx products"
           className="absolute inset-0 w-full h-full"
           loading="eager"

@@ -30,8 +30,7 @@ const PRODUCT_LINE_TAGLINES: Record<ProductLine, string> = {
 const PRODUCT_LINE_HREF: Record<ProductLine, string> = {
   kitchen: "/kitchen",
   wardrobe: "/wardrobe",
-  // No dedicated route yet — fall back to the shop root.
-  hardware: "/kitchen",
+  hardware: "/hardware",
 };
 
 type ExploreLink = {
@@ -54,11 +53,12 @@ export default function ProductsMegaMenu({
   onMouseEnter,
   onMouseLeave,
 }: Props) {
-  // Filter to the two customer-facing lines by default. Hardware is
-  // a real product_line value but there's no /hardware page today
-  // and the products under it currently overlap kitchen categories.
+  // The three customer-facing lines, each with its own listing page.
   const visibleGroups = categoryGroups.filter(
-    (g) => g.productLine === "kitchen" || g.productLine === "wardrobe"
+    (g) =>
+      g.productLine === "kitchen" ||
+      g.productLine === "wardrobe" ||
+      g.productLine === "hardware"
   );
 
   return (
@@ -78,11 +78,11 @@ export default function ProductsMegaMenu({
 
           <div className="grid grid-cols-1 md:grid-cols-12 gap-0 divide-y md:divide-y-0 md:divide-x divide-[#EDEDED] dark:divide-[#222222]">
             {visibleGroups.map((group) => (
-              <div key={group.productLine} className="md:col-span-4">
+              <div key={group.productLine} className="md:col-span-3">
                 <MegaColumn group={group} onNavigate={onNavigate} />
               </div>
             ))}
-            <div className="md:col-span-4">
+            <div className="md:col-span-3">
               <ExploreColumn onNavigate={onNavigate} />
             </div>
           </div>

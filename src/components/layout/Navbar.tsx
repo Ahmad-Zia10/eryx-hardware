@@ -44,7 +44,7 @@ const MOBILE_PRODUCT_LINE_LABELS: Record<ProductLine, string> = {
 const MOBILE_PRODUCT_LINE_HREF: Record<ProductLine, string> = {
   kitchen: "/kitchen",
   wardrobe: "/wardrobe",
-  hardware: "/kitchen",
+  hardware: "/hardware",
 };
 
 // Mirrors react-router's <NavLink isActive> behavior — Next.js has no
@@ -378,7 +378,10 @@ export default function Navbar({
               <div className="py-3 border-b border-line space-y-4">
                 {categoryGroups
                   .filter(
-                    (g) => g.productLine === "kitchen" || g.productLine === "wardrobe"
+                    (g) =>
+                      g.productLine === "kitchen" ||
+                      g.productLine === "wardrobe" ||
+                      g.productLine === "hardware"
                   )
                   .map((group) => (
                     <div key={group.productLine}>

@@ -132,6 +132,10 @@ export const IMAGES = {
   heroAlt: productPath("glass-pull-down", "glass-pull-down-5-lifestyle.jpg"),
   heroTertiary: productPath("s-corner", "s-corner-3-lifestyle-collage.jpg"),
   kitchenHero: "/products/hero/kitchen-page-hero.jpg",
+  // Per-line listing banners. Drop the source photos at these paths.
+  wardrobeHero: "/products/hero/wardrobe-hero.jpg",
+  hardwareHero: "/products/hero/hardware-hero.jpg",
+  allProductsHero: "/products/hero/all-products-hero.jpg",
   categoriesFocusLarge: productPath("basket", "basket-5-brand.jpg"),
 };
 
