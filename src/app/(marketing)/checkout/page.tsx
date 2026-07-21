@@ -35,6 +35,10 @@ const inputClass =
   'w-full bg-surface border border-line-strong px-3.5 py-2.5 rounded-control text-sm text-ink placeholder:text-ink-faint focus:border-gold outline-none transition-colors duration-200';
 const labelClass = 'block text-sm font-medium text-ink mb-1.5';
 
+// Shared with the cart page so a promo applied there carries into checkout.
+// Only the CODE is persisted; the discount is always re-validated server-side.
+const PROMO_STORAGE_KEY = 'eryx_applied_promo';
+
 export default function CheckoutPage() {
   const { items, cartTotal, clearCart, removeItem } = useCart();
   const [isLoading, setIsLoading] = useState(false);
@@ -100,6 +104,39 @@ export default function CheckoutPage() {
     };
   }, [user, cartTotal]);
 
+  // Rehydrate a promo applied on the cart page and re-validate it against the
+  // current subtotal (server authoritative — never trust a stored discount).
+  // If it no longer qualifies, drop it silently.
+  useEffect(() => {
+    const stored = sessionStorage.getItem(PROMO_STORAGE_KEY);
+    if (!stored || items.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/validate-promo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: stored, subtotal: cartTotal }),
+        });
+        const data = await res.json();
+        if (cancelled) return;
+        if (res.ok) {
+          setAppliedPromo(data);
+          setPromoCode(data.code);
+        } else {
+          sessionStorage.removeItem(PROMO_STORAGE_KEY);
+        }
+      } catch {
+        /* leave unapplied on network error */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // Run once on mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -130,6 +167,7 @@ export default function CheckoutPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setAppliedPromo(data);
+      sessionStorage.setItem(PROMO_STORAGE_KEY, data.code);
     } catch (err: any) {
       setPromoError(err.message);
     } finally {
@@ -199,6 +237,7 @@ export default function CheckoutPage() {
           // 2. Redirect to success on successful payment
           // Note: Webhook handles actual db status update
           clearCart();
+          sessionStorage.removeItem(PROMO_STORAGE_KEY);
           window.location.href = `/checkout/success?order_id=${data.orderId}`;
         },
         prefill: {
