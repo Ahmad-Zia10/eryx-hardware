@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import {
   ChevronDown,
+  ChevronRight,
   Search,
   Moon,
   Sun,
@@ -243,36 +244,69 @@ export default function Navbar({
             )}
 
             {userDropdownOpen && user && (
-              <div className="absolute right-0 mt-2 w-48 bg-surface-raised border border-line shadow-xl rounded-md py-1 z-50">
-                <div className="px-4 py-2 border-b border-line">
-                  <p className="text-sm font-medium text-ink truncate">{user.user_metadata?.full_name || user.email}</p>
-                  <p className="text-xs text-ink-muted truncate">{user.email}</p>
+              <div
+                role="menu"
+                className="absolute right-0 mt-3 w-64 bg-surface-raised border border-line shadow-[0_16px_48px_rgba(0,0,0,0.16)] dark:shadow-[0_16px_48px_rgba(0,0,0,0.5)] rounded-card overflow-hidden z-50 origin-top-right animate-[dropdown_140ms_ease-out]"
+              >
+                {/* Identity header — gold-ringed avatar + name/email,
+                    mirroring the account page's profile block. */}
+                <div className="flex items-center gap-3 p-4 bg-surface-sunken border-b border-line">
+                  <div className="w-11 h-11 shrink-0 rounded-full bg-gold-tint text-gold-deep ring-1 ring-gold/30 flex items-center justify-center text-lg font-semibold uppercase">
+                    {(user.user_metadata?.full_name || user.email || "?").charAt(0)}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-ink truncate">
+                      {user.user_metadata?.full_name || user.email}
+                    </p>
+                    <p className="text-xs text-ink-muted truncate">{user.email}</p>
+                  </div>
                 </div>
-                {isAdmin && (
+
+                <div className="p-1.5">
+                  {isAdmin && (
+                    <Link
+                      href="/admin"
+                      role="menuitem"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="group/item flex items-center gap-3 px-3 py-2.5 text-sm text-gold-deep rounded-control hover:bg-gold-tint transition-colors duration-150"
+                    >
+                      <ShieldAlert size={16} className="shrink-0" />
+                      <span className="flex-1 font-medium">Admin Panel</span>
+                      <ChevronRight size={14} className="opacity-0 -translate-x-1 group-hover/item:opacity-100 group-hover/item:translate-x-0 transition-all duration-150" />
+                    </Link>
+                  )}
                   <Link
-                    href="/admin"
+                    href="/account"
+                    role="menuitem"
                     onClick={() => setUserDropdownOpen(false)}
-                    className="flex items-center px-4 py-2 text-sm text-gold hover:bg-surface-sunken"
+                    className="group/item flex items-center gap-3 px-3 py-2.5 text-sm text-ink-muted rounded-control hover:bg-surface-sunken hover:text-ink transition-colors duration-150"
                   >
-                    <ShieldAlert size={14} className="mr-2" />
-                    Admin Panel
+                    <User size={16} className="shrink-0" />
+                    <span className="flex-1">My Account</span>
+                    <ChevronRight size={14} className="opacity-0 -translate-x-1 group-hover/item:opacity-100 group-hover/item:translate-x-0 transition-all duration-150" />
                   </Link>
-                )}
-                <Link
-                  href="/account"
-                  onClick={() => setUserDropdownOpen(false)}
-                  className="flex items-center px-4 py-2 text-sm text-ink-muted hover:bg-surface-sunken hover:text-gold"
-                >
-                  <User size={14} className="mr-2" />
-                  My Account
-                </Link>
-                <button
-                  onClick={handleSignOut}
-                  className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-surface-sunken"
-                >
-                  <LogOut size={14} className="mr-2" />
-                  Sign Out
-                </button>
+                  <Link
+                    href="/wishlist"
+                    role="menuitem"
+                    onClick={() => setUserDropdownOpen(false)}
+                    className="group/item flex items-center gap-3 px-3 py-2.5 text-sm text-ink-muted rounded-control hover:bg-surface-sunken hover:text-ink transition-colors duration-150"
+                  >
+                    <Heart size={16} className="shrink-0" />
+                    <span className="flex-1">Wishlist</span>
+                    <ChevronRight size={14} className="opacity-0 -translate-x-1 group-hover/item:opacity-100 group-hover/item:translate-x-0 transition-all duration-150" />
+                  </Link>
+
+                  <div className="my-1.5 border-t border-line" />
+
+                  <button
+                    onClick={handleSignOut}
+                    role="menuitem"
+                    className="group/item flex w-full items-center gap-3 px-3 py-2.5 text-sm text-red-600 dark:text-red-400 rounded-control hover:bg-red-500/10 transition-colors duration-150"
+                  >
+                    <LogOut size={16} className="shrink-0" />
+                    <span className="flex-1 text-left">Sign Out</span>
+                  </button>
+                </div>
               </div>
             )}
           </div>
