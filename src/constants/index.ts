@@ -20,6 +20,27 @@ export const SITE_CONFIG = {
   catalogueUrl: "/catalogue/eryx-catalogue.pdf" as const,
 } as const;
 
+// Experience Centre / showroom details. Single source of truth for the
+// /experience-centre page. Edit these values in one place — the page reads
+// them all. `mapsQuery` is URL-encoded into a Google Maps directions link.
+export const EXPERIENCE_CENTRE = {
+  name: "Eryx Experience Centre",
+  addressLines: [
+    "E-70, Surajpur Site 4 Industrial Block H Rd",
+    "Block P, Industrial Area, Surajpur Site 4",
+    "Greater Noida, Uttar Pradesh 201310",
+  ],
+  // Human-readable single-line address (used for the maps query + schema).
+  mapsQuery:
+    "E-70, Surajpur Site 4 Industrial Block H Rd, Block P, Industrial Area, Surajpur Site 4, Greater Noida, Uttar Pradesh 201310",
+  hours: [
+    { days: "Monday – Saturday", time: "9:30 AM – 6:00 PM" },
+    { days: "Sunday", time: "Closed" },
+  ],
+  phone: "70111 84853",
+  email: "Info@modularindia.com",
+} as const;
+
 // Below this quantity a variant is flagged low-stock in the admin UI.
 // Kept as a single global for v1 — per-variant thresholds can be added
 // as an additive migration if needed later.
