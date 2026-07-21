@@ -31,9 +31,14 @@ export default function WishlistButton({
     toggle(variantId);
   };
 
+  // Match the card's floating action buttons: same rounded-control,
+  // shadow, and translucent-surface backdrop. Gold is the brand's
+  // "active/selected" accent (Sale badge, selected states) — a saved
+  // heart uses it so the card stays in one palette instead of
+  // introducing a lone saturated red.
   const base =
     variant === "floating"
-      ? "bg-surface-raised/95 backdrop-blur-sm shadow-md p-2.5 rounded-control"
+      ? "bg-surface-raised/95 backdrop-blur-sm shadow-md p-2.5 rounded-control ring-1 ring-black/5 dark:ring-white/10 hover:bg-surface-raised"
       : "p-2 rounded-control border border-line hover:border-line-strong";
 
   return (
@@ -43,13 +48,13 @@ export default function WishlistButton({
       aria-pressed={saved}
       title={saved ? "Saved — remove from wishlist" : "Save to wishlist"}
       className={`group/heart transition duration-300 ease-out ${base} ${
-        saved ? "text-red-500" : "text-ink-muted hover:text-red-500"
+        saved ? "text-gold" : "text-ink-muted hover:text-gold-deep"
       } ${className}`}
     >
       <Heart
         size={size}
-        className={`transition-transform duration-200 group-active/heart:scale-90 ${
-          saved ? "fill-red-500" : "fill-transparent"
+        className={`transition-transform duration-200 group-hover/heart:scale-110 group-active/heart:scale-90 ${
+          saved ? "fill-gold" : "fill-transparent"
         }`}
       />
     </button>
