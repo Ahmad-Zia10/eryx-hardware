@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Phone, Mail, Globe, Download } from "lucide-react";
-import { CATEGORIES } from "@/lib/catalogue-data";
+import { getCategoriesForLine } from "@/lib/catalogue-data";
 import { SITE_CONFIG } from "@/constants";
 import {
   InstagramIcon,
@@ -105,7 +105,7 @@ export default function Footer() {
             <h4 className="text-xs tracking-widest uppercase text-gold">
               Kitchen
             </h4>
-            {CATEGORIES.map((cat) => (
+            {getCategoriesForLine("kitchen").map((cat) => (
               <Link
                 key={cat}
                 href={`/kitchen?category=${encodeURIComponent(cat)}`}

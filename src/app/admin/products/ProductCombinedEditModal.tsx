@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { updateParentProduct, updateProduct } from '@/app/admin/actions';
 import { Toggle } from '@/components/ui/Toggle';
-import { CATEGORIES } from '@/lib/catalogue-data';
+import { getCategoriesForLine } from '@/lib/catalogue-data';
 import ProductImageManager from './ProductImageManager';
 
 interface Props {
@@ -31,7 +31,7 @@ export default function ProductCombinedEditModal({ parent, variant, onClose, onS
   const [productForm, setProductForm] = useState({
     name: parent.name || '',
     description: parent.description || '',
-    category: parent.category || CATEGORIES[0],
+    category: parent.category || getCategoriesForLine(parent.product_line || 'kitchen')[0],
     product_line: parent.product_line || 'kitchen',
     is_active: parent.is_active !== false,
     is_featured: parent.is_featured || false,
@@ -178,18 +178,30 @@ export default function ProductCombinedEditModal({ parent, variant, onClose, onS
                     onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
                     className="w-full bg-[#1A1A1A] border border-[#2A2A2A] text-[#F5F5F5] text-sm px-4 py-2.5 rounded-sm focus:border-[#D4A017] focus:outline-none"
                   >
-                    {CATEGORIES.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
+                    {(() => {
+                      const opts = getCategoriesForLine(productForm.product_line);
+                      // Preserve a legacy/unmigrated current category so saving
+                      // doesn't silently reassign it.
+                      const withCurrent =
+                        productForm.category && !opts.includes(productForm.category)
+                          ? [productForm.category, ...opts]
+                          : opts;
+                      return withCurrent.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ));
+                    })()}
                   </select>
                 </div>
                 <div>
                   <label className="block text-xs uppercase tracking-widest text-[#9A9A9A] mb-2">Product line</label>
                   <select
                     value={productForm.product_line}
-                    onChange={(e) => setProductForm({ ...productForm, product_line: e.target.value })}
+                    onChange={(e) => {
+                      const line = e.target.value;
+                      setProductForm({ ...productForm, product_line: line, category: getCategoriesForLine(line)[0] });
+                    }}
                     className="w-full bg-[#1A1A1A] border border-[#2A2A2A] text-[#F5F5F5] text-sm px-4 py-2.5 rounded-sm focus:border-[#D4A017] focus:outline-none"
                   >
                     <option value="kitchen">Kitchen</option>

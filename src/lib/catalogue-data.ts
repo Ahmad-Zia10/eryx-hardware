@@ -126,6 +126,47 @@ export const CATALOG_CATEGORIES: CatalogueCategory[] = [
 
 export const CATEGORIES = CATALOG_CATEGORIES.map((category) => category.name);
 
+// ─── Line-scoped categories ────────────────────────────────────────
+// Categories differ per product line. This map is the single source of
+// truth for which categories belong to which line — the admin create/edit
+// dropdowns filter by it, and the marketing surfaces (footer, PLP filters,
+// homepage strip) read from it so nothing drifts.
+//
+// Keep these values in sync with the `category` column on product_variants
+// (and products). When you add a category here, existing products won't
+// change; when you rename one, run a migration to move the rows.
+export type ProductLineKey = "kitchen" | "wardrobe" | "hardware";
+
+export const CATEGORIES_BY_LINE: Record<ProductLineKey, string[]> = {
+  kitchen: [
+    "Basket",
+    "Glass Pull Down",
+    "GTPT",
+    "Rolling Shutter",
+    "S Corner",
+    "Slim Box",
+  ],
+  wardrobe: [
+    "Trouser Rack",
+    "Hanging",
+    "Shelves",
+    "Baskets",
+    "Mirror",
+    "Shoe Rack",
+    "Tie Rack",
+  ],
+  hardware: ["Hinges", "Channels", "Skirting"],
+};
+
+export function getCategoriesForLine(line: string): string[] {
+  return CATEGORIES_BY_LINE[line as ProductLineKey] ?? [];
+}
+
+// Flat union of every line's categories — handy for validation / fallbacks.
+export const ALL_LINE_CATEGORIES: string[] = Array.from(
+  new Set(Object.values(CATEGORIES_BY_LINE).flat())
+);
+
 export const IMAGES = {
   logo: "/eryx-logo.png",
   heroMain: productPath("gtpt", "gtpt-3-lifestyle.jpg"),

@@ -6,7 +6,7 @@ import { ChevronLeft, SlidersHorizontal, X } from "lucide-react";
 import ProductImage from "@/components/ui/ProductImage";
 import ProductCard from "@/components/sections/ProductCard";
 import { useUI } from "@/context/UIContext";
-import { CATEGORIES, FINISHES, IMAGES } from "@/lib/catalogue-data";
+import { getCategoriesForLine, FINISHES, IMAGES } from "@/lib/catalogue-data";
 import type { CatalogueProduct } from "@/lib/catalogue-data";
 
 const MAX_PRICE = 35000;
@@ -244,7 +244,7 @@ export default function Kitchen({ products }: KitchenProps) {
       <div className="sticky top-25 z-30 bg-surface border-b border-line">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex gap-2 overflow-x-auto no-scrollbar py-3">
-            {["All", ...CATEGORIES].map((tab) => (
+            {["All", ...getCategoriesForLine("kitchen")].map((tab) => (
               <button
                 key={tab}
                 onClick={() => handleTabClick(tab)}

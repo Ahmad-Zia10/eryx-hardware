@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { X } from 'lucide-react';
 import { updateParentProduct } from '@/app/admin/actions';
 import { Toggle } from '@/components/ui/Toggle';
-import { CATEGORIES } from '@/lib/catalogue-data';
+import { getCategoriesForLine } from '@/lib/catalogue-data';
 
 export default function ProductParentEditModal({
   product,
@@ -20,7 +20,7 @@ export default function ProductParentEditModal({
   const [formData, setFormData] = useState({
     name: product.name || '',
     description: product.description || '',
-    category: product.category || CATEGORIES[0],
+    category: product.category || getCategoriesForLine('kitchen')[0],
     product_line: product.product_line || 'kitchen',
     is_active: product.is_active !== false,
     is_featured: product.is_featured || false,
@@ -72,11 +72,21 @@ export default function ProductParentEditModal({
               onChange={(event) => setFormData({ ...formData, category: event.target.value })}
               className="bg-[#1A1A1A] border border-[#2A2A2A] text-[#F5F5F5] text-sm px-4 py-2.5 rounded-sm"
             >
-              {CATEGORIES.map((category) => <option key={category} value={category}>{category}</option>)}
+              {(() => {
+                const opts = getCategoriesForLine(formData.product_line);
+                const withCurrent =
+                  formData.category && !opts.includes(formData.category)
+                    ? [formData.category, ...opts]
+                    : opts;
+                return withCurrent.map((category) => <option key={category} value={category}>{category}</option>);
+              })()}
             </select>
             <select
               value={formData.product_line}
-              onChange={(event) => setFormData({ ...formData, product_line: event.target.value })}
+              onChange={(event) => {
+                const line = event.target.value;
+                setFormData({ ...formData, product_line: line, category: getCategoriesForLine(line)[0] });
+              }}
               className="bg-[#1A1A1A] border border-[#2A2A2A] text-[#F5F5F5] text-sm px-4 py-2.5 rounded-sm"
             >
               <option value="kitchen">Kitchen</option>

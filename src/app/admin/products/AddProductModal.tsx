@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { ImagePlus, Trash2, X } from 'lucide-react';
 import { Toggle } from '@/components/ui/Toggle';
-import { CATEGORIES } from '@/lib/catalogue-data';
+import { getCategoriesForLine } from '@/lib/catalogue-data';
 
 interface AddProductModalProps {
   onClose: () => void;
@@ -45,7 +45,7 @@ export default function AddProductModal({ onClose, onSuccess }: AddProductModalP
   const [formData, setFormData] = useState({
     item_code: '',
     name: '',
-    category: CATEGORIES[0],
+    category: getCategoriesForLine('kitchen')[0],
     product_line: 'kitchen',
     finish: '',
     material: '',
@@ -351,7 +351,7 @@ export default function AddProductModal({ onClose, onSuccess }: AddProductModalP
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
               >
-                {CATEGORIES.map(cat => (
+                {getCategoriesForLine(formData.product_line).map(cat => (
                   <option key={cat} value={cat}>{cat}</option>
                 ))}
               </select>
@@ -361,7 +361,12 @@ export default function AddProductModal({ onClose, onSuccess }: AddProductModalP
               <select
                 className="w-full bg-[#1A1A1A] border border-[#2A2A2A] text-[#F5F5F5] text-sm px-4 py-2.5 focus:border-[#D4A017] focus:outline-none placeholder-[#9A9A9A] rounded-sm transition duration-200 ease-in-out"
                 value={formData.product_line}
-                onChange={(e) => setFormData({ ...formData, product_line: e.target.value })}
+                onChange={(e) => {
+                  const line = e.target.value;
+                  // Reset category to the new line's first option so it can
+                  // never hold a category that doesn't belong to the line.
+                  setFormData({ ...formData, product_line: line, category: getCategoriesForLine(line)[0] });
+                }}
               >
                 <option value="kitchen">Kitchen</option>
                 <option value="wardrobe">Wardrobe</option>

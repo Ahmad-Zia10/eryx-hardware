@@ -78,7 +78,7 @@ export default async function Home() {
             {CATALOG_CATEGORIES.map((category) => (
               <Link
                 key={category.slug}
-                href={`/kitchen?category=${encodeURIComponent(category.name)}`}
+                href={`/products?category=${encodeURIComponent(category.name)}`}
                 className="flex flex-col items-center gap-2 min-w-28 shrink-0 group"
               >
                 {/* Uniform treatment for mixed-crop source shots: white
