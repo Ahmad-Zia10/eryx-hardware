@@ -11,19 +11,30 @@ import AddVariantModal from './AddVariantModal';
 import ProductCombinedEditModal from './ProductCombinedEditModal';
 import AdjustStockModal from '@/components/admin/AdjustStockModal';
 import { LOW_STOCK_THRESHOLD } from '@/constants';
+import { getEffectivePrice, hasActiveDiscount } from '@/lib/pricing';
 
 function formatPrice(mrp: number | null): string {
   return typeof mrp === 'number' ? `₹${mrp.toLocaleString('en-IN')}` : 'POA';
 }
 
-function priceRange(variants: any[]): string {
+// Price shown in the list uses the EFFECTIVE price (sale price when a variant
+// is on sale), not raw MRP — so admins can see at a glance what a customer
+// pays. `onSale` is true when any active variant currently has a live discount,
+// which drives a small "Sale" tag beside the range.
+function priceSummary(variants: any[]): { label: string; onSale: boolean } {
   const active = variants.filter((v) => v.is_active && v.mrp != null);
-  if (active.length === 0) return 'POA';
-  const prices = active.map((v) => Number(v.mrp));
+  if (active.length === 0) return { label: 'POA', onSale: false };
+
+  const prices = active
+    .map((v) => getEffectivePrice(v))
+    .filter((p): p is number => typeof p === 'number');
+  if (prices.length === 0) return { label: 'POA', onSale: false };
+
+  const onSale = active.some((v) => hasActiveDiscount(v));
   const min = Math.min(...prices);
   const max = Math.max(...prices);
-  if (min === max) return formatPrice(min);
-  return `${formatPrice(min)} – ${formatPrice(max)}`;
+  const label = min === max ? formatPrice(min) : `${formatPrice(min)} – ${formatPrice(max)}`;
+  return { label, onSale };
 }
 
 function totalStock(variants: any[]): { total: number; tracked: boolean } {
@@ -210,7 +221,19 @@ export default function ProductsTable({ products }: { products: any[] }) {
                         {variants.length} {variants.length === 1 ? 'variant' : 'variants'}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-[#F5F5F5]">
-                        {priceRange(variants)}
+                        {(() => {
+                          const { label, onSale } = priceSummary(variants);
+                          return (
+                            <span className="inline-flex items-center gap-2">
+                              {label}
+                              {onSale && (
+                                <span className="px-1.5 py-0.5 text-[10px] font-semibold rounded-sm bg-[#D4A017]/15 text-[#D4A017] border border-[#D4A017]/30">
+                                  Sale
+                                </span>
+                              )}
+                            </span>
+                          );
+                        })()}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm">
                         {(() => {

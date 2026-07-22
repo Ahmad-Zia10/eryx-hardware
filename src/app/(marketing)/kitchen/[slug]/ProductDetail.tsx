@@ -86,12 +86,16 @@ export default function ProductDetail({
   const notifyEmailRef = useRef<HTMLInputElement>(null);
   const notifySectionRef = useRef<HTMLDivElement>(null);
 
-  // Variant selector — initialised to the default variant.
-  // When there is only one variant (or no variants array supplied), activeVariant
-  // stays null and liveProduct falls back to the product prop directly.
+  // Variant selector — initialised to the selected variant. Single- and
+  // multi-variant products follow the SAME path: activeVariant is the sole
+  // variant (single) or the default variant (multi). This keeps pricing —
+  // including is_on_sale / discount_price — sourced from the variant in both
+  // cases, rather than relying on the parent `product` prop to carry those
+  // fields for the single-variant case. Only falls back to null when no
+  // variants array was supplied at all.
   const [activeVariant, setActiveVariant] = useState<ProductVariant | null>(
-    variants.length > 1
-      ? (variants.find((v) => v.is_default) ?? variants[0] ?? null)
+    variants.length > 0
+      ? (variants.find((v) => v.is_default) ?? variants[0])
       : null
   );
   const variantAxes = getVariantAxes(variants);

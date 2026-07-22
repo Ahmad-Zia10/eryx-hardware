@@ -58,9 +58,21 @@ export async function updateProduct(id: string, data: unknown) {
 
   if (variantError) throw new Error('Update failed');
 
-  revalidatePath('/');
-  revalidatePath('/kitchen');
-  revalidatePath('/checkout');
+  revalidateProductSurfaces();
+}
+
+// Every public surface where a product's price / sale state can appear.
+// Pricing changes (mrp, is_on_sale, discount_price) must refresh all of
+// these — missing one leaves a stale price cached on that surface.
+function revalidateProductSurfaces() {
+  revalidatePath('/');                       // home (top picks)
+  revalidatePath('/kitchen');                // kitchen PLP
+  revalidatePath('/wardrobe');               // wardrobe PLP
+  revalidatePath('/hardware');               // hardware PLP
+  revalidatePath('/products');               // all-lines PLP
+  revalidatePath('/deals');                  // discounts page
+  revalidatePath('/checkout');               // order summary snapshots
+  revalidatePath('/kitchen/[slug]', 'page'); // every PDP (all lines route here)
 }
 
 // updateParentProduct targets the products table for shared concept-level fields.
@@ -93,8 +105,7 @@ export async function updateParentProduct(id: string, data: unknown) {
     .eq('id', id);
 
   if (error) throw new Error('Update failed');
-  revalidatePath('/');
-  revalidatePath('/kitchen');
+  revalidateProductSurfaces();
 }
 
 export async function addProductVariant(parentId: string, data: {
