@@ -1,23 +1,27 @@
 import { Suspense } from "react";
-import Kitchen from "./kitchen";
+import ProductLineListing from "@/components/sections/ProductLineListing";
 import { getAllProducts } from "@/lib/db/products";
+import { IMAGES } from "@/lib/catalogue-data";
 
-// Server Component — fetches real product data once, on the server,
-// before the page is sent to the browser. Kitchen.tsx (the Client
-// Component) receives this as a prop and handles all filtering
-// interactivity client-side, same as it always did against static data.
-//
-// The Suspense wrapper is required here, not optional: any Client
-// Component that calls useSearchParams() — which Kitchen.tsx does —
-// must be wrapped in Suspense, or Next.js throws a build error on
-// prerendered/static routes. This is an App Router rule, not a
-// stylistic choice.
+// Server Component — fetches this line's products once on the server, then
+// hands them to the shared ProductLineListing client component (filters +
+// sort + category chips). The Suspense wrapper is required: the client
+// component calls useSearchParams().
 export default async function KitchenPage() {
   const products = await getAllProducts("kitchen");
 
   return (
     <Suspense>
-      <Kitchen products={products} />
+      <ProductLineListing
+        products={products}
+        basePath="/kitchen"
+        line="kitchen"
+        heroImage={IMAGES.kitchenHero}
+        eyebrow="Kitchen Accessories"
+        title="Kitchen Solutions"
+        breadcrumb="Kitchen Solutions"
+        description="Explore Eryx hardware categories for baskets, shutters, hinges, pull-down systems, corners, and wardrobe fittings."
+      />
     </Suspense>
   );
 }

@@ -6,46 +6,83 @@ import { ChevronLeft, SlidersHorizontal, X } from "lucide-react";
 import ProductImage from "@/components/ui/ProductImage";
 import ProductCard from "@/components/sections/ProductCard";
 import { useUI } from "@/context/UIContext";
-import { getCategoriesForLine, FINISHES, IMAGES } from "@/lib/catalogue-data";
+import { getCategoriesForLine } from "@/lib/catalogue-data";
 import type { CatalogueProduct } from "@/lib/catalogue-data";
-
-const MAX_PRICE = 35000;
 
 type SortKey = "featured" | "price-asc" | "price-desc";
 
-interface KitchenProps {
-  // Fetched server-side by page.tsx and passed down — this component
-  // no longer imports ALL_PRODUCTS directly. All filtering still
-  // happens client-side against this prop, same as it did against the
-  // static array before; only the data source changed.
+export interface ProductLineListingProps {
+  /** Products for this line (already fetched server-side via getAllProducts(line)). */
   products: CatalogueProduct[];
+  /** Base route for this line's PLP, e.g. "/kitchen". Drives URL state. */
+  basePath: string;
+  /** Product-line key used to look up categories. */
+  line: "kitchen" | "wardrobe" | "hardware";
+  /** Hero image src. */
+  heroImage: string;
+  /** Small uppercase eyebrow above the title. */
+  eyebrow: string;
+  /** Big hero heading. */
+  title: string;
+  /** Breadcrumb label (e.g. "Kitchen Accessories"). */
+  breadcrumb: string;
+  /** Hero description line. */
+  description: string;
 }
 
-export default function Kitchen({ products }: KitchenProps) {
+// Shared listing UI for every product line (kitchen / wardrobe / hardware).
+// Categories come from getCategoriesForLine(line); finishes and the price
+// ceiling are derived from the actual product set so filters never list a
+// value that can't appear. URL (?category=) is the source of truth for the
+// active category, so it's shareable/deep-linkable.
+export default function ProductLineListing({
+  products,
+  basePath,
+  line,
+  heroImage,
+  eyebrow,
+  title,
+  breadcrumb,
+  description,
+}: ProductLineListingProps) {
   const router = useRouter();
-  // next/navigation's useSearchParams is READ-ONLY — unlike react-router's
-  // version, you can't call .set()/.delete() on it directly. To change the
-  // URL you build a fresh URLSearchParams from the current one, mutate
-  // that copy, then push the resulting string via the router yourself.
   const searchParams = useSearchParams();
+
+  const categories = getCategoriesForLine(line);
+
+  // Finishes present in this line's products (sorted, non-empty).
+  const finishes = useMemo(() => {
+    const set = new Set<string>();
+    for (const p of products) if (p.finish) set.add(p.finish);
+    return Array.from(set).sort();
+  }, [products]);
+
+  // Price ceiling rounded up to a clean step above the max MRP, so the
+  // range control fits the line's real prices (hardware is cheap, kitchen
+  // is dear — a shared hardcoded ceiling would be wrong for both).
+  const maxPrice = useMemo(() => {
+    const prices = products
+      .map((p) => (typeof p.mrp === "number" ? p.mrp : 0))
+      .filter((n) => n > 0);
+    if (prices.length === 0) return 1000;
+    const max = Math.max(...prices);
+    return Math.ceil(max / 500) * 500;
+  }, [products]);
 
   const activeTab = searchParams.get("category") || "All";
   const [selectedFinishes, setSelectedFinishes] = useState<string[]>([]);
   const [priceMin, setPriceMin] = useState(0);
-  const [priceMax, setPriceMax] = useState(MAX_PRICE);
+  const [priceMax, setPriceMax] = useState(maxPrice);
   const [sortKey, setSortKey] = useState<SortKey>("featured");
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const { openEnquiryModal } = useUI();
 
   const handleTabClick = (tab: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    if (tab === "All") {
-      params.delete("category");
-    } else {
-      params.set("category", tab);
-    }
+    if (tab === "All") params.delete("category");
+    else params.set("category", tab);
     const query = params.toString();
-    router.push(query ? `/kitchen?${query}` : "/kitchen");
+    router.push(query ? `${basePath}?${query}` : basePath);
   };
 
   const toggleFinish = (finish: string) => {
@@ -54,12 +91,12 @@ export default function Kitchen({ products }: KitchenProps) {
     );
   };
 
-  const priceFiltered = priceMin > 0 || priceMax < MAX_PRICE;
+  const priceFiltered = priceMin > 0 || priceMax < maxPrice;
 
   const clearAllFilters = () => {
     setSelectedFinishes([]);
     setPriceMin(0);
-    setPriceMax(MAX_PRICE);
+    setPriceMax(maxPrice);
     if (activeTab !== "All") handleTabClick("All");
   };
 
@@ -73,8 +110,6 @@ export default function Kitchen({ products }: KitchenProps) {
       return matchesCategory && matchesFinish && matchesPrice;
     });
     if (sortKey === "featured") return filtered;
-    // Price sorts: null-price ("Price on request") items always sink to
-    // the end regardless of direction.
     return [...filtered].sort((a, b) => {
       const pa = typeof a.mrp === "number" ? a.mrp : null;
       const pb = typeof b.mrp === "number" ? b.mrp : null;
@@ -87,28 +122,28 @@ export default function Kitchen({ products }: KitchenProps) {
 
   const filterSidebarContent = (
     <div className="flex flex-col gap-8">
-      <span className="text-xs tracking-widest uppercase text-gold-deep">
-        Filters
-      </span>
+      <span className="text-xs tracking-widest uppercase text-gold-deep">Filters</span>
 
-      <div>
-        <h4 className="text-sm font-semibold text-ink mb-3">Finish</h4>
-        <div className="flex flex-col gap-2">
-          {FINISHES.map((finish) => (
-            <label
-              key={finish}
-              className="flex items-center gap-2 text-sm text-ink-muted hover:text-ink cursor-pointer transition-colors duration-200"
-            >
-              <input
-                type="checkbox"
-                checked={selectedFinishes.includes(finish)}
-                onChange={() => toggleFinish(finish)}
-              />
-              {finish}
-            </label>
-          ))}
+      {finishes.length > 0 && (
+        <div>
+          <h4 className="text-sm font-semibold text-ink mb-3">Finish</h4>
+          <div className="flex flex-col gap-2">
+            {finishes.map((finish) => (
+              <label
+                key={finish}
+                className="flex items-center gap-2 text-sm text-ink-muted hover:text-ink cursor-pointer transition-colors duration-200"
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedFinishes.includes(finish)}
+                  onChange={() => toggleFinish(finish)}
+                />
+                {finish}
+              </label>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <div>
         <h4 className="text-sm font-semibold text-ink mb-3">Price</h4>
@@ -116,35 +151,32 @@ export default function Kitchen({ products }: KitchenProps) {
           <input
             type="number"
             min={0}
-            max={MAX_PRICE}
+            max={maxPrice}
             step={500}
             placeholder="Min"
             aria-label="Minimum price"
             value={priceMin === 0 ? "" : priceMin}
-            onChange={(e) =>
-              setPriceMin(Math.max(0, Number(e.target.value) || 0))
-            }
+            onChange={(e) => setPriceMin(Math.max(0, Number(e.target.value) || 0))}
             className="w-full border border-line-strong bg-surface text-ink text-sm px-2.5 py-1.5 rounded-control placeholder:text-ink-faint"
           />
           <span className="text-ink-faint text-sm">–</span>
           <input
             type="number"
             min={0}
-            max={MAX_PRICE}
+            max={maxPrice}
             step={500}
             placeholder="Max"
             aria-label="Maximum price"
-            value={priceMax === MAX_PRICE ? "" : priceMax}
+            value={priceMax === maxPrice ? "" : priceMax}
             onChange={(e) => {
               const v = Number(e.target.value);
-              setPriceMax(v > 0 ? Math.min(v, MAX_PRICE) : MAX_PRICE);
+              setPriceMax(v > 0 ? Math.min(v, maxPrice) : maxPrice);
             }}
             className="w-full border border-line-strong bg-surface text-ink text-sm px-2.5 py-1.5 rounded-control placeholder:text-ink-faint"
           />
         </div>
         <p className="text-xs text-ink-faint mt-2">
-          ₹{priceMin.toLocaleString("en-IN")} – ₹
-          {priceMax.toLocaleString("en-IN")}
+          ₹{priceMin.toLocaleString("en-IN")} – ₹{priceMax.toLocaleString("en-IN")}
         </p>
       </div>
     </div>
@@ -166,7 +198,7 @@ export default function Kitchen({ products }: KitchenProps) {
         <button
           onClick={() => {
             setPriceMin(0);
-            setPriceMax(MAX_PRICE);
+            setPriceMax(maxPrice);
           }}
           className="flex items-center gap-1.5 bg-gold-tint text-gold-deep border border-gold/30 rounded-pill px-3 py-1 text-xs font-medium hover:border-gold transition-colors duration-200"
         >
@@ -195,22 +227,15 @@ export default function Kitchen({ products }: KitchenProps) {
         </button>
       </div>
 
-      {/* Hero — full-bleed lifestyle image at full opacity, dark scrim
-          for text legibility, left-aligned stack matching the home
-          HeroSlider's visual language. */}
+      {/* Hero */}
       <section className="relative h-[55vh] min-h-[420px] overflow-hidden mt-4 bg-brand-dark">
         <ProductImage
-          src={IMAGES.kitchenHero}
-          alt="Kitchen Solutions"
+          src={heroImage}
+          alt={breadcrumb}
           className="absolute inset-0 w-full h-full"
           loading="eager"
         />
-
-        {/* Single continuous scrim: dark at bottom-left, transparent to
-            top-right so the image dominates the upper-right quadrant. */}
         <div className="absolute inset-0 bg-gradient-to-tr from-black/85 via-black/50 to-transparent pointer-events-none" />
-
-        {/* Content stack — bottom-left, mirrors HeroSlider positioning */}
         <div className="relative z-10 h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-end pb-10 sm:pb-14 lg:pb-16">
           <div className="flex flex-col gap-3 sm:gap-4 max-w-2xl">
             <p className="text-xs text-white/70">
@@ -220,46 +245,46 @@ export default function Kitchen({ products }: KitchenProps) {
               >
                 Home
               </span>{" "}
-              / Kitchen Solutions
+              / {breadcrumb}
             </p>
             <div>
               <span className="text-[10px] sm:text-xs tracking-[0.3em] uppercase text-gold">
-                Kitchen Accessories
+                {eyebrow}
               </span>
               <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold leading-[1.05] text-white font-display mt-2 sm:mt-3">
-                Kitchen Solutions
+                {title}
               </h1>
             </div>
             <p className="text-sm sm:text-base text-white/80 max-w-lg leading-relaxed">
-              Explore Eryx hardware categories for baskets, shutters, hinges, pull-down
-              systems, corners, and wardrobe fittings.
+              {description}
             </p>
             <div className="w-16 h-0.5 bg-gold mt-1" />
           </div>
         </div>
       </section>
 
-      {/* Category chips — the single home of category filtering (the
-          sidebar no longer duplicates it). */}
-      <div className="sticky top-25 z-30 bg-surface border-b border-line">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex gap-2 overflow-x-auto no-scrollbar py-3">
-            {["All", ...getCategoriesForLine("kitchen")].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => handleTabClick(tab)}
-                className={`text-sm whitespace-nowrap rounded-pill px-4 py-1.5 transition duration-200 ease-in-out ${
-                  activeTab === tab
-                    ? "bg-gold text-on-gold font-medium"
-                    : "border border-line text-ink-muted hover:border-gold hover:text-gold-deep"
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
+      {/* Category chips */}
+      {categories.length > 0 && (
+        <div className="sticky top-25 z-30 bg-surface border-b border-line">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex gap-2 overflow-x-auto no-scrollbar py-3">
+              {["All", ...categories].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => handleTabClick(tab)}
+                  className={`text-sm whitespace-nowrap rounded-pill px-4 py-1.5 transition duration-200 ease-in-out ${
+                    activeTab === tab
+                      ? "bg-gold text-on-gold font-medium"
+                      : "border border-line text-ink-muted hover:border-gold hover:text-gold-deep"
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Mobile filter trigger */}
       <div className="lg:hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
@@ -279,10 +304,7 @@ export default function Kitchen({ products }: KitchenProps) {
       {/* Mobile filter drawer */}
       {mobileFiltersOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          <div
-            className="absolute inset-0 bg-black/60"
-            onClick={() => setMobileFiltersOpen(false)}
-          />
+          <div className="absolute inset-0 bg-black/60" onClick={() => setMobileFiltersOpen(false)} />
           <div className="absolute left-0 top-0 h-full w-80 bg-surface p-6 overflow-y-auto">
             <button
               onClick={() => setMobileFiltersOpen(false)}
@@ -303,11 +325,9 @@ export default function Kitchen({ products }: KitchenProps) {
         </aside>
 
         <div className="flex-1 min-w-0">
-          {/* Toolbar: result count + sort */}
           <div className="flex items-center justify-between gap-4 mb-5">
             <p className="text-sm text-ink-muted">
-              {filteredProducts.length}{" "}
-              {filteredProducts.length === 1 ? "product" : "products"}
+              {filteredProducts.length} {filteredProducts.length === 1 ? "product" : "products"}
             </p>
             <label className="flex items-center gap-2 text-sm text-ink-muted">
               Sort
@@ -325,16 +345,15 @@ export default function Kitchen({ products }: KitchenProps) {
 
           {activeFilterChips}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {filteredProducts.map((product) => (
-              <ProductCard key={product.slug} product={product} />
-            ))}
-          </div>
-          {filteredProducts.length === 0 && (
+          {filteredProducts.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              {filteredProducts.map((product) => (
+                <ProductCard key={product.slug} product={product} />
+              ))}
+            </div>
+          ) : (
             <div className="text-center py-16 border border-line rounded-card">
-              <p className="text-ink font-medium">
-                No products match the selected filters.
-              </p>
+              <p className="text-ink font-medium">No products match the selected filters.</p>
               <button
                 onClick={clearAllFilters}
                 className="mt-3 text-sm text-gold-deep hover:underline underline-offset-4"
