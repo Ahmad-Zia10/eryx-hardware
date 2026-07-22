@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Minus, Plus, ShoppingCart, Truck, ShieldCheck, Award, ExternalLink, Star, Layers } from "lucide-react";
+import { Minus, Plus, ShoppingCart, Truck, Award, ExternalLink, Star, Layers } from "lucide-react";
 import ProductImage from "@/components/ui/ProductImage";
 import ProductCard from "@/components/sections/ProductCard";
 import WishlistButton from "@/components/ui/WishlistButton";
@@ -424,7 +424,6 @@ export default function ProductDetail({
               ["Material", liveProduct.material],
               ["Category", liveProduct.category],
               ["Item Code", liveProduct.code],
-              ["Technology", "German Tech"],
               ["Unit", "Set"],
             ].map(([key, value]) => (
               <div key={key} className="flex justify-between py-2 text-sm">
@@ -534,9 +533,6 @@ export default function ProductDetail({
           <div className="flex flex-wrap gap-6 mt-2">
             <div className="flex items-center gap-2 text-xs text-ink-muted">
               <Truck size={16} /> Pan India Delivery
-            </div>
-            <div className="flex items-center gap-2 text-xs text-ink-muted">
-              <ShieldCheck size={16} /> German Tech
             </div>
             <div className="flex items-center gap-2 text-xs text-ink-muted">
               <Award size={16} /> Certified Quality

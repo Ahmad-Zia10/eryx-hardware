@@ -95,11 +95,6 @@ export type CategoryValue = CategoryEntry["slug"];
 
 export const BRAND_HIGHLIGHTS = [
   {
-    icon: "Shield",
-    title: "German Technology",
-    subtitle: "SGS Certified Components",
-  },
-  {
     icon: "Globe",
     title: "Pan India Delivery",
     subtitle: "All major cities covered",
