@@ -1,14 +1,13 @@
 'use client';
 
 import { createClient } from '@/lib/supabase/client';
-import { useState, useEffect, Suspense } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Mail, Lock, User, Eye, EyeOff, CheckCircle2, AlertCircle, Phone, ArrowLeft } from 'lucide-react';
-import { signInSchema, signUpSchema, phoneSchema, otpSchema } from '@/lib/validations/auth';
+import { Mail, Lock, User, Eye, EyeOff, CheckCircle2, AlertCircle } from 'lucide-react';
+import { signInSchema, signUpSchema } from '@/lib/validations/auth';
 
 type Mode = 'signin' | 'signup';
-type Method = 'email' | 'phone';
 
 function GoogleIcon() {
   return (
@@ -26,198 +25,12 @@ const inputWrap =
 const inputEl =
   'w-full bg-transparent py-2.5 text-sm text-ink placeholder:text-ink-faint outline-none';
 
-// Two-step phone OTP: enter 10-digit mobile → receive SMS code → verify.
-// Kept self-contained so the email/password form above stays simple. On a
-// successful verify it hard-navigates to `next` (same as the email path) so
-// the server picks up the new session cookie.
-function PhoneAuth({
-  next,
-  onBack,
-}: {
-  next: string;
-  onBack: () => void;
-}) {
-  const supabase = createClient();
-  const [step, setStep] = useState<'phone' | 'otp'>('phone');
-  const [phone, setPhone] = useState('');
-  const [token, setToken] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
-  const [cooldown, setCooldown] = useState(0);
-
-  // Countdown for the resend cooldown.
-  useEffect(() => {
-    if (cooldown <= 0) return;
-    const t = setInterval(() => setCooldown((c) => (c <= 1 ? 0 : c - 1)), 1000);
-    return () => clearInterval(t);
-  }, [cooldown]);
-
-  const e164 = (raw: string) => `+91${raw}`;
-
-  const sendOtp = async (isResend = false) => {
-    const parsed = phoneSchema.safeParse({ phone });
-    if (!parsed.success) {
-      setError(parsed.error.issues[0].message);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    setNotice(null);
-    try {
-      const { error } = await supabase.auth.signInWithOtp({ phone: e164(parsed.data.phone) });
-      if (error) throw error;
-      setStep('otp');
-      setCooldown(30);
-      setNotice(isResend ? 'A new code has been sent.' : `We sent a 6-digit code to +91 ${parsed.data.phone}.`);
-    } catch (err: any) {
-      setError(err.message || 'Could not send the code. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const verifyOtp = async () => {
-    const parsed = otpSchema.safeParse({ token });
-    if (!parsed.success) {
-      setError(parsed.error.issues[0].message);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      const { error } = await supabase.auth.verifyOtp({
-        phone: e164(phone),
-        token: parsed.data.token,
-        type: 'sms',
-      });
-      if (error) throw error;
-      window.location.href = next;
-    } catch (err: any) {
-      setError(/expired|invalid/i.test(err.message) ? 'That code is invalid or expired.' : err.message);
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div>
-      {notice && (
-        <div className="mb-4 flex items-start gap-2 rounded-control border border-green-500/30 bg-green-500/10 p-3 text-sm text-green-600 dark:text-green-500">
-          <CheckCircle2 size={16} className="mt-0.5 shrink-0" />
-          <span>{notice}</span>
-        </div>
-      )}
-      {error && (
-        <div className="mb-4 flex items-start gap-2 rounded-control border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-600 dark:text-red-500">
-          <AlertCircle size={16} className="mt-0.5 shrink-0" />
-          <span>{error}</span>
-        </div>
-      )}
-
-      {step === 'phone' ? (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (!loading) sendOtp(false);
-          }}
-          className="space-y-4"
-        >
-          <div>
-            <label className="block text-xs font-medium text-ink-muted mb-1.5">Mobile number</label>
-            <div className={inputWrap}>
-              <span className="text-sm text-ink-muted shrink-0">+91</span>
-              <input
-                type="tel"
-                inputMode="numeric"
-                autoComplete="tel-national"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                placeholder="10-digit mobile number"
-                className={inputEl}
-              />
-            </div>
-          </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-gold hover:bg-gold-bright text-on-gold font-semibold py-2.5 rounded-control transition-colors disabled:opacity-50"
-          >
-            {loading ? 'Sending…' : 'Send code'}
-          </button>
-        </form>
-      ) : (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (!loading) verifyOtp();
-          }}
-          className="space-y-4"
-        >
-          <div>
-            <label className="block text-xs font-medium text-ink-muted mb-1.5">Enter the 6-digit code</label>
-            <div className={inputWrap}>
-              <input
-                type="text"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                value={token}
-                onChange={(e) => setToken(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                placeholder="••••••"
-                className={`${inputEl} tracking-[0.4em] text-center`}
-                autoFocus
-              />
-            </div>
-          </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-gold hover:bg-gold-bright text-on-gold font-semibold py-2.5 rounded-control transition-colors disabled:opacity-50"
-          >
-            {loading ? 'Verifying…' : 'Verify & continue'}
-          </button>
-          <div className="flex items-center justify-between text-xs">
-            <button
-              type="button"
-              onClick={() => {
-                setStep('phone');
-                setToken('');
-                setError(null);
-                setNotice(null);
-              }}
-              className="text-ink-muted hover:text-gold-deep"
-            >
-              Change number
-            </button>
-            <button
-              type="button"
-              disabled={cooldown > 0 || loading}
-              onClick={() => sendOtp(true)}
-              className="text-gold-deep hover:text-gold disabled:text-ink-faint disabled:hover:text-ink-faint"
-            >
-              {cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend code'}
-            </button>
-          </div>
-        </form>
-      )}
-
-      <button
-        type="button"
-        onClick={onBack}
-        className="inline-flex items-center gap-1.5 mt-5 text-sm text-ink-muted hover:text-gold-deep"
-      >
-        <ArrowLeft size={14} /> Other sign-in options
-      </button>
-    </div>
-  );
-}
-
 function LoginForm() {
   const supabase = createClient();
   const searchParams = useSearchParams();
   const next = searchParams.get('next') || '/';
 
   const [mode, setMode] = useState<Mode>('signin');
-  const [method, setMethod] = useState<Method>('email');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -376,13 +189,6 @@ function LoginForm() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-surface-raised py-8 px-6 sm:px-10 shadow-sm rounded-card border border-line">
-          {method === 'phone' ? (
-            <>
-              <h2 className="text-sm font-semibold text-ink mb-4">Sign in with phone</h2>
-              <PhoneAuth next={next} onBack={() => { setMethod('email'); resetMessages(); }} />
-            </>
-          ) : (
-          <>
           {/* Mode tabs */}
           <div className="grid grid-cols-2 gap-1 p-1 bg-surface-sunken rounded-control mb-6">
             {(['signin', 'signup'] as Mode[]).map((m) => (
@@ -407,15 +213,6 @@ function LoginForm() {
           >
             <GoogleIcon />
             {googleLoading ? 'Connecting…' : 'Continue with Google'}
-          </button>
-
-          <button
-            onClick={() => { setMethod('phone'); resetMessages(); }}
-            disabled={googleLoading || loading}
-            className="mt-3 w-full flex justify-center items-center gap-2 py-2.5 px-4 border border-line-strong rounded-control bg-surface text-sm font-medium text-ink hover:bg-surface-sunken transition-colors disabled:opacity-50"
-          >
-            <Phone size={16} className="text-ink-muted" />
-            Continue with phone
           </button>
 
           <div className="flex items-center gap-3 my-6">
@@ -557,8 +354,6 @@ function LoginForm() {
               </>
             )}
           </p>
-          </>
-          )}
         </div>
       </div>
     </div>

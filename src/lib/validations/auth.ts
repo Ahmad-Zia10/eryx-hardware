@@ -41,26 +41,6 @@ export const resetPasswordSchema = z
     path: ["confirm_password"],
   });
 
-// Phone OTP. We collect a 10-digit Indian mobile number and prepend +91 at
-// the call site to form E.164 (Supabase requires E.164). The regex rejects
-// leading zeros and enforces a valid Indian mobile prefix (6-9).
-export const phoneSchema = z.object({
-  phone: z
-    .string()
-    .trim()
-    .regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit mobile number."),
-});
-
-export const otpSchema = z.object({
-  token: z
-    .string()
-    .trim()
-    .regex(/^\d{6}$/, "Enter the 6-digit code."),
-});
-
-export type PhoneInput = z.infer<typeof phoneSchema>;
-export type OtpInput = z.infer<typeof otpSchema>;
-
 export type SignInInput = z.infer<typeof signInSchema>;
 export type SignUpInput = z.infer<typeof signUpSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
