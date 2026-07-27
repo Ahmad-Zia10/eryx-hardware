@@ -29,8 +29,34 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+## Deploy on Railway
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Production is hosted on [Railway](https://railway.app). Build/start commands and the
+healthcheck path are pinned in `railway.json`; the full list of required environment
+variables is in `.env.example`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### One-time setup
+
+1. **Create the service** — New Project → Deploy from GitHub repo → select this repo.
+   Railway auto-detects Next.js (Nixpacks) and reads `railway.json` for build/start.
+2. **Environment variables** — In the service's **Variables** tab, add every var from
+   `.env.example` with real values. (Copy the block from `.env.example` as a starting point.)
+3. **Deploy** — Railway builds and starts on `npm run start`, binding to the injected `$PORT`.
+   Note the generated `*.up.railway.app` URL.
+4. **Custom domain** — Settings → Networking → Custom Domain → add `eryxhardware.com`,
+   then create the CNAME it shows at your DNS provider.
+
+### External services to repoint at the new domain
+
+These live outside this repo and must be updated manually after the domain is live:
+
+- **Supabase** → Authentication → URL Configuration: set **Site URL** to
+  `https://eryxhardware.com` and add redirect URLs `https://eryxhardware.com/auth/callback`
+  and `https://eryxhardware.com/reset-password`.
+- **Google Cloud Console** (OAuth client): add `https://eryxhardware.com/auth/callback`
+  to Authorized redirect URIs.
+- **Razorpay** dashboard: point the webhook at
+  `https://eryxhardware.com/api/webhooks/razorpay` (same `RAZORPAY_WEBHOOK_SECRET`).
+
+The order-release sweep runs in Supabase **pg_cron**, so no scheduler needs configuring
+on Railway.
