@@ -147,6 +147,22 @@ export default function Footer() {
           </div>
         </div>
 
+        {/* Legal / policies */}
+        <div className="border-t border-white/10 pt-6 mt-10 flex flex-wrap gap-x-6 gap-y-2">
+          <Link href="/terms" className={footerLink}>
+            Terms &amp; Conditions
+          </Link>
+          <Link href="/return-policy" className={footerLink}>
+            Return Policy
+          </Link>
+          <Link href="/refund-policy" className={footerLink}>
+            Refund &amp; Cancellation Policy
+          </Link>
+          <Link href="/shipping-policy" className={footerLink}>
+            Shipping Policy
+          </Link>
+        </div>
+
         <div className="border-t border-white/10 pt-5 mt-10">
           <p className="text-center text-xs text-white/45">
             Copyright © 2026, Eryx Hardware · A Division of Modular India. All
