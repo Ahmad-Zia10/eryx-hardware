@@ -10,11 +10,11 @@ import {
   PinterestIcon,
 } from "@/components/ui/SocialIcons";
 
-// The footer is an always-dark surface in both themes, so it uses the
-// warm brand-dark + literal light-on-dark colors rather than the
-// adaptive surface/ink tokens.
+// The footer is an always-dark Modernist band (#201e1d = brand-dark),
+// so it uses the warm brand-cream (#f3f2f2) at reduced opacity for
+// light-on-dark text and the red accent (gold token) for emphasis.
 const footerLink =
-  "text-sm text-white/55 hover:text-brand-cream transition duration-200 ease-in-out";
+  "text-sm text-brand-cream/55 hover:text-brand-cream transition duration-200 ease-in-out";
 
 const SOCIALS = [
   { label: "Instagram", url: SITE_CONFIG.socialLinks.instagram.url, Icon: InstagramIcon },
@@ -26,30 +26,33 @@ const SOCIALS = [
 
 export default function Footer() {
   return (
-    <footer id="footer" className="bg-brand-dark border-t border-white/10">
+    <footer id="footer" className="bg-brand-dark border-t-2 border-line-strong">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           {/* Brand */}
           <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-gold text-2xl font-bold">▲</span>
-              <span className="font-bold text-2xl tracking-widest text-white">
-                ERYX
-              </span>
+            {/* Logo stays FULL COLOR on a light chip (Modernist rule) */}
+            <div className="flex items-center">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/eryx-logo-transparent.png"
+                alt="ERYX"
+                className="h-10 w-auto bg-brand-cream px-2 py-1.5 object-contain"
+              />
             </div>
-            <p className="text-sm text-white/55 leading-relaxed">
+            <p className="text-sm text-brand-cream/55 leading-relaxed">
               Precision Hardware for Modern Homes. A Division of Modular India.
             </p>
             <div className="flex flex-col gap-2 text-sm">
               <a
                 href="tel:+917011184853"
-                className="flex items-center gap-2 text-white/55 hover:text-gold transition duration-200 ease-in-out"
+                className="flex items-center gap-2 text-brand-cream/55 hover:text-gold transition duration-200 ease-in-out"
               >
                 <Phone size={14} /> 70111 84853
               </a>
               <a
                 href="mailto:Info@modularindia.com"
-                className="flex items-center gap-2 text-white/55 hover:text-gold transition duration-200 ease-in-out"
+                className="flex items-center gap-2 text-brand-cream/55 hover:text-gold transition duration-200 ease-in-out"
               >
                 <Mail size={14} /> Info@modularindia.com
               </a>
@@ -57,7 +60,7 @@ export default function Footer() {
                 href="https://eryxhardware.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-white/55 hover:text-gold transition duration-200 ease-in-out"
+                className="flex items-center gap-2 text-brand-cream/55 hover:text-gold transition duration-200 ease-in-out"
               >
                 <Globe size={14} /> eryxhardware.com
               </a>
@@ -148,7 +151,7 @@ export default function Footer() {
         </div>
 
         {/* Legal / policies */}
-        <div className="border-t border-white/10 pt-6 mt-10 flex flex-wrap gap-x-6 gap-y-2">
+        <div className="border-t border-brand-cream/10 pt-6 mt-10 flex flex-wrap gap-x-6 gap-y-2">
           <Link href="/terms" className={footerLink}>
             Terms &amp; Conditions
           </Link>
@@ -163,8 +166,8 @@ export default function Footer() {
           </Link>
         </div>
 
-        <div className="border-t border-white/10 pt-5 mt-10">
-          <p className="text-center text-xs text-white/45">
+        <div className="border-t border-brand-cream/10 pt-5 mt-10">
+          <p className="text-center text-xs text-brand-cream/45">
             Copyright © 2026, Eryx Hardware · A Division of Modular India. All
             Rights Reserved.
           </p>

@@ -234,7 +234,7 @@ function EmptyState({
 }) {
   return (
     <div className="p-16 flex flex-col items-center text-center">
-      <div className="w-14 h-14 rounded-full bg-surface-sunken flex items-center justify-center mb-4">
+      <div className="w-14 h-14 bg-surface-sunken flex items-center justify-center mb-4">
         {icon}
       </div>
       <p className="text-ink font-medium">{title}</p>

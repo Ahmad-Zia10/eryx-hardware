@@ -72,11 +72,11 @@ export default function ProductsMegaMenu({
       className="absolute left-0 right-0 top-full z-40 px-4 sm:px-6 lg:px-8"
     >
       <div className="max-w-7xl mx-auto mt-3">
-        <div className="relative overflow-hidden rounded-lg border border-[#D4D4D4] dark:border-[#2A2A2A] bg-white dark:bg-[#0F0F0F] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.25)] dark:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.7)]">
-          {/* Gold accent stripe at the top */}
-          <div className="h-[3px] w-full bg-gradient-to-r from-[#D4A017] via-[#E8B820] to-[#D4A017]" />
+        <div className="relative overflow-hidden border-2 border-line-strong bg-surface-raised shadow-[0_20px_60px_-15px_rgba(32,30,29,0.25)]">
+          {/* Flat red accent rule at the top (Modernist — no gradient) */}
+          <div className="h-[2px] w-full bg-gold" />
 
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-0 divide-y md:divide-y-0 md:divide-x divide-[#EDEDED] dark:divide-[#222222]">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-0 divide-y md:divide-y-0 md:divide-x divide-line">
             {visibleGroups.map((group) => (
               <div key={group.productLine} className="md:col-span-3">
                 <MegaColumn group={group} onNavigate={onNavigate} />
@@ -88,14 +88,14 @@ export default function ProductsMegaMenu({
           </div>
 
           {/* Footer strip */}
-          <div className="border-t border-[#EDEDED] dark:border-[#222222] bg-[#FAFAFA] dark:bg-[#0A0A0A] px-6 py-3 flex items-center justify-between gap-4">
-            <p className="text-xs text-[#6B6B6B] dark:text-[#9A9A9A]">
-              <span className="text-[#D4A017] font-semibold">Free shipping</span> on orders over ₹5,000 · Pan-India delivery
+          <div className="border-t border-line bg-surface-sunken px-6 py-3 flex items-center justify-between gap-4">
+            <p className="text-xs text-ink-muted">
+              <span className="text-gold-deep font-semibold">Free shipping</span> on orders over ₹5,000 · Pan-India delivery
             </p>
             <Link
               href="/products"
               onClick={onNavigate}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0A0A0A] dark:text-[#F5F5F5] hover:text-[#D4A017] transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink hover:text-gold transition-colors"
             >
               Shop everything
               <ArrowUpRight size={12} />
@@ -124,8 +124,8 @@ function MegaColumn({
       <div className="mb-4">
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#D4A017]" />
-            <span className="text-[10px] tracking-[0.3em] uppercase text-[#D4A017] font-semibold">
+            <span className="h-3 w-[2px] bg-gold" />
+            <span className="text-[10px] tracking-[0.3em] uppercase text-gold font-bold">
               {lineLabel}
             </span>
           </div>
@@ -133,14 +133,14 @@ function MegaColumn({
             <Link
               href={lineHref}
               onClick={onNavigate}
-              className="inline-flex items-center gap-1 text-[10px] tracking-widest uppercase text-[#9A9A9A] hover:text-[#D4A017] transition-colors"
+              className="inline-flex items-center gap-1 text-[10px] tracking-widest uppercase text-ink-faint hover:text-gold transition-colors"
             >
               View all
               <ArrowRight size={10} />
             </Link>
           )}
         </div>
-        <p className="text-xs text-[#6B6B6B] dark:text-[#9A9A9A] pl-3.5">
+        <p className="text-xs text-ink-muted pl-3.5">
           {lineTagline}
         </p>
       </div>
@@ -152,18 +152,18 @@ function MegaColumn({
               <Link
                 href={`${lineHref}?category=${encodeURIComponent(cat.name)}`}
                 onClick={onNavigate}
-                className="group flex items-center justify-between gap-3 px-3 py-2 rounded-md text-sm text-[#0A0A0A] dark:text-[#F5F5F5] hover:bg-[#FFF9EB] dark:hover:bg-[#1F1A0F] hover:text-[#D4A017] transition-colors"
+                className="group flex items-center justify-between gap-3 px-3 py-2 text-sm text-ink hover:bg-gold-tint hover:text-gold-deep transition-colors"
               >
                 <span className="flex items-center gap-2">
                   <ChevronRight
                     size={14}
-                    className="text-[#D4A017] -ml-1 opacity-0 group-hover:opacity-100 group-hover:ml-0 transition-all"
+                    className="text-gold -ml-1 opacity-0 group-hover:opacity-100 group-hover:ml-0 transition-all"
                   />
                   <span className="group-hover:translate-x-0.5 transition-transform">
                     {cat.name}
                   </span>
                 </span>
-                <span className="text-[10px] font-semibold text-[#9A9A9A] group-hover:text-[#D4A017] bg-[#F5F5F5] dark:bg-[#1F1F1F] group-hover:bg-[#FFF3D1] dark:group-hover:bg-[#2A2210] px-2 py-0.5 rounded-full transition-colors">
+                <span className="text-[10px] font-semibold text-ink-faint group-hover:text-on-gold bg-surface-sunken group-hover:bg-gold px-2 py-0.5 transition-colors">
                   {cat.count}
                 </span>
               </Link>
@@ -171,17 +171,17 @@ function MegaColumn({
           ))}
         </ul>
       ) : (
-        <div className="rounded-md border border-dashed border-[#D4D4D4] dark:border-[#2A2A2A] p-4 bg-[#FAFAFA] dark:bg-[#141414]">
-          <p className="text-sm text-[#0A0A0A] dark:text-[#F5F5F5] font-medium">
+        <div className="border border-dashed border-line-strong p-4 bg-surface-sunken">
+          <p className="text-sm text-ink font-medium">
             {lineLabel} range coming soon
           </p>
-          <p className="text-xs text-[#6B6B6B] dark:text-[#9A9A9A] mt-1">
+          <p className="text-xs text-ink-muted mt-1">
             Get in touch for {lineLabel.toLowerCase()} requirements.
           </p>
           <Link
             href="/contact"
             onClick={onNavigate}
-            className="inline-flex items-center gap-1 text-xs font-semibold text-[#D4A017] hover:text-[#E8B820] mt-3"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-gold-deep hover:text-gold mt-3"
           >
             Contact us
             <ArrowRight size={12} />
@@ -197,12 +197,12 @@ function ExploreColumn({ onNavigate }: { onNavigate: () => void }) {
     <div className="p-6 flex flex-col h-full">
       <div className="mb-4">
         <div className="flex items-center gap-2 mb-1">
-          <span className="h-1.5 w-1.5 rounded-full bg-[#D4A017]" />
-          <span className="text-[10px] tracking-[0.3em] uppercase text-[#D4A017] font-semibold">
+          <span className="h-3 w-[2px] bg-gold" />
+          <span className="text-[10px] tracking-[0.3em] uppercase text-gold font-bold">
             Explore
           </span>
         </div>
-        <p className="text-xs text-[#6B6B6B] dark:text-[#9A9A9A] pl-3.5">
+        <p className="text-xs text-ink-muted pl-3.5">
           Shortcuts, deals & help
         </p>
       </div>
@@ -215,22 +215,22 @@ function ExploreColumn({ onNavigate }: { onNavigate: () => void }) {
               <Link
                 href={link.href}
                 onClick={onNavigate}
-                className="group flex items-center gap-3 px-3 py-2 rounded-md text-sm text-[#0A0A0A] dark:text-[#F5F5F5] hover:bg-[#FFF9EB] dark:hover:bg-[#1F1A0F] transition-colors"
+                className="group flex items-center gap-3 px-3 py-2 text-sm text-ink hover:bg-gold-tint transition-colors"
               >
-                <span className="flex items-center justify-center h-8 w-8 rounded-md bg-[#F5F5F5] dark:bg-[#1F1F1F] group-hover:bg-[#D4A017] group-hover:text-[#0A0A0A] text-[#555555] dark:text-[#9A9A9A] transition-colors shrink-0">
+                <span className="flex items-center justify-center h-8 w-8 bg-surface-sunken group-hover:bg-gold group-hover:text-on-gold text-ink-muted transition-colors shrink-0">
                   <Icon size={14} />
                 </span>
                 <span className="flex flex-col flex-1 min-w-0">
-                  <span className="font-medium group-hover:text-[#D4A017] transition-colors leading-tight">
+                  <span className="font-medium group-hover:text-gold-deep transition-colors leading-tight">
                     {link.label}
                   </span>
-                  <span className="text-[11px] text-[#6B6B6B] dark:text-[#9A9A9A] leading-tight">
+                  <span className="text-[11px] text-ink-muted leading-tight">
                     {link.description}
                   </span>
                 </span>
                 <ArrowRight
                   size={14}
-                  className="text-[#D4A017] opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all shrink-0"
+                  className="text-gold opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all shrink-0"
                 />
               </Link>
             </li>
@@ -238,26 +238,23 @@ function ExploreColumn({ onNavigate }: { onNavigate: () => void }) {
         })}
       </ul>
 
-      {/* Promotional callout — fills the visual gap at the bottom of the column */}
-      <div className="mt-4 relative overflow-hidden rounded-md bg-gradient-to-br from-[#D4A017] to-[#B8890F] p-4">
-        <div className="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-white/10" />
-        <div className="absolute -right-8 -bottom-8 h-20 w-20 rounded-full bg-white/5" />
-        <div className="relative">
-          <p className="text-[10px] tracking-[0.2em] uppercase text-[#0A0A0A]/70 font-bold mb-1">
-            Trade & Projects
-          </p>
-          <p className="text-sm font-semibold text-[#0A0A0A] leading-snug mb-2">
-            Special pricing for architects & dealers
-          </p>
-          <Link
-            href="/dealer-enquiry"
-            onClick={onNavigate}
-            className="inline-flex items-center gap-1 text-xs font-bold text-[#0A0A0A] hover:gap-1.5 transition-all"
-          >
-            Get in touch
-            <ArrowRight size={12} />
-          </Link>
-        </div>
+      {/* Promotional callout — flat red poster block (Modernist: full-red
+          statement field, no gradient, no rounded decoration). */}
+      <div className="mt-4 relative overflow-hidden bg-gold p-4">
+        <p className="text-[10px] tracking-[0.2em] uppercase text-on-gold/70 font-bold mb-1">
+          Trade & Projects
+        </p>
+        <p className="text-sm font-semibold text-on-gold leading-snug mb-2">
+          Special pricing for architects & dealers
+        </p>
+        <Link
+          href="/dealer-enquiry"
+          onClick={onNavigate}
+          className="inline-flex items-center gap-1 text-xs font-bold text-on-gold hover:gap-1.5 transition-all"
+        >
+          Get in touch
+          <ArrowRight size={12} />
+        </Link>
       </div>
     </div>
   );

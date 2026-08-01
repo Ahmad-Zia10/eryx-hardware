@@ -5,7 +5,7 @@ import { X, CheckCircle, AlertCircle } from "lucide-react";
 import { useUI } from "@/context/UIContext";
 
 const inputClasses =
-  "w-full border border-[#D4D4D4] dark:border-[#2A2A2A] bg-white dark:bg-[#0A0A0A] text-[#0A0A0A] dark:text-[#F5F5F5] text-sm px-4 py-3 focus:border-[#D4A017] focus:outline-none placeholder-[#555555] dark:placeholder-[#9A9A9A]";
+  "w-full border border-line-strong bg-surface text-ink text-sm px-4 py-3 focus:border-gold focus:outline-none placeholder-ink-faint";
 
 export default function EnquiryModal() {
   const { enquiryModal, closeEnquiryModal } = useUI();
@@ -107,12 +107,12 @@ function EnquiryModalContent({
       onClick={handleClose}
     >
       <div
-        className="bg-white dark:bg-[#141414] border border-[#D4D4D4] dark:border-[#2A2A2A] max-w-md w-full mx-4 mt-20 rounded-sm relative"
+        className="bg-surface-raised border border-line-strong max-w-md w-full mx-4 mt-20 relative"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={handleClose}
-          className="absolute top-4 right-4 text-[#555555] dark:text-[#9A9A9A] hover:text-[#D4A017] transition duration-200 ease-in-out"
+          className="absolute top-4 right-4 text-ink-muted hover:text-gold transition duration-200 ease-in-out"
           aria-label="Close"
         >
           <X size={20} />
@@ -121,27 +121,27 @@ function EnquiryModalContent({
         <div className="p-6">
           {submitted ? (
             <div className="flex flex-col items-center text-center gap-3 py-6">
-              <CheckCircle className="text-[#D4A017]" size={48} />
-              <h2 className="text-xl font-bold text-[#0A0A0A] dark:text-[#F5F5F5] font-serif">
+              <CheckCircle className="text-gold" size={48} />
+              <h2 className="text-xl font-bold text-ink font-serif">
                 Enquiry Sent!
               </h2>
-              <p className="text-[#555555] dark:text-[#9A9A9A]">
+              <p className="text-ink-muted">
                 Our team will contact you within 24 hours.
               </p>
               <button
                 onClick={handleClose}
-                className="mt-2 border border-[#D4D4D4] dark:border-[#2A2A2A] text-[#555555] dark:text-[#9A9A9A] hover:border-[#D4A017] px-6 py-2 transition duration-200 ease-in-out"
+                className="mt-2 border border-line-strong text-ink-muted hover:border-gold hover:text-gold px-6 py-2 transition duration-200 ease-in-out"
               >
                 Close
               </button>
             </div>
           ) : (
             <>
-              <h2 className="text-xl font-bold text-[#0A0A0A] dark:text-[#F5F5F5] font-serif">
+              <h2 className="text-xl font-bold text-ink font-serif">
                 {heading}
               </h2>
               {productName && (
-                <p className="text-[#D4A017] text-sm mt-1">{productName}</p>
+                <p className="text-gold-deep text-sm mt-1">{productName}</p>
               )}
 
               {errorMessage && (
@@ -195,7 +195,7 @@ function EnquiryModalContent({
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="bg-[#D4A017] hover:bg-[#E8B820] disabled:opacity-60 disabled:cursor-not-allowed text-[#0A0A0A] font-semibold w-full py-3 transition duration-200 ease-in-out"
+                  className="bg-gold hover:bg-gold-bright disabled:opacity-60 disabled:cursor-not-allowed text-on-gold font-semibold w-full py-3 transition duration-200 ease-in-out"
                 >
                   {submitting ? "Sending..." : "Send Enquiry"}
                 </button>

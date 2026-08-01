@@ -7,8 +7,6 @@ import {
   ChevronDown,
   ChevronRight,
   Search,
-  Moon,
-  Sun,
   User,
   ShoppingCart,
   Heart,
@@ -18,7 +16,6 @@ import {
   ShieldAlert
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { useTheme } from "@/context/ThemeContext";
 import { useCart } from "@/context/CartContext";
 import { useUI } from "@/context/UIContext";
 import { useWishlist } from "@/context/WishlistContext";
@@ -51,7 +48,7 @@ const MOBILE_PRODUCT_LINE_HREF: Record<ProductLine, string> = {
 // built-in equivalent, so we compare the current pathname ourselves.
 function navLinkClass(isActive: boolean) {
   return `text-sm transition duration-200 ease-in-out hover:text-gold ${
-    isActive ? "text-gold font-medium" : "text-ink-muted"
+    isActive ? "text-gold font-bold" : "text-ink"
   }`;
 }
 
@@ -60,7 +57,6 @@ export default function Navbar({
 }: {
   categoryGroups?: CategoryGroup[];
 }) {
-  const { isDark, toggleTheme } = useTheme();
   const { cartCount } = useCart();
   const { openCartDrawer } = useUI();
   const { wishlistCount } = useWishlist();
@@ -166,7 +162,7 @@ export default function Navbar({
   };
 
   return (
-    <nav className="sticky top-9.25 z-40 bg-surface border-b border-line relative">
+    <nav className="sticky top-9.25 z-40 bg-surface border-b-2 border-line-strong relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 shrink-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -184,7 +180,7 @@ export default function Navbar({
           >
             <button
               onClick={() => setProductsOpen((open) => !open)}
-              className="flex items-center gap-1 text-sm text-ink-muted transition duration-200 ease-in-out hover:text-gold"
+              className="flex items-center gap-1 text-sm text-ink transition duration-200 ease-in-out hover:text-gold"
             >
               Products <ChevronDown size={14} />
             </button>
@@ -216,13 +212,6 @@ export default function Navbar({
             >
               <Search size={20} />
             </button>
-          <button
-            onClick={toggleTheme}
-            className="text-ink-muted hover:text-gold transition duration-200 ease-in-out"
-            aria-label="Toggle theme"
-          >
-            {isDark ? <Moon size={20} /> : <Sun size={20} />}
-          </button>
           <div className="relative" ref={userMenuRef}>
             {user ? (
               <button
@@ -246,12 +235,12 @@ export default function Navbar({
             {userDropdownOpen && user && (
               <div
                 role="menu"
-                className="absolute right-0 mt-3 w-64 bg-surface-raised border border-line shadow-[0_16px_48px_rgba(0,0,0,0.16)] dark:shadow-[0_16px_48px_rgba(0,0,0,0.5)] rounded-card overflow-hidden z-50 origin-top-right animate-[dropdown_140ms_ease-out]"
+                className="absolute right-0 mt-3 w-64 bg-surface-raised border border-line shadow-[0_16px_48px_rgba(32,30,29,0.16)] rounded-card overflow-hidden z-50 origin-top-right animate-[dropdown_140ms_ease-out]"
               >
                 {/* Identity header — gold-ringed avatar + name/email,
                     mirroring the account page's profile block. */}
                 <div className="flex items-center gap-3 p-4 bg-surface-sunken border-b border-line">
-                  <div className="w-11 h-11 shrink-0 rounded-full bg-gold-tint text-gold-deep ring-1 ring-gold/30 flex items-center justify-center text-lg font-semibold uppercase">
+                  <div className="w-11 h-11 shrink-0 bg-gold-tint text-gold-deep ring-1 ring-gold/30 flex items-center justify-center text-lg font-semibold uppercase">
                     {(user.user_metadata?.full_name || user.email || "?").charAt(0)}
                   </div>
                   <div className="min-w-0">
@@ -301,7 +290,7 @@ export default function Navbar({
                   <button
                     onClick={handleSignOut}
                     role="menuitem"
-                    className="group/item flex w-full items-center gap-3 px-3 py-2.5 text-sm text-red-600 dark:text-red-400 rounded-control hover:bg-red-500/10 transition-colors duration-150"
+                    className="group/item flex w-full items-center gap-3 px-3 py-2.5 text-sm text-red-600 rounded-control hover:bg-red-500/10 transition-colors duration-150"
                   >
                     <LogOut size={16} className="shrink-0" />
                     <span className="flex-1 text-left">Sign Out</span>
@@ -322,14 +311,18 @@ export default function Navbar({
               </span>
             )}
           </Link>
+          {/* Modernist: Cart is the one filled control in the bar —
+              red fill, weight 800, count inline (poster-style) rather
+              than a floating badge. */}
           <button
             onClick={openCartDrawer}
-            className="relative text-ink-muted hover:text-gold transition duration-200 ease-in-out"
+            className="relative flex items-center gap-2 bg-gold hover:bg-gold-bright text-on-gold font-extrabold text-sm px-4 py-2 transition duration-200 ease-in-out"
             aria-label="Cart"
           >
-            <ShoppingCart size={20} />
+            <ShoppingCart size={18} />
+            <span className="hidden sm:inline">Cart{cartCount > 0 ? ` · ${cartCount}` : ""}</span>
             {cartCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-gold text-on-gold text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-pill">
+              <span className="sm:hidden absolute -top-1.5 -right-1.5 bg-ink text-brand-cream text-[10px] font-bold w-4 h-4 flex items-center justify-center">
                 {cartCount}
               </span>
             )}
