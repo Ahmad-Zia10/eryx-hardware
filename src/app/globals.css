@@ -3,55 +3,61 @@
 /* ─── Tailwind v4 theme configuration ──────────────────────────────
    In Tailwind v3 this lived in tailwind.config.js. In v4, theme
    tokens and custom variants are declared directly in CSS instead —
-   there is no separate config file in this project, by design. */
+   there is no separate config file in this project, by design.
 
-@theme {
-  /* Fonts loaded via next/font in layout.tsx expose these CSS vars.
-     Two families only (performance budget): Inter for body/UI,
-     Fraunces for every serif role. The four serif tokens are kept as
-     distinct names because ~50 files use the utilities, but they all
-     resolve to Fraunces — consolidation happened here, not in the
-     components. */
-  --font-sans: var(--font-inter, Inter), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-fraunces, Fraunces), Georgia, serif;
-  --font-display: var(--font-fraunces, Fraunces), Georgia, serif;
-  --font-heading: var(--font-fraunces, Fraunces), Georgia, serif;
-  --font-accent: var(--font-fraunces, Fraunces), Georgia, serif;
+   ── Two themes, one token set (Modernist reskin) ──
+   The storefront `(marketing)` runs the MODERNIST system (red accent,
+   flat/zero-radius, Archivo). The `admin` area keeps its LEGACY theme
+   (gold accent, soft radius, Fraunces). Both consume the SAME token
+   names (`gold`, `ink`, `surface`, `line`, `radius-*`, `font-*`), so
+   the split is done entirely at the token layer:
 
-  /* Brand Kit Colors.
-     brand-gold is intentionally the muted #D4A017 rather than the
-     brand kit's raw #fec201 — the bright yellow is reserved for the
-     logo artwork; UI surfaces and CTAs use the calmer gold so the
-     accent reads premium instead of neon. */
-  --color-brand-navy: #012761;
-  --color-brand-gold: #d4a017;
-  --color-brand-muted: #9ea4b5;
-  --color-brand-dark: #1b1611;
-  --color-brand-bronze: #b48214;
-  --color-brand-cream: #fff3c2;
+     • Every design token below resolves through a CSS variable via
+       `@theme inline` — so `bg-gold`, `rounded-card`, `font-serif`
+       emit `var(--…)` rather than a baked-in value.
+     • `:root` holds the LEGACY (admin) values — the default.
+     • `.modernist` (set on the marketing layout root) overrides those
+       variables with the Modernist values.
 
-  /* Gold ramp — the ONLY accent family. Use `gold` for fills and
-     interactive accents, `gold-bright` for hover, `gold-deep` for
-     pressed/borders on gold, `on-gold` for text sitting on gold. */
-  --color-gold: #d4a017;
-  --color-gold-bright: #e8b820;
-  --color-gold-deep: #b48214;
-  --color-on-gold: #1b1611;
+   Result: ~80% of the storefront recolors from this file alone, and
+   the admin area is untouched because nothing under `.modernist`
+   reaches it. Do NOT hardcode hex neutrals or accent colors in
+   components — always go through a token. */
 
-  /* Radius system: controls (buttons, inputs, badges) stay crisp,
-     cards are softly rounded, chips/tags are pills. Use these three
-     — avoid ad-hoc rounded-sm/md/lg per component. */
-  --radius-control: 0.125rem;
-  --radius-card: 0.375rem;
-  --radius-pill: 9999px;
-}
-
-/* ─── Semantic, theme-adaptive tokens ──────────────────────────────
-   These flip automatically with the `.dark` class, so components use
-   `bg-surface text-ink border-line` with NO dark: prefix needed.
-   Migrate components to these as they're touched; new code must not
-   hardcode hex neutrals. */
+/* ─── Legacy (admin) token values — the :root default ──────────────
+   These are the pre-reskin brand values. They stay in effect
+   everywhere EXCEPT under `.modernist` (the marketing scope). */
 :root {
+  /* Fonts. Distinct `--app-font-*` names (not `--font-*`) so the
+     `@theme inline` mapping below is a clean reference, not a
+     self-referential loop against Tailwind's own `--font-*` tokens. */
+  --app-font-sans: var(--font-inter, Inter), ui-sans-serif, system-ui, sans-serif;
+  --app-font-serif: var(--font-fraunces, Fraunces), Georgia, serif;
+  --app-font-display: var(--font-fraunces, Fraunces), Georgia, serif;
+  --app-font-heading: var(--font-fraunces, Fraunces), Georgia, serif;
+  --app-font-accent: var(--font-fraunces, Fraunces), Georgia, serif;
+
+  /* Accent family (legacy gold ramp) */
+  --gold: #d4a017;
+  --gold-bright: #e8b820;
+  --gold-deep: #b48214;
+  --on-gold: #1b1611;
+
+  /* Brand kit (legacy) */
+  --brand-navy: #012761;
+  --brand-gold: #d4a017;
+  --brand-muted: #9ea4b5;
+  --brand-dark: #1b1611;
+  --brand-bronze: #b48214;
+  --brand-cream: #fff3c2;
+
+  /* Radius (legacy: crisp controls, soft cards, pill chips). Distinct
+     `--app-radius-*` names for the same clean-reference reason. */
+  --app-radius-control: 0.125rem;
+  --app-radius-card: 0.375rem;
+  --app-radius-pill: 9999px;
+
+  /* Semantic neutrals (legacy light) */
   --surface: #ffffff; /* page background */
   --surface-raised: #ffffff; /* cards, drawers, modals */
   --surface-sunken: #f5f4f0; /* image wells, alt section bands */
@@ -63,6 +69,9 @@
   --gold-tint: #faf6ea; /* soft gold wash backgrounds */
 }
 
+/* `.dark` flips the LEGACY neutrals for the admin area's dark chrome.
+   Marketing is a light-only system (theme toggle retired there), so
+   `.modernist` below never receives `.dark` and keeps its light ramp. */
 .dark {
   --surface: #0a0a0a;
   --surface-raised: #141414;
@@ -75,9 +84,81 @@
   --gold-tint: rgba(212, 160, 23, 0.08);
 }
 
-/* `inline` makes utilities emit var(--surface) directly, so the
-   values above cascade through the .dark flip at runtime. */
+/* ─── Modernist token values — scoped to the marketing tree ────────
+   `.modernist` is applied on the `(marketing)` layout root. These
+   overrides are what turn the storefront red/flat/Archivo. Values
+   come straight from the design handoff token table. */
+.modernist {
+  /* Fonts — Archivo for every role */
+  --app-font-sans: var(--font-archivo, Archivo), ui-sans-serif, system-ui, sans-serif;
+  --app-font-serif: var(--font-archivo, Archivo), ui-sans-serif, system-ui, sans-serif;
+  --app-font-display: var(--font-archivo, Archivo), ui-sans-serif, system-ui, sans-serif;
+  --app-font-heading: var(--font-archivo, Archivo), ui-sans-serif, system-ui, sans-serif;
+  --app-font-accent: var(--font-archivo, Archivo), ui-sans-serif, system-ui, sans-serif;
+
+  /* Accent family — single red. `gold` is the token NAME kept for
+     zero-churn migration; the value is now Modernist red. */
+  --gold: #ec3013;
+  --gold-bright: #ff4a2b;
+  --gold-deep: #ae1800;
+  --on-gold: #f3f2f2;
+
+  /* Brand kit → Modernist ink/cream */
+  --brand-navy: #201e1d;
+  --brand-gold: #ec3013;
+  --brand-muted: rgba(32, 30, 29, 0.45);
+  --brand-dark: #201e1d;
+  --brand-bronze: #ae1800;
+  --brand-cream: #f3f2f2;
+
+  /* Radius — flat everywhere (zero corner radius) */
+  --app-radius-control: 0;
+  --app-radius-card: 0;
+  --app-radius-pill: 0;
+
+  /* Semantic neutrals — Modernist warm-gray light system */
+  --surface: #f3f2f2;
+  --surface-raised: #ffffff;
+  --surface-sunken: #faf9f9;
+  --ink: #201e1d;
+  --ink-muted: rgba(32, 30, 29, 0.65);
+  --ink-faint: rgba(32, 30, 29, 0.45);
+  --line: rgba(32, 30, 29, 0.2);
+  --line-strong: rgba(32, 30, 29, 0.4);
+  --gold-tint: rgba(236, 48, 19, 0.06); /* soft red wash */
+}
+
+/* `@theme inline` makes every utility emit `var(--…)` directly, so the
+   `:root` / `.modernist` cascade above resolves per-scope at runtime.
+   Keeping the SAME token names means components need no edits. */
 @theme inline {
+  /* Fonts */
+  --font-sans: var(--app-font-sans);
+  --font-serif: var(--app-font-serif);
+  --font-display: var(--app-font-display);
+  --font-heading: var(--app-font-heading);
+  --font-accent: var(--app-font-accent);
+
+  /* Accent ramp */
+  --color-gold: var(--gold);
+  --color-gold-bright: var(--gold-bright);
+  --color-gold-deep: var(--gold-deep);
+  --color-on-gold: var(--on-gold);
+
+  /* Brand kit */
+  --color-brand-navy: var(--brand-navy);
+  --color-brand-gold: var(--brand-gold);
+  --color-brand-muted: var(--brand-muted);
+  --color-brand-dark: var(--brand-dark);
+  --color-brand-bronze: var(--brand-bronze);
+  --color-brand-cream: var(--brand-cream);
+
+  /* Radius */
+  --radius-control: var(--app-radius-control);
+  --radius-card: var(--app-radius-card);
+  --radius-pill: var(--app-radius-pill);
+
+  /* Semantic neutrals */
   --color-surface: var(--surface);
   --color-surface-raised: var(--surface-raised);
   --color-surface-sunken: var(--surface-sunken);
@@ -93,7 +174,8 @@
    mode (v3's `darkMode: 'class'` equivalent). Without this, `dark:`
    utilities fall back to the `prefers-color-scheme` media query
    instead of responding to the `.dark` class our ThemeContext /
-   no-flash script toggle on <html>. */
+   no-flash script toggle on <html>. Only the admin area uses `.dark`
+   now — marketing is light-only. */
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* Font loading handled via next/font/google in layout.tsx — no @import
@@ -113,7 +195,8 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Keyboard focus: one consistent gold ring everywhere. Mouse clicks
+/* Keyboard focus: one consistent accent ring everywhere (gold in
+   admin, red in marketing — follows the scoped token). Mouse clicks
    don't trigger it (focus-visible), so this is zero visual cost for
    pointer users and a big win for keyboard users. */
 :focus-visible {
@@ -163,7 +246,7 @@ body {
   scrollbar-width: none;
 }
 
-/* range slider + checkbox accent follows the gold token */
+/* range slider + checkbox accent follows the accent token */
 input[type="range"] {
   accent-color: var(--color-gold);
 }

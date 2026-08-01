@@ -20,13 +20,19 @@ export default async function MarketingLayout({ children } :  {
     <CartProvider>
       <UIProvider>
         <WishlistProvider>
-          <AnnouncementBar />
-          <Navbar categoryGroups={categoryGroups} />
-          <main>{children}</main>
-          <Footer />
-          <CartDrawer />
-          <EnquiryModal />
-          <Toast />
+          {/* `.modernist` scopes the redesign token overrides (globals.css)
+              to the storefront only — the admin tree never sits inside it,
+              so it keeps the legacy theme. `font-sans` re-applies Archivo
+              here because the body-level utility resolved against :root. */}
+          <div className="modernist bg-surface text-ink font-sans">
+            <AnnouncementBar />
+            <Navbar categoryGroups={categoryGroups} />
+            <main>{children}</main>
+            <Footer />
+            <CartDrawer />
+            <EnquiryModal />
+            <Toast />
+          </div>
         </WishlistProvider>
       </UIProvider>
     </CartProvider>

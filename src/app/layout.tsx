@@ -1,15 +1,29 @@
 import type { Metadata } from "next";
-import { Fraunces, Inter } from "next/font/google";
+import { Archivo, Fraunces, Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/context/ThemeContext";
 
 // ─── Brand fonts ───────────────────────────────────────────────────
-// Two families only, by design (performance budget — every page pays
-// for every font file). Fraunces covers ALL serif roles; the four
-// serif tokens (--font-display/heading/serif/accent) are mapped to it
-// in globals.css so existing font-* utilities keep working.
-//   Inter    → body + UI  (--font-sans via --font-inter)
-//   Fraunces → display headlines, section headings, editorial serif
+// Marketing (Modernist reskin) runs on ARCHIVO for every type role —
+// display headlines, headings, and body/UI alike. The four serif
+// tokens (--font-display/heading/serif/accent) and --font-sans are
+// remapped to Archivo inside the `.modernist` scope in globals.css, so
+// existing font-* utilities recolor with no component edits.
+//
+// Fraunces + Inter are retained ONLY for the Admin area, which keeps
+// its legacy theme (the :root token defaults point at them). Loading
+// all three is a deliberate, admin-scoped cost — marketing visitors
+// still only render Archivo glyphs that actually paint.
+//   Archivo  → all marketing type (--font-archivo)
+//   Inter    → admin body + UI  (--font-inter)
+//   Fraunces → admin serif roles (--font-fraunces)
+
+const archivo = Archivo({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-archivo",
+  display: "swap",
+});
 
 const inter = Inter({
   subsets: ["latin"],
@@ -48,7 +62,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${fraunces.variable}`}>
+    <html lang="en" className={`${archivo.variable} ${inter.variable} ${fraunces.variable}`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: noFlashThemeScript }} />
       </head>

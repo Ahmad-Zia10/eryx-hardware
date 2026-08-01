@@ -10,6 +10,11 @@ interface ProductImageProps {
   // "contain" shows the full product (mixed-crop source shots render
   // uniformly); default "cover" fills the frame.
   fit?: "cover" | "contain";
+  // Modernist imagery policy: EDITORIAL/brand imagery renders grayscale,
+  // but any place a specific SKU is shown stays in COLOR (the default)
+  // so mobile — where there's no hover — shows the true finish. Pure CSS
+  // filter, so lazy-loading/optimization are unaffected.
+  grayscale?: boolean;
 }
 
 export default function ProductImage({
@@ -18,6 +23,7 @@ export default function ProductImage({
   className = "",
   loading = "lazy",
   fit = "cover",
+  grayscale = false,
 }: ProductImageProps) {
   const [errored, setErrored] = useState(false);
 
@@ -38,6 +44,7 @@ export default function ProductImage({
       alt={alt}
       loading={loading}
       onError={() => setErrored(true)}
+      style={grayscale ? { filter: "grayscale(1) contrast(1.06)" } : undefined}
       className={`${fit === "contain" ? "object-contain" : "object-cover"} ${className}`}
     />
   );
