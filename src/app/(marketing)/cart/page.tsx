@@ -28,7 +28,7 @@ function formatDiscountBadge(code: AvailableCode): string {
 }
 
 const inputClass =
-  'w-full bg-surface border border-line-strong px-3.5 py-2.5 rounded-control text-sm text-ink placeholder:text-ink-faint focus:border-gold outline-none transition-colors duration-200';
+  'w-full bg-surface border border-line-strong px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:border-gold outline-none transition-colors duration-200';
 
 export default function CartPage() {
   const { items, updateQuantity, removeItem, cartTotal, cartCount } = useCart();
@@ -168,16 +168,16 @@ export default function CartPage() {
     return (
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center flex flex-col items-center">
-          <div className="w-16 h-16 rounded-full bg-surface-sunken flex items-center justify-center mb-5">
+          <div className="w-16 h-16 bg-surface-sunken flex items-center justify-center mb-5">
             <ShoppingBag size={28} className="text-ink-faint" />
           </div>
-          <h1 className="font-serif text-2xl text-ink">Your cart is empty</h1>
+          <h1 className="text-2xl font-extrabold tracking-[-0.02em] text-ink">Your cart is empty</h1>
           <p className="text-sm text-ink-muted mt-1 max-w-sm">
             Browse our kitchen and wardrobe hardware and add items to get started.
           </p>
           <Link
             href="/kitchen"
-            className="mt-6 inline-flex items-center gap-2 bg-gold hover:bg-gold-bright text-on-gold font-semibold px-8 py-3 rounded-control transition duration-200 ease-in-out"
+            className="mt-6 inline-flex items-center gap-2 bg-gold hover:bg-gold-bright text-on-gold font-bold px-8 py-3 transition duration-200 ease-in-out"
           >
             <ShoppingBag size={16} />
             Browse Products
@@ -189,22 +189,22 @@ export default function CartPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="font-serif text-3xl text-ink mb-2">Your Cart</h1>
-      <p className="text-sm text-ink-muted mb-8">
+      <h1 className="text-4xl sm:text-5xl font-extrabold tracking-[-0.03em] text-ink mb-2">Your cart</h1>
+      <p className="text-sm text-ink-muted mb-8 border-b-2 border-line-strong pb-4">
         {cartCount} {cartCount === 1 ? 'item' : 'items'}
       </p>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
         {/* Line items */}
         <div className="lg:col-span-2">
-          <div className="border border-line rounded-card divide-y divide-line overflow-hidden">
+          <div className="border border-line divide-y divide-line overflow-hidden">
             {items.map((item) => {
               const price = getEffectivePrice(item.product);
               return (
-                <div key={item.product.slug} className="flex gap-4 p-4 bg-surface-raised">
+                <div key={item.product.slug} className="flex gap-4 p-5 bg-surface-raised">
                   <Link
                     href={`/kitchen/${item.product.slug}`}
-                    className="w-24 h-24 shrink-0 bg-surface-sunken rounded-control overflow-hidden"
+                    className="w-24 h-24 shrink-0 bg-surface-sunken overflow-hidden"
                   >
                     <ProductImage src={item.product.image} alt={item.product.name} className="w-24 h-24" />
                   </Link>
@@ -214,7 +214,7 @@ export default function CartPage() {
                         <span className="text-xs text-ink-faint">{item.product.code}</span>
                         <Link
                           href={`/kitchen/${item.product.slug}`}
-                          className="block text-sm font-semibold text-ink font-serif hover:text-gold-deep transition-colors duration-200 truncate"
+                          className="block text-base font-extrabold text-ink hover:text-gold-deep transition-colors duration-200 truncate"
                         >
                           {item.product.name}
                         </Link>
@@ -232,7 +232,7 @@ export default function CartPage() {
                     </div>
 
                     <div className="mt-auto pt-3 flex items-end justify-between gap-3">
-                      <div className="flex items-center border border-line-strong rounded-control">
+                      <div className="flex items-center border border-line-strong">
                         <button
                           onClick={() => updateQuantity(item.product.slug, item.quantity - 1)}
                           aria-label="Decrease quantity"
@@ -240,7 +240,7 @@ export default function CartPage() {
                         >
                           <Minus size={14} />
                         </button>
-                        <span className="px-3 text-sm text-ink tabular-nums">{item.quantity}</span>
+                        <span className="px-3 text-sm text-ink font-bold tabular-nums">{item.quantity}</span>
                         <button
                           onClick={() => updateQuantity(item.product.slug, item.quantity + 1)}
                           aria-label="Increase quantity"
@@ -250,7 +250,7 @@ export default function CartPage() {
                         </button>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-semibold text-ink">
+                        <p className="text-base font-extrabold text-ink">
                           {typeof price === 'number' ? formatPrice(price * item.quantity) : 'Price on request'}
                         </p>
                         {item.quantity > 1 && typeof price === 'number' && (
@@ -275,15 +275,15 @@ export default function CartPage() {
 
         {/* Summary + promo */}
         <div className="lg:col-span-1">
-          <div className="lg:sticky lg:top-28 border border-line rounded-card p-5 bg-surface-raised space-y-5">
-            <h2 className="text-lg font-semibold text-ink">Order Summary</h2>
+          <div className="lg:sticky lg:top-28 border border-line p-5 bg-surface-raised space-y-5">
+            <h2 className="text-lg font-extrabold tracking-[-0.01em] text-ink">Order summary</h2>
 
             {/* Promo */}
             <div>
               {appliedPromo ? (
-                <div className="flex items-center justify-between gap-3 rounded-control border border-green-500/40 bg-green-500/10 px-3 py-2">
+                <div className="flex items-center justify-between gap-3 border border-green-600/40 bg-green-600/10 px-3 py-2">
                   <div className="min-w-0">
-                    <span className="font-mono font-semibold text-green-600 dark:text-green-500 text-sm">
+                    <span className="font-mono font-bold text-green-700 text-sm">
                       {appliedPromo.code}
                     </span>
                     <p className="text-xs text-ink-muted">
@@ -312,7 +312,7 @@ export default function CartPage() {
                     <button
                       onClick={handleApplyPromo}
                       disabled={promoLoading || !promoCode}
-                      className="bg-ink text-surface px-5 py-2 rounded-control text-sm font-medium hover:opacity-90 transition disabled:opacity-40 whitespace-nowrap"
+                      className="bg-ink text-brand-cream px-5 py-2 text-sm font-bold hover:bg-gold hover:text-on-gold transition disabled:opacity-40 whitespace-nowrap"
                       type="button"
                     >
                       {promoLoading ? '...' : 'Apply'}
@@ -322,37 +322,41 @@ export default function CartPage() {
 
                   {availableCodes.length > 0 && (
                     <div className="mt-3">
-                      <p className="text-xs uppercase tracking-widest text-ink-muted mb-2">Available codes</p>
-                      <ul className="space-y-2">
+                      <p className="text-[10px] uppercase tracking-[0.12em] text-ink-faint mb-2">Available codes</p>
+                      <ul className="space-y-1.5">
                         {availableCodes.map((code) => {
                           const selected = promoCode.toUpperCase() === code.code.toUpperCase();
                           const muted = !code.eligible;
-                          const rowClass = `flex items-center justify-between gap-3 rounded-control border px-3 py-2 text-sm ${
+                          const rowClass = `flex items-center justify-between gap-3 border px-3 py-2 text-sm ${
                             muted
-                              ? 'opacity-60 cursor-not-allowed border-line bg-surface-sunken'
+                              ? 'opacity-55 cursor-not-allowed border-line bg-surface-sunken'
                               : 'border-line hover:border-gold cursor-pointer'
-                          } ${selected ? 'ring-1 ring-gold' : ''}`;
+                          } ${selected ? 'border-gold ring-1 ring-gold' : ''}`;
 
                           const inner = (
                             <>
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-2">
-                                  <span className="font-mono font-semibold text-gold-deep">{code.code}</span>
+                                  <span className={`font-mono font-extrabold ${code.eligible ? 'text-gold-deep' : 'text-ink'}`}>{code.code}</span>
                                   <span className="text-xs text-ink-muted">{formatDiscountBadge(code)}</span>
                                 </div>
                                 {code.description && (
                                   <p className="text-xs text-ink-muted mt-0.5 truncate">{code.description}</p>
                                 )}
                               </div>
-                              {code.ineligibility_reason && (
+                              {code.ineligibility_reason ? (
                                 <span
                                   className={`text-xs whitespace-nowrap ${
-                                    code.eligible ? 'text-amber-600 dark:text-amber-400' : 'text-ink-muted'
+                                    code.eligible ? 'text-amber-600' : 'text-ink-muted'
                                   }`}
                                 >
                                   {code.ineligibility_reason}
                                 </span>
-                              )}
+                              ) : code.eligible ? (
+                                <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-ink-faint whitespace-nowrap">
+                                  Apply
+                                </span>
+                              ) : null}
                             </>
                           );
 
@@ -389,16 +393,16 @@ export default function CartPage() {
                 <span>{formatPrice(cartTotal)}</span>
               </div>
               {appliedPromo && (
-                <div className="flex justify-between text-sm text-green-600 dark:text-green-500">
+                <div className="flex justify-between text-sm text-green-700">
                   <span>Discount ({appliedPromo.code})</span>
                   <span>-{formatPrice(appliedPromo.discount_amount)}</span>
                 </div>
               )}
               <div className="flex justify-between text-sm text-ink-muted">
                 <span>Shipping</span>
-                <span className="text-green-600 dark:text-green-500 font-medium">Free</span>
+                <span className="text-green-700 font-bold">Free</span>
               </div>
-              <div className="flex justify-between font-bold text-lg text-ink pt-2 border-t border-line">
+              <div className="flex justify-between font-extrabold text-xl text-ink pt-2.5 border-t border-line">
                 <span>Total</span>
                 <span>{formatPrice(total)}</span>
               </div>
@@ -407,7 +411,7 @@ export default function CartPage() {
 
             <button
               onClick={() => router.push('/checkout')}
-              className="w-full bg-gold hover:bg-gold-bright text-on-gold font-semibold py-3 rounded-control transition duration-200 ease-in-out flex items-center justify-center gap-2"
+              className="w-full bg-gold hover:bg-gold-bright text-on-gold font-bold py-3.5 transition duration-200 ease-in-out flex items-center justify-center gap-2"
             >
               Proceed to Checkout
               <ArrowRight size={16} />

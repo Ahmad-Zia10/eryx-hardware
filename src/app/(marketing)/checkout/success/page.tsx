@@ -41,16 +41,16 @@ export default async function CheckoutSuccessPage({
     // is its own small information leak.
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xl p-8 text-center">
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2">
+        <div className="max-w-md w-full bg-surface-raised border border-line p-8 text-center">
+          <h1 className="text-2xl font-extrabold tracking-[-0.02em] text-ink mb-2">
             Order not found
           </h1>
-          <p className="text-neutral-600 dark:text-neutral-400 mb-6">
+          <p className="text-ink-muted mb-6">
             We couldn&apos;t find that order, or you may need to sign in to view it.
           </p>
           <Link
             href="/"
-            className="inline-block w-full bg-[#0A0A0A] dark:bg-white text-white dark:text-[#0A0A0A] font-medium py-3 rounded-xl"
+            className="inline-block w-full bg-ink text-brand-cream font-bold py-3 hover:bg-gold hover:text-on-gold transition-colors"
           >
             Back to Home
           </Link>
@@ -68,22 +68,22 @@ export default async function CheckoutSuccessPage({
   if (order.status !== "paid") {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xl p-8 text-center">
+        <div className="max-w-md w-full bg-surface-raised border border-line p-8 text-center">
           <div className="flex justify-center mb-6">
-            <Clock className="w-16 h-16 text-[#D4A017] animate-pulse" />
+            <Clock className="w-16 h-16 text-gold animate-pulse" />
           </div>
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2">
+          <h1 className="text-2xl font-extrabold tracking-[-0.02em] text-ink mb-2">
             Confirming your payment
           </h1>
-          <p className="text-neutral-600 dark:text-neutral-400 mb-6">
+          <p className="text-ink-muted mb-6">
             This usually takes just a few seconds. This page will update
             automatically — no need to refresh.
           </p>
-          <div className="bg-neutral-50 dark:bg-neutral-800 rounded-lg p-4">
-            <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-1">
+          <div className="bg-surface-sunken p-4">
+            <p className="text-sm text-ink-muted mb-1">
               Order Reference
             </p>
-            <p className="font-mono text-neutral-900 dark:text-white font-medium">
+            <p className="font-mono text-ink font-medium">
               {order.id}
             </p>
           </div>
@@ -99,31 +99,31 @@ export default async function CheckoutSuccessPage({
 
   return (
     <div className="min-h-[70vh] flex flex-col items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xl p-8 text-center">
+      <div className="max-w-md w-full bg-surface-raised border border-line p-8 text-center">
         <div className="flex justify-center mb-6">
-          <CheckCircle2 className="w-20 h-20 text-green-500" />
+          <CheckCircle2 className="w-20 h-20 text-green-600" />
         </div>
-        <h1 className="text-3xl font-bold text-neutral-900 dark:text-white mb-2">
-          Payment Successful!
+        <h1 className="text-3xl font-extrabold tracking-[-0.02em] text-ink mb-2">
+          Payment successful
         </h1>
-        <p className="text-neutral-600 dark:text-neutral-400 mb-6">
+        <p className="text-ink-muted mb-6">
           Thank you, {order.customer_name}. Your order has been placed successfully.
         </p>
 
-        <div className="bg-neutral-50 dark:bg-neutral-800 rounded-lg p-4 mb-8 flex flex-col gap-2">
+        <div className="bg-surface-sunken p-4 mb-8 flex flex-col gap-2 text-left">
           <div>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-1">
+            <p className="text-sm text-ink-muted mb-1">
               Order Reference
             </p>
-            <p className="font-mono text-neutral-900 dark:text-white font-medium">
+            <p className="font-mono text-ink font-medium">
               {order.id}
             </p>
           </div>
           <div>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-1">
+            <p className="text-sm text-ink-muted mb-1">
               Amount Paid
             </p>
-            <p className="text-neutral-900 dark:text-white font-medium">
+            <p className="text-ink font-extrabold">
               {formatPrice(order.total)}
             </p>
           </div>
@@ -131,7 +131,7 @@ export default async function CheckoutSuccessPage({
 
         <Link
           href="/kitchen"
-          className="inline-block w-full bg-[#0A0A0A] dark:bg-white text-white dark:text-[#0A0A0A] font-medium py-3 rounded-xl transition-transform active:scale-[0.98] hover:bg-neutral-800 dark:hover:bg-neutral-200"
+          className="inline-block w-full bg-ink text-brand-cream font-bold py-3 transition-transform active:scale-[0.98] hover:bg-gold hover:text-on-gold"
         >
           Continue Shopping
         </Link>

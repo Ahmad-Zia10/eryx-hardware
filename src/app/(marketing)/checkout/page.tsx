@@ -32,7 +32,7 @@ function formatDiscountBadge(code: AvailableCode): string {
 
 // Shared control styling — matches the enquiry/dealer forms.
 const inputClass =
-  'w-full bg-surface border border-line-strong px-3.5 py-2.5 rounded-control text-sm text-ink placeholder:text-ink-faint focus:border-gold outline-none transition-colors duration-200';
+  'w-full bg-surface border border-line-strong px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:border-gold outline-none transition-colors duration-200';
 const labelClass = 'block text-sm font-medium text-ink mb-1.5';
 
 // Shared with the cart page so a promo applied there carries into checkout.
@@ -253,7 +253,7 @@ export default function CheckoutPage() {
           contact: formData.phone,
         },
         theme: {
-          color: "#D4A017",
+          color: "#ec3013",
         },
         method: {
           emi: true,
@@ -275,7 +275,7 @@ export default function CheckoutPage() {
   if (items.length === 0) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center p-4">
-        <h2 className="font-serif text-2xl text-ink mb-4">Your cart is empty</h2>
+        <h2 className="text-2xl font-extrabold tracking-[-0.02em] text-ink mb-4">Your cart is empty</h2>
         <Link href="/kitchen" className="text-gold-deep hover:text-gold hover:underline">
           Continue shopping
         </Link>
@@ -290,13 +290,13 @@ export default function CheckoutPage() {
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
 
       <div className="max-w-4xl mx-auto px-4 py-12 md:py-20">
-        <h1 className="font-serif text-3xl md:text-4xl text-ink mb-8">Checkout</h1>
+        <h1 className="text-4xl md:text-5xl font-extrabold tracking-[-0.03em] text-ink mb-8 border-b-2 border-line-strong pb-5">Checkout</h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           {/* Order Summary */}
-          <div className="md:sticky md:top-28 self-start">
-            <div className="flex items-center justify-between mb-4 border-b border-line pb-2">
-              <h2 className="text-xl font-semibold text-ink">Order Summary</h2>
+          <div className="md:sticky md:top-28 self-start bg-surface-sunken border border-line p-5">
+            <div className="flex items-center justify-between mb-4 border-b border-line pb-2.5">
+              <h2 className="text-lg font-extrabold tracking-[-0.01em] text-ink">Order summary</h2>
               <Link
                 href="/cart"
                 className="text-xs text-gold-deep hover:text-gold transition-colors duration-200"
@@ -311,26 +311,26 @@ export default function CheckoutPage() {
                 return (
                 <div
                   key={item.product.slug}
-                  className={`flex flex-col text-sm rounded-control p-2 ${
+                  className={`flex flex-col text-sm p-2 ${
                     stale ? 'border border-red-500 bg-red-500/10' : ''
                   }`}
                 >
                   <div className="flex justify-between gap-3">
                     <div className="flex gap-4 min-w-0">
-                      <div className="w-16 h-16 bg-surface-sunken rounded-control shrink-0 overflow-hidden">
+                      <div className="w-16 h-16 bg-surface-raised shrink-0 overflow-hidden">
                         <img src={item.product.image} alt={item.product.name} className="w-full h-full object-cover" />
                       </div>
                       <div className="min-w-0">
-                        <p className="font-medium text-ink truncate">{item.product.name}</p>
+                        <p className="font-bold text-ink truncate">{item.product.name}</p>
                         <p className="text-ink-muted">Qty: {item.quantity}</p>
                       </div>
                     </div>
-                    <div className="text-ink font-medium whitespace-nowrap">
+                    <div className="text-ink font-bold whitespace-nowrap">
                       {typeof price === 'number' ? formatPrice(price * item.quantity) : 'Price on request'}
                     </div>
                   </div>
                   {stale && (
-                    <div className="mt-2 flex items-center justify-between text-xs text-red-600 dark:text-red-400">
+                    <div className="mt-2 flex items-center justify-between text-xs text-red-600">
                       <span>
                         {stale.available === 0
                           ? 'Out of stock — remove to continue.'
@@ -355,9 +355,9 @@ export default function CheckoutPage() {
 
             <div className="mt-8">
               {appliedPromo ? (
-                <div className="flex items-center justify-between gap-3 rounded-control border border-green-500/40 bg-green-500/10 px-3 py-2">
+                <div className="flex items-center justify-between gap-3 border border-green-600/40 bg-green-600/10 px-3 py-2">
                   <div className="min-w-0">
-                    <span className="font-mono font-semibold text-green-600 dark:text-green-500 text-sm">
+                    <span className="font-mono font-bold text-green-700 text-sm">
                       {appliedPromo.code}
                     </span>
                     <p className="text-xs text-ink-muted">
@@ -381,13 +381,13 @@ export default function CheckoutPage() {
                   value={promoCode}
                   onChange={(e) => setPromoCode(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleApplyPromo()}
-                  placeholder="Enter Promo Code"
+                  placeholder="Enter promo code"
                   className={inputClass}
                 />
                 <button
                   onClick={handleApplyPromo}
                   disabled={promoLoading || !promoCode}
-                  className="bg-ink text-surface px-5 py-2 rounded-control text-sm font-medium hover:opacity-90 transition disabled:opacity-40 whitespace-nowrap"
+                  className="bg-ink text-brand-cream px-5 py-2 text-sm font-bold hover:bg-gold hover:text-on-gold transition disabled:opacity-40 whitespace-nowrap"
                   type="button"
                 >
                   {promoLoading ? '...' : 'Apply'}
@@ -397,24 +397,24 @@ export default function CheckoutPage() {
 
               {availableCodes.length > 0 && (
                 <div className="mt-4">
-                  <p className="text-xs uppercase tracking-widest text-ink-muted mb-2">
+                  <p className="text-[10px] uppercase tracking-[0.12em] text-ink-faint mb-2">
                     Available codes
                   </p>
-                  <ul className="space-y-2">
+                  <ul className="space-y-1.5">
                     {availableCodes.map((code) => {
                       const selected = promoCode.toUpperCase() === code.code.toUpperCase();
                       const muted = !code.eligible;
-                      const rowClass = `flex items-center justify-between gap-3 rounded-control border px-3 py-2 text-sm ${
+                      const rowClass = `flex items-center justify-between gap-3 border px-3 py-2 text-sm bg-surface-raised ${
                         muted
-                          ? 'opacity-60 cursor-not-allowed border-line bg-surface-sunken'
+                          ? 'opacity-55 cursor-not-allowed border-line'
                           : 'border-line hover:border-gold cursor-pointer'
-                      } ${selected ? 'ring-1 ring-gold' : ''}`;
+                      } ${selected ? 'border-gold ring-1 ring-gold' : ''}`;
 
                       const inner = (
                         <>
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
-                              <span className="font-mono font-semibold text-gold-deep">
+                              <span className={`font-mono font-extrabold ${code.eligible ? 'text-gold-deep' : 'text-ink'}`}>
                                 {code.code}
                               </span>
                               <span className="text-xs text-ink-muted">
@@ -427,17 +427,19 @@ export default function CheckoutPage() {
                               </p>
                             )}
                           </div>
-                          {code.ineligibility_reason && (
+                          {code.ineligibility_reason ? (
                             <span
                               className={`text-xs whitespace-nowrap ${
-                                code.eligible
-                                  ? 'text-amber-600 dark:text-amber-400'
-                                  : 'text-ink-muted'
+                                code.eligible ? 'text-amber-600' : 'text-ink-muted'
                               }`}
                             >
                               {code.ineligibility_reason}
                             </span>
-                          )}
+                          ) : code.eligible ? (
+                            <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-ink-faint whitespace-nowrap">
+                              Apply
+                            </span>
+                          ) : null}
                         </>
                       );
 
@@ -473,16 +475,16 @@ export default function CheckoutPage() {
                 <span>{formatPrice(cartTotal)}</span>
               </div>
               {appliedPromo && (
-                <div className="flex justify-between text-green-600 dark:text-green-500 mb-2 text-sm">
+                <div className="flex justify-between text-green-700 mb-2 text-sm">
                   <span>Discount ({appliedPromo.code})</span>
                   <span>-{formatPrice(appliedPromo.discount_amount)}</span>
                 </div>
               )}
               <div className="flex justify-between text-ink-muted mb-2 text-sm">
                 <span>Shipping</span>
-                <span className="text-green-600 dark:text-green-500 font-medium">Free</span>
+                <span className="text-green-700 font-bold">Free</span>
               </div>
-              <div className="flex justify-between font-bold text-lg text-ink pt-2 border-t border-line">
+              <div className="flex justify-between font-extrabold text-xl text-ink pt-2.5 border-t border-line">
                 <span>Total</span>
                 <span>{formatPrice(total)}</span>
               </div>
@@ -494,8 +496,12 @@ export default function CheckoutPage() {
 
           {/* Shipping + Payment */}
           <div>
-            <h2 className="text-xl font-semibold mb-4 text-ink border-b border-line pb-2">Shipping Details</h2>
             <form onSubmit={handlePayment} className="space-y-4">
+              {/* 01 — Contact */}
+              <div className="flex items-baseline gap-3 border-b border-line pb-2.5 mb-1">
+                <span className="text-sm font-extrabold text-gold">01</span>
+                <h2 className="text-xl font-extrabold tracking-[-0.01em] text-ink">Contact</h2>
+              </div>
               <div>
                 <label htmlFor="co-name" className={labelClass}>
                   Full Name <span className="text-gold-deep">*</span>
@@ -513,6 +519,12 @@ export default function CheckoutPage() {
                   </label>
                   <input id="co-phone" required type="tel" name="phone" pattern="^[0-9+\-\s()]{8,20}$" value={formData.phone} onChange={handleInputChange} className={inputClass} />
                 </div>
+              </div>
+
+              {/* 02 — Shipping address */}
+              <div className="flex items-baseline gap-3 border-b border-line pb-2.5 mb-1 pt-4">
+                <span className="text-sm font-extrabold text-gold">02</span>
+                <h2 className="text-xl font-extrabold tracking-[-0.01em] text-ink">Shipping address</h2>
               </div>
               <div>
                 <label htmlFor="co-addr1" className={labelClass}>
@@ -557,28 +569,48 @@ export default function CheckoutPage() {
                   className={inputClass}
                 />
                 {pincodeServiceable === true && (
-                  <p className="flex items-center gap-1.5 text-xs text-green-600 dark:text-green-500 mt-1.5">
+                  <p className="flex items-center gap-1.5 text-xs text-green-700 mt-1.5">
                     <CheckCircle2 size={13} /> We deliver here — estimated 5–7 business days.
                   </p>
                 )}
                 {pincodeServiceable === false && (
-                  <p className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 mt-1.5">
+                  <p className="flex items-center gap-1.5 text-xs text-amber-600 mt-1.5">
                     <XCircle size={13} /> We don&apos;t deliver to this pincode yet — our team will reach out to arrange it.
                   </p>
                 )}
               </div>
 
+              {/* 03 — Payment. Only the online (Razorpay) path is wired;
+                  COD is schema-ready but not surfaced (see orders rule). */}
+              <div className="flex items-baseline gap-3 border-b border-line pb-2.5 mb-1 pt-4">
+                <span className="text-sm font-extrabold text-gold">03</span>
+                <h2 className="text-xl font-extrabold tracking-[-0.01em] text-ink">Payment</h2>
+              </div>
+              <div className="flex items-center gap-3 border-2 border-gold px-4 py-3.5">
+                <span className="w-4 h-4 border-2 border-gold rounded-full flex items-center justify-center shrink-0">
+                  <span className="w-2 h-2 bg-gold rounded-full" />
+                </span>
+                <span className="text-sm font-bold text-ink">Pay online — UPI / Card / Netbanking</span>
+                <span className="ml-auto text-xs text-ink-muted">via Razorpay</span>
+              </div>
+
               <button
                 type="submit"
                 disabled={isLoading || outOfStock.length > 0}
-                className="w-full mt-2 bg-gold hover:bg-gold-bright text-on-gold font-bold py-3.5 px-4 rounded-control transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex justify-center"
+                className="w-full mt-2 bg-gold hover:bg-gold-bright text-on-gold font-bold py-3.5 px-4 transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex justify-center"
               >
                 {isLoading
                   ? 'Processing...'
                   : outOfStock.length > 0
                     ? 'Resolve stock issues to continue'
-                    : `Pay ${formatPrice(total)}`}
+                    : `Place order · ${formatPrice(total)}`}
               </button>
+
+              <p className="text-xs text-ink-faint text-center">
+                By placing this order you agree to our{' '}
+                <Link href="/terms" className="text-gold-deep hover:underline">Terms</Link> &amp;{' '}
+                <Link href="/refund-policy" className="text-gold-deep hover:underline">Refund Policy</Link>.
+              </p>
 
               <div className="flex items-center justify-center gap-1.5 text-xs text-ink-muted">
                 <Lock size={12} />
