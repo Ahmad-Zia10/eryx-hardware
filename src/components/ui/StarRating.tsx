@@ -16,7 +16,8 @@ interface StarRatingProps {
 /**
  * Star rating used in both display and input modes. Display mode (no onChange)
  * renders filled/empty stars; input mode adds hover preview + keyboard/click
- * selection. Gold fill matches the brand accent (#D4A017).
+ * selection. Fill uses the `gold` accent token (red in the Modernist
+ * marketing scope, gold in admin).
  */
 export default function StarRating({
   value,
@@ -42,8 +43,8 @@ export default function StarRating({
             size={size}
             className={
               star <= value
-                ? "fill-[#D4A017] text-[#D4A017]"
-                : "fill-transparent text-[#D4D4D4] dark:text-[#3A3A3A]"
+                ? "fill-gold text-gold"
+                : "fill-transparent text-line-strong"
             }
           />
         ))}
@@ -67,14 +68,14 @@ export default function StarRating({
           aria-label={`${star} star${star > 1 ? "s" : ""}`}
           onMouseEnter={() => setHover(star)}
           onClick={() => onChange!(star)}
-          className="p-0.5 rounded-sm transition-transform hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D4A017]"
+          className="p-0.5 transition-transform hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold"
         >
           <Star
             size={size}
             className={
               star <= shown
-                ? "fill-[#D4A017] text-[#D4A017]"
-                : "fill-transparent text-[#D4D4D4] dark:text-[#3A3A3A]"
+                ? "fill-gold text-gold"
+                : "fill-transparent text-line-strong"
             }
           />
         </button>

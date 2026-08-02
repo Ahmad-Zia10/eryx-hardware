@@ -49,7 +49,7 @@ export default function ProductCard({ product, className = "", averageRating, re
   return (
     <div
       onClick={handleCardClick}
-      className={`group bg-surface-raised border border-line hover:border-line-strong hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.45)] hover:-translate-y-0.5 transition duration-300 ease-out cursor-pointer rounded-card overflow-hidden flex flex-col ${className}`}
+      className={`group bg-surface-raised border border-line hover:border-gold hover:-translate-y-0.5 transition duration-300 ease-out cursor-pointer overflow-hidden flex flex-col ${className}`}
     >
       <div className="relative overflow-hidden aspect-square w-full bg-surface-sunken">
         <ProductImage
@@ -58,12 +58,12 @@ export default function ProductCard({ product, className = "", averageRating, re
           className="h-full w-full transition-transform duration-500 ease-out group-hover:scale-[1.04]"
         />
         {outOfStock ? (
-          <span className="absolute top-3 left-3 px-2 py-1 text-[10px] font-semibold tracking-widest uppercase bg-surface-raised/95 text-red-500 backdrop-blur-sm rounded-control">
+          <span className="absolute top-3 left-3 px-2.5 py-1 text-[10px] font-extrabold tracking-[0.06em] uppercase bg-brand-cream text-gold border border-gold">
             Out of Stock
           </span>
         ) : (
           discounted && (
-            <span className="absolute top-3 left-3 px-2 py-1 text-[10px] font-semibold tracking-widest uppercase bg-gold text-on-gold rounded-control">
+            <span className="absolute top-3 left-3 px-2.5 py-1 text-[10px] font-extrabold tracking-[0.06em] uppercase bg-gold text-on-gold">
               Sale
             </span>
           )
@@ -78,7 +78,7 @@ export default function ProductCard({ product, className = "", averageRating, re
             onClick={handleNotifyMe}
             aria-label="Notify me when back in stock"
             title="Notify me when back in stock"
-            className="absolute bottom-3 right-3 bg-surface-raised/95 hover:bg-gold hover:text-on-gold text-gold p-2.5 rounded-control shadow-md backdrop-blur-sm transition duration-300 ease-out lg:opacity-0 lg:translate-y-1 lg:group-hover:opacity-100 lg:group-hover:translate-y-0 focus-visible:opacity-100 focus-visible:translate-y-0"
+            className="absolute bottom-3 right-3 bg-surface-raised/95 hover:bg-gold hover:text-on-gold text-gold p-2.5 shadow-md backdrop-blur-sm transition duration-300 ease-out lg:opacity-0 lg:translate-y-1 lg:group-hover:opacity-100 lg:group-hover:translate-y-0 focus-visible:opacity-100 focus-visible:translate-y-0"
           >
             <Bell size={18} />
           </button>
@@ -86,7 +86,7 @@ export default function ProductCard({ product, className = "", averageRating, re
           <button
             onClick={handleAddToCart}
             aria-label="Add to cart"
-            className="absolute bottom-3 right-3 bg-gold hover:bg-gold-bright text-on-gold p-2.5 rounded-control shadow-md transition duration-300 ease-out lg:opacity-0 lg:translate-y-1 lg:group-hover:opacity-100 lg:group-hover:translate-y-0 focus-visible:opacity-100 focus-visible:translate-y-0"
+            className="absolute bottom-3 right-3 bg-gold hover:bg-gold-bright text-on-gold p-2.5 shadow-md transition duration-300 ease-out lg:opacity-0 lg:translate-y-1 lg:group-hover:opacity-100 lg:group-hover:translate-y-0 focus-visible:opacity-100 focus-visible:translate-y-0"
           >
             <ShoppingCart size={18} />
           </button>
@@ -96,7 +96,7 @@ export default function ProductCard({ product, className = "", averageRating, re
         <span className="text-[11px] uppercase tracking-wider text-ink-faint">
           {product.code}
         </span>
-        <h3 className="text-[15px] font-medium leading-snug text-ink font-serif">
+        <h3 className="text-[15px] font-extrabold tracking-[-0.01em] leading-tight text-ink">
           {/* Real link for keyboard users / SEO; same destination as the
               card click, stopPropagation avoids a double push. */}
           <Link
@@ -117,7 +117,7 @@ export default function ProductCard({ product, className = "", averageRating, re
         <span className="text-xs text-ink-faint">{product.dimensions}</span>
         <div className="mt-auto pt-3 flex items-end justify-between gap-2">
           <div className="flex items-baseline gap-2">
-            <span className="text-ink font-semibold">
+            <span className={`font-extrabold ${discounted ? "text-gold-deep" : "text-ink"}`}>
               {formatPrice(effectivePrice)}
             </span>
             {discounted && (

@@ -38,8 +38,8 @@ export default function WishlistButton({
   // introducing a lone saturated red.
   const base =
     variant === "floating"
-      ? "bg-surface-raised/95 backdrop-blur-sm shadow-md p-2.5 rounded-control ring-1 ring-black/5 dark:ring-white/10 hover:bg-surface-raised"
-      : "p-2 rounded-control border border-line hover:border-line-strong";
+      ? "bg-surface-raised/95 backdrop-blur-sm shadow-md p-2.5 ring-1 ring-ink/5 hover:bg-surface-raised"
+      : "p-2 border border-line hover:border-line-strong";
 
   return (
     <button

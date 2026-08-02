@@ -125,12 +125,26 @@ export default function AllProducts({ products }: AllProductsProps) {
   }, [productsInLine, activeCategory, selectedFinishes, priceMin, priceMax, sortKey]);
 
   const filterSidebarContent = (
-    <div className="flex flex-col gap-8">
-      <span className="text-xs tracking-widest uppercase text-gold-deep">Filters</span>
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center justify-between border-b border-line pb-2.5">
+        <span className="text-xs font-extrabold tracking-[0.06em] uppercase text-ink">
+          Filters
+        </span>
+        {(selectedFinishes.length > 0 || priceFiltered) && (
+          <button
+            onClick={clearAllFilters}
+            className="text-xs text-gold-deep hover:text-gold transition-colors"
+          >
+            Clear
+          </button>
+        )}
+      </div>
 
       {finishes.length > 0 && (
-        <div>
-          <h4 className="text-sm font-semibold text-ink mb-3">Finish</h4>
+        <div className="border-b border-line pb-6">
+          <h4 className="text-[11px] font-semibold tracking-[0.12em] uppercase text-ink-faint mb-3">
+            Finish
+          </h4>
           <div className="flex flex-col gap-2">
             {finishes.map((finish) => (
               <label
@@ -150,7 +164,9 @@ export default function AllProducts({ products }: AllProductsProps) {
       )}
 
       <div>
-        <h4 className="text-sm font-semibold text-ink mb-3">Price</h4>
+        <h4 className="text-[11px] font-semibold tracking-[0.12em] uppercase text-ink-faint mb-3">
+          Price range
+        </h4>
         <div className="flex items-center gap-2">
           <input
             type="number"
@@ -192,7 +208,7 @@ export default function AllProducts({ products }: AllProductsProps) {
         <button
           key={finish}
           onClick={() => toggleFinish(finish)}
-          className="flex items-center gap-1.5 bg-gold-tint text-gold-deep border border-gold/30 rounded-pill px-3 py-1 text-xs font-medium hover:border-gold transition-colors duration-200"
+          className="flex items-center gap-1.5 bg-gold-tint text-gold-deep border border-gold/40 px-3 py-1 text-xs font-medium hover:border-gold transition-colors duration-200"
         >
           {finish}
           <X size={12} />
@@ -204,7 +220,7 @@ export default function AllProducts({ products }: AllProductsProps) {
             setPriceMin(0);
             setPriceMax(MAX_PRICE);
           }}
-          className="flex items-center gap-1.5 bg-gold-tint text-gold-deep border border-gold/30 rounded-pill px-3 py-1 text-xs font-medium hover:border-gold transition-colors duration-200"
+          className="flex items-center gap-1.5 bg-gold-tint text-gold-deep border border-gold/40 px-3 py-1 text-xs font-medium hover:border-gold transition-colors duration-200"
         >
           ₹{priceMin.toLocaleString("en-IN")} – ₹{priceMax.toLocaleString("en-IN")}
           <X size={12} />
@@ -232,56 +248,59 @@ export default function AllProducts({ products }: AllProductsProps) {
       </div>
 
       {/* Hero */}
-      <section className="relative h-[50vh] min-h-[380px] overflow-hidden mt-4 bg-brand-dark">
+      <section className="relative h-[48vh] min-h-[360px] overflow-hidden mt-4 bg-brand-dark">
         <ProductImage
           src={IMAGES.allProductsHero}
           alt="All Eryx products"
-          className="absolute inset-0 w-full h-full"
+          grayscale
+          className="absolute inset-0 w-full h-full opacity-70"
           loading="eager"
         />
-        <div className="absolute inset-0 bg-gradient-to-tr from-black/85 via-black/50 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-r from-brand-dark/90 via-brand-dark/50 to-transparent pointer-events-none" />
         <div className="relative z-10 h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-end pb-10 sm:pb-14 lg:pb-16">
           <div className="flex flex-col gap-3 sm:gap-4 max-w-2xl">
-            <p className="text-xs text-white/70">
+            <p className="text-xs text-brand-cream/70">
               <span
                 onClick={() => router.push("/")}
                 className="hover:text-gold cursor-pointer hover:underline"
               >
                 Home
               </span>{" "}
-              / All Products
+              / <span className="text-brand-cream font-bold">All Products</span>
             </p>
-            <div>
-              <span className="text-[10px] sm:text-xs tracking-[0.3em] uppercase text-gold">
+            <div className="flex items-center gap-3">
+              <span className="w-11 h-[2px] bg-gold" />
+              <span className="text-[10px] sm:text-xs tracking-[0.2em] uppercase font-extrabold text-gold">
                 The Full Catalogue
               </span>
-              <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold leading-[1.05] text-white font-display mt-2 sm:mt-3">
-                All Products
-              </h1>
             </div>
-            <p className="text-sm sm:text-base text-white/80 max-w-lg leading-relaxed">
+            <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold leading-[0.96] tracking-[-0.03em] text-brand-cream font-display">
+              All Products
+            </h1>
+            <p className="text-sm sm:text-base text-brand-cream/80 max-w-lg leading-relaxed">
               Every Eryx accessory in one place — kitchen storage, wardrobe
               fittings, and precision hardware. Filter by line, category, finish,
               and price.
             </p>
-            <div className="w-16 h-0.5 bg-gold mt-1" />
           </div>
         </div>
       </section>
 
       {/* Product-line + category filter bar */}
-      <div className="sticky top-25 z-30 bg-surface border-b border-line">
+      <div className="sticky top-25 z-30 bg-surface border-b-2 border-line-strong">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Product line */}
-          <div className="flex gap-2 overflow-x-auto no-scrollbar pt-3">
-            {LINES.map((line) => (
+          <div className="flex overflow-x-auto no-scrollbar">
+            {LINES.map((line, i) => (
               <button
                 key={line.key}
                 onClick={() => handleLineClick(line.key)}
-                className={`text-sm whitespace-nowrap rounded-pill px-4 py-1.5 transition duration-200 ease-in-out ${
+                className={`text-sm whitespace-nowrap px-5 py-3 transition duration-200 ease-in-out ${
+                  i > 0 ? "border-l border-line" : ""
+                } ${
                   activeLine === line.key
-                    ? "bg-gold text-on-gold font-medium"
-                    : "border border-line text-ink-muted hover:border-gold hover:text-gold-deep"
+                    ? "bg-ink text-brand-cream font-extrabold"
+                    : "text-ink-muted hover:text-gold-deep"
                 }`}
               >
                 {line.label}
@@ -290,15 +309,15 @@ export default function AllProducts({ products }: AllProductsProps) {
           </div>
           {/* Category (scoped to the active line) */}
           {categories.length > 0 && (
-            <div className="flex gap-2 overflow-x-auto no-scrollbar py-3">
+            <div className="flex gap-2 overflow-x-auto no-scrollbar py-3 border-t border-line">
               {["All", ...categories].map((cat) => (
                 <button
                   key={cat}
                   onClick={() => handleCategoryClick(cat)}
-                  className={`text-xs whitespace-nowrap rounded-pill px-3 py-1 transition duration-200 ease-in-out ${
+                  className={`text-xs whitespace-nowrap px-3 py-1.5 border transition duration-200 ease-in-out ${
                     activeCategory === cat
-                      ? "bg-ink text-surface font-medium"
-                      : "border border-line text-ink-muted hover:border-gold hover:text-gold-deep"
+                      ? "bg-ink text-brand-cream border-ink font-bold"
+                      : "border-line text-ink-muted hover:border-gold hover:text-gold-deep"
                   }`}
                 >
                   {cat}
@@ -348,16 +367,17 @@ export default function AllProducts({ products }: AllProductsProps) {
         </aside>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-4 mb-5">
+          <div className="flex items-center justify-between gap-4 mb-5 border-b border-line pb-4">
             <p className="text-sm text-ink-muted">
-              {filteredProducts.length} {filteredProducts.length === 1 ? "product" : "products"}
+              <strong className="text-ink font-bold">{filteredProducts.length}</strong>{" "}
+              {filteredProducts.length === 1 ? "product" : "products"}
             </p>
-            <label className="flex items-center gap-2 text-sm text-ink-muted">
+            <label className="flex items-center gap-2 text-xs uppercase tracking-[0.1em] text-ink-faint">
               Sort
               <select
                 value={sortKey}
                 onChange={(e) => setSortKey(e.target.value as SortKey)}
-                className="border border-line-strong bg-surface text-ink text-sm px-3 py-1.5 rounded-control cursor-pointer"
+                className="border border-line-strong bg-surface text-ink text-sm font-bold px-3 py-1.5 cursor-pointer normal-case tracking-normal"
               >
                 <option value="featured">Featured</option>
                 <option value="price-asc">Price: Low to High</option>
@@ -374,7 +394,7 @@ export default function AllProducts({ products }: AllProductsProps) {
             ))}
           </div>
           {filteredProducts.length === 0 && (
-            <div className="text-center py-16 border border-line rounded-card">
+            <div className="text-center py-16 border border-line">
               <p className="text-ink font-medium">No products match the selected filters.</p>
               <button
                 onClick={clearAllFilters}
@@ -387,27 +407,27 @@ export default function AllProducts({ products }: AllProductsProps) {
         </div>
       </div>
 
-      {/* Enquire CTA Banner */}
-      <section className="bg-gold">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div>
-            <p className="font-bold text-2xl text-on-gold">
-              Can&apos;t find what you&apos;re looking for?
+      {/* "Can't find your fitting?" — full-red statement band. */}
+      <section className="bg-gold text-on-gold">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="max-w-xl">
+            <p className="font-extrabold text-2xl sm:text-3xl tracking-[-0.02em]">
+              Can&apos;t find your fitting?
             </p>
-            <p className="text-on-gold/80 mt-1">
+            <p className="text-on-gold/85 mt-2">
               Our team will help you find the right hardware for your project.
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col sm:flex-row gap-3 shrink-0">
             <a
               href="tel:+917011184853"
-              className="bg-brand-dark text-gold font-semibold px-6 py-3 rounded-control hover:bg-black transition duration-200 ease-in-out text-center"
+              className="bg-brand-cream text-ink font-bold px-6 py-3.5 hover:bg-surface-raised transition duration-200 ease-in-out text-center"
             >
               Call Us: 70111 84853
             </a>
             <button
               onClick={() => openEnquiryModal()}
-              className="bg-brand-dark text-gold font-semibold px-6 py-3 rounded-control hover:bg-black transition duration-200 ease-in-out"
+              className="border border-on-gold/50 text-on-gold font-bold px-6 py-3.5 hover:bg-on-gold hover:text-gold transition duration-200 ease-in-out"
             >
               Send Enquiry
             </button>
