@@ -21,7 +21,7 @@ function GoogleIcon() {
 }
 
 const inputWrap =
-  'flex items-center gap-2 w-full bg-surface border border-line-strong rounded-control px-3 focus-within:border-gold transition-colors';
+  'flex items-center gap-2 w-full bg-surface border border-line-strong px-3 focus-within:border-gold transition-colors';
 const inputEl =
   'w-full bg-transparent py-2.5 text-sm text-ink placeholder:text-ink-faint outline-none';
 
@@ -175,9 +175,9 @@ function LoginForm() {
   };
 
   return (
-    <div className="flex min-h-[80vh] flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="flex min-h-[80vh] flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-surface-sunken">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h1 className="text-center font-serif text-3xl text-ink">
+        <h1 className="text-center text-3xl sm:text-4xl font-extrabold tracking-[-0.02em] text-ink">
           {mode === 'signin' ? 'Welcome back' : 'Create your account'}
         </h1>
         <p className="mt-2 text-center text-sm text-ink-muted">
@@ -188,16 +188,16 @@ function LoginForm() {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-surface-raised py-8 px-6 sm:px-10 shadow-sm rounded-card border border-line">
-          {/* Mode tabs */}
-          <div className="grid grid-cols-2 gap-1 p-1 bg-surface-sunken rounded-control mb-6">
+        <div className="bg-surface-raised py-8 px-6 sm:px-10 border border-line">
+          {/* Mode tabs — segmented, dark active fill (Modernist) */}
+          <div className="grid grid-cols-2 border border-line-strong mb-6">
             {(['signin', 'signup'] as Mode[]).map((m) => (
               <button
                 key={m}
                 type="button"
                 onClick={() => switchMode(m)}
-                className={`py-2 text-sm font-medium rounded-sm transition-colors ${
-                  mode === m ? 'bg-surface-raised text-gold-deep shadow-sm' : 'text-ink-muted hover:text-ink'
+                className={`py-2.5 text-sm transition-colors ${
+                  mode === m ? 'bg-ink text-brand-cream font-extrabold' : 'text-ink-muted hover:text-ink'
                 }`}
               >
                 {m === 'signin' ? 'Sign in' : 'Sign up'}
@@ -209,7 +209,7 @@ function LoginForm() {
           <button
             onClick={handleGoogle}
             disabled={googleLoading || loading}
-            className="w-full flex justify-center items-center gap-2 py-2.5 px-4 border border-line-strong rounded-control bg-surface text-sm font-medium text-ink hover:bg-surface-sunken transition-colors disabled:opacity-50"
+            className="w-full flex justify-center items-center gap-2 py-2.5 px-4 border border-line-strong bg-surface text-sm font-bold text-ink hover:bg-surface-sunken transition-colors disabled:opacity-50"
           >
             <GoogleIcon />
             {googleLoading ? 'Connecting…' : 'Continue with Google'}
@@ -223,13 +223,13 @@ function LoginForm() {
 
           {/* Messages */}
           {notice && (
-            <div className="mb-4 flex items-start gap-2 rounded-control border border-green-500/30 bg-green-500/10 p-3 text-sm text-green-600 dark:text-green-500">
+            <div className="mb-4 flex items-start gap-2 border border-green-600/30 bg-green-600/10 p-3 text-sm text-green-700">
               <CheckCircle2 size={16} className="mt-0.5 shrink-0" />
               <span>{notice}</span>
             </div>
           )}
           {error && (
-            <div className="mb-4 flex items-start gap-2 rounded-control border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-600 dark:text-red-500">
+            <div className="mb-4 flex items-start gap-2 border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-600">
               <AlertCircle size={16} className="mt-0.5 shrink-0" />
               <div>
                 <p>{error}</p>
@@ -331,7 +331,7 @@ function LoginForm() {
             <button
               type="submit"
               disabled={loading || googleLoading}
-              className="w-full bg-gold hover:bg-gold-bright text-on-gold font-semibold py-2.5 rounded-control transition-colors disabled:opacity-50"
+              className="w-full bg-gold hover:bg-gold-bright text-on-gold font-bold py-3 transition-colors disabled:opacity-50"
             >
               {loading ? 'Please wait…' : mode === 'signin' ? 'Sign in' : 'Create account'}
             </button>

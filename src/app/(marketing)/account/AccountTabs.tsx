@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import StarRating from '@/components/ui/StarRating';
+import { createClient } from '@/lib/supabase/client';
 
 function slugify(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -102,6 +103,12 @@ export default function AccountTabs({
   avatarUrl,
 }: AccountTabsProps) {
   const router = useRouter();
+  const handleSignOut = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push('/');
+    router.refresh();
+  };
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const [helpOrderId, setHelpOrderId] = useState<string | null>(null);
@@ -156,20 +163,20 @@ export default function AccountTabs({
 
   return (
     <div>
-      <div className="flex border-b border-line mb-8">
+      <div className="flex border-b-2 border-line-strong mb-8">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`relative px-6 py-3 text-sm font-medium border-b-2 transition duration-200 ease-in-out ${
+            className={`relative px-6 py-4 text-sm transition duration-200 ease-in-out -mb-0.5 border-b-[3px] ${
               activeTab === tab.id
-                ? 'border-gold text-gold-deep'
+                ? 'border-gold text-ink font-extrabold'
                 : 'border-transparent text-ink-muted hover:text-ink'
             }`}
           >
             {tab.label}
             {tab.badge ? (
-              <span className="ml-2 inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-gold text-on-gold text-[10px] font-bold align-middle">
+              <span className="ml-2 inline-flex items-center justify-center min-w-5 h-5 px-1.5 bg-gold text-on-gold text-[10px] font-bold align-middle">
                 {tab.badge}
               </span>
             ) : null}
@@ -179,34 +186,40 @@ export default function AccountTabs({
 
       {activeTab === 'overview' && (
         <div className="space-y-8">
-          <div className="bg-surface-raised border border-line rounded-card p-6 flex items-center gap-6">
+          <div className="bg-surface-raised border border-line p-6 flex items-center gap-6">
             {avatarUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={avatarUrl} alt="" className="w-16 h-16 rounded-full object-cover" />
+              <img src={avatarUrl} alt="" className="w-16 h-16 object-cover" />
             ) : (
-              <div className="w-16 h-16 rounded-full bg-gold text-on-gold flex items-center justify-center text-2xl font-bold">
+              <div className="w-16 h-16 bg-brand-dark text-brand-cream flex items-center justify-center text-2xl font-extrabold">
                 {avatarInitial}
               </div>
             )}
             <div>
-              <h2 className="text-xl font-semibold text-ink">{displayName}</h2>
-              <p className="text-sm text-ink-muted">{profile.email}</p>
-              <p className="text-xs text-ink-muted mt-1">
-                Member since {new Date(profile.created_at).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}
+              <h2 className="text-2xl font-extrabold tracking-[-0.02em] text-ink">{displayName}</h2>
+              <p className="text-sm text-ink-muted">
+                {profile.email} · Member since{' '}
+                {new Date(profile.created_at).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}
               </p>
             </div>
+            <button
+              onClick={handleSignOut}
+              className="ml-auto border border-line-strong text-ink font-bold px-5 py-2.5 text-sm hover:border-gold hover:text-gold-deep transition duration-200 shrink-0"
+            >
+              Sign out
+            </button>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-surface-raised border border-line rounded-card p-5">
+            <div className="bg-surface-raised border border-line p-5">
               <p className="text-xs tracking-widest uppercase text-ink-faint">Total Orders</p>
               <p className="text-2xl font-bold text-ink mt-1">{orders.length}</p>
             </div>
-            <div className="bg-surface-raised border border-line rounded-card p-5">
+            <div className="bg-surface-raised border border-line p-5">
               <p className="text-xs tracking-widest uppercase text-ink-faint">Total Spent</p>
               <p className="text-2xl font-bold text-ink mt-1">₹{totalSpent.toLocaleString('en-IN')}</p>
             </div>
-            <div className="bg-surface-raised border border-line rounded-card p-5">
+            <div className="bg-surface-raised border border-line p-5">
               <p className="text-xs tracking-widest uppercase text-ink-faint">Pending Orders</p>
               <p className="text-2xl font-bold text-ink mt-1">{pendingOrders}</p>
             </div>
@@ -215,7 +228,7 @@ export default function AccountTabs({
           {pendingReviewCount > 0 && (
             <button
               onClick={() => setActiveTab('reviews')}
-              className="w-full text-left bg-gold-tint border border-gold/40 rounded-card p-4 flex items-center gap-3 hover:border-gold transition duration-200"
+              className="w-full text-left bg-gold-tint border border-gold/40 p-4 flex items-center gap-3 hover:border-gold transition duration-200"
             >
               <Star size={18} className="fill-gold text-gold shrink-0" />
               <span className="text-sm text-ink">
@@ -244,7 +257,7 @@ export default function AccountTabs({
                 {recentOrders.map((order) => (
                   <div
                     key={order.id}
-                    className="bg-surface-raised border border-line rounded-card p-4 flex items-center justify-between"
+                    className="bg-surface-raised border border-line p-4 flex items-center justify-between"
                   >
                     <div>
                       <p className="font-mono text-sm text-ink">#{order.id.split('-')[0].toUpperCase()}</p>
@@ -279,13 +292,13 @@ export default function AccountTabs({
                 return (
                   <div
                     key={order.id}
-                    className="bg-surface-raised border border-line rounded-card overflow-hidden"
+                    className="bg-surface-raised border border-line overflow-hidden"
                   >
                     {/* Header row */}
-                    <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-surface-sunken border-b border-line">
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-3">
-                          <span className="font-mono text-sm font-medium text-ink">
+                          <span className="font-mono text-sm font-extrabold text-ink">
                             #{order.id.split('-')[0].toUpperCase()}
                           </span>
                           <StatusBadge status={order.status} />
@@ -295,7 +308,7 @@ export default function AccountTabs({
                         </span>
                       </div>
                       <div className="flex items-center gap-4">
-                        <span className="text-sm font-semibold text-ink">
+                        <span className="text-sm font-extrabold text-ink">
                           ₹{Number(order.total).toLocaleString('en-IN')}
                         </span>
                         <button
@@ -396,7 +409,7 @@ export default function AccountTabs({
                           <select
                             name="reason"
                             required
-                            className="bg-surface-raised border border-line px-3 py-2 rounded-control text-sm text-ink"
+                            className="bg-surface-raised border border-line px-3 py-2 text-sm text-ink"
                           >
                             <option value="order_not_received">Order not received</option>
                             <option value="wrong_item">Wrong item received</option>
@@ -418,11 +431,11 @@ export default function AccountTabs({
                           maxLength={2000}
                           rows={3}
                           placeholder="Tell us what happened"
-                          className="w-full bg-surface-raised border border-line px-3 py-2 rounded-control text-sm text-ink"
+                          className="w-full bg-surface-raised border border-line px-3 py-2 text-sm text-ink"
                         />
                         <button
                           disabled={helpSubmitting}
-                          className="bg-gold hover:bg-gold-bright text-on-gold font-semibold px-4 py-2 text-sm rounded-control disabled:opacity-50 transition duration-200"
+                          className="bg-gold hover:bg-gold-bright text-on-gold font-semibold px-4 py-2 text-sm disabled:opacity-50 transition duration-200"
                         >
                           {helpSubmitting ? 'Submitting...' : 'Submit Request'}
                         </button>
@@ -434,7 +447,7 @@ export default function AccountTabs({
             </div>
           )}
           {helpMessage && (
-            <p className="text-sm text-ink mt-4 bg-gold-tint border border-gold/40 rounded-card px-4 py-3">
+            <p className="text-sm text-ink mt-4 bg-gold-tint border border-gold/40 px-4 py-3">
               {helpMessage}
             </p>
           )}
@@ -443,7 +456,7 @@ export default function AccountTabs({
               <h3 className="text-lg font-semibold text-ink mb-4">Your help requests</h3>
               <div className="space-y-3">
                 {supportRequests.map((request) => (
-                  <div key={request.id} className="bg-surface-raised border border-line rounded-card p-4">
+                  <div key={request.id} className="bg-surface-raised border border-line p-4">
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <p className="font-mono text-xs text-ink-muted">
@@ -494,7 +507,7 @@ function EmptyState({
       {cta && (
         <Link
           href={cta.href}
-          className="mt-6 inline-flex items-center gap-2 bg-gold hover:bg-gold-bright text-on-gold font-semibold px-8 py-3 rounded-control transition duration-200 ease-in-out"
+          className="mt-6 inline-flex items-center gap-2 bg-gold hover:bg-gold-bright text-on-gold font-semibold px-8 py-3 transition duration-200 ease-in-out"
         >
           <ShoppingBag size={16} />
           {cta.label}
@@ -521,7 +534,7 @@ function ReviewsTab({
         <div className="flex items-center gap-2 mb-4">
           <h3 className="text-lg font-semibold text-ink">Awaiting your review</h3>
           {reviewableItems.length > 0 && (
-            <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-gold text-on-gold text-[10px] font-bold">
+            <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 bg-gold text-on-gold text-[10px] font-bold">
               {reviewableItems.length}
             </span>
           )}
@@ -593,7 +606,7 @@ function PendingReviewCard({ item, onSubmitted }: { item: ReviewableItem; onSubm
   };
 
   return (
-    <div className="bg-surface-raised border border-line rounded-card p-5">
+    <div className="bg-surface-raised border border-line p-5">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           {slug ? (
@@ -613,7 +626,7 @@ function PendingReviewCard({ item, onSubmitted }: { item: ReviewableItem; onSubm
         {!open && (
           <button
             onClick={() => setOpen(true)}
-            className="inline-flex items-center gap-1.5 bg-gold hover:bg-gold-bright text-on-gold font-semibold px-4 py-2 text-sm rounded-control transition duration-200 shrink-0"
+            className="inline-flex items-center gap-1.5 bg-gold hover:bg-gold-bright text-on-gold font-semibold px-4 py-2 text-sm transition duration-200 shrink-0"
           >
             <Star size={14} />
             Write a review
@@ -633,7 +646,7 @@ function PendingReviewCard({ item, onSubmitted }: { item: ReviewableItem; onSubm
             onChange={(e) => setTitle(e.target.value)}
             maxLength={120}
             placeholder="Add a headline (optional)"
-            className="w-full bg-surface border border-line px-3 py-2 rounded-control text-sm text-ink"
+            className="w-full bg-surface border border-line px-3 py-2 text-sm text-ink"
           />
           <textarea
             value={text}
@@ -641,13 +654,13 @@ function PendingReviewCard({ item, onSubmitted }: { item: ReviewableItem; onSubm
             maxLength={2000}
             rows={3}
             placeholder="Share what you liked or didn't (optional)"
-            className="w-full bg-surface border border-line px-3 py-2 rounded-control text-sm text-ink"
+            className="w-full bg-surface border border-line px-3 py-2 text-sm text-ink"
           />
           {error && <p className="text-sm text-red-500">{error}</p>}
           <div className="flex items-center gap-3">
             <button
               disabled={submitting}
-              className="bg-gold hover:bg-gold-bright text-on-gold font-semibold px-4 py-2 text-sm rounded-control disabled:opacity-50 transition duration-200"
+              className="bg-gold hover:bg-gold-bright text-on-gold font-semibold px-4 py-2 text-sm disabled:opacity-50 transition duration-200"
             >
               {submitting ? 'Submitting...' : 'Submit review'}
             </button>
@@ -722,7 +735,7 @@ function SubmittedReviewCard({ review, onChanged }: { review: Review; onChanged:
   };
 
   return (
-    <div className="bg-surface-raised border border-line rounded-card p-5">
+    <div className="bg-surface-raised border border-line p-5">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
         <div className="min-w-0">
           {productSlug ? (
@@ -806,7 +819,7 @@ function SubmittedReviewCard({ review, onChanged }: { review: Review; onChanged:
             onChange={(e) => setTitle(e.target.value)}
             maxLength={120}
             placeholder="Add a headline (optional)"
-            className="w-full bg-surface border border-line px-3 py-2 rounded-control text-sm text-ink"
+            className="w-full bg-surface border border-line px-3 py-2 text-sm text-ink"
           />
           <textarea
             value={text}
@@ -814,14 +827,14 @@ function SubmittedReviewCard({ review, onChanged }: { review: Review; onChanged:
             maxLength={2000}
             rows={3}
             placeholder="Share what you liked or didn't (optional)"
-            className="w-full bg-surface border border-line px-3 py-2 rounded-control text-sm text-ink"
+            className="w-full bg-surface border border-line px-3 py-2 text-sm text-ink"
           />
           <p className="text-xs text-ink-faint">Editing sends your review back for approval before it shows publicly.</p>
           {error && <p className="text-sm text-red-500">{error}</p>}
           <div className="flex items-center gap-3">
             <button
               disabled={busy}
-              className="bg-gold hover:bg-gold-bright text-on-gold font-semibold px-4 py-2 text-sm rounded-control disabled:opacity-50 transition duration-200"
+              className="bg-gold hover:bg-gold-bright text-on-gold font-semibold px-4 py-2 text-sm disabled:opacity-50 transition duration-200"
             >
               {busy ? 'Saving...' : 'Save changes'}
             </button>
@@ -854,7 +867,7 @@ function ReviewStatusPill({ status }: { status: string }) {
   const entry = map[status] || map.pending;
   return (
     <span
-      className={`px-2 py-0.5 text-xs font-medium rounded-control ${entry.cls}`}
+      className={`px-2 py-0.5 text-xs font-medium ${entry.cls}`}
       title={
         status === 'pending'
           ? 'Waiting for admin approval before it appears on the product page.'

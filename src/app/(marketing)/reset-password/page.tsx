@@ -80,24 +80,24 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="flex min-h-[80vh] flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="flex min-h-[80vh] flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-surface-sunken">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h1 className="text-center font-serif text-3xl text-ink">Set a new password</h1>
+        <h1 className="text-center text-3xl sm:text-4xl font-extrabold tracking-[-0.02em] text-ink">Set a new password</h1>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-surface-raised py-8 px-6 sm:px-10 shadow-sm rounded-card border border-line">
+        <div className="bg-surface-raised py-8 px-6 sm:px-10 border border-line">
           {done ? (
             <div className="text-center">
-              <div className="mx-auto w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center mb-4">
-                <CheckCircle2 size={24} className="text-green-600 dark:text-green-500" />
+              <div className="mx-auto w-12 h-12 bg-green-500/10 flex items-center justify-center mb-4">
+                <CheckCircle2 size={24} className="text-green-600" />
               </div>
               <p className="text-sm text-ink">Your password has been updated. Redirecting you to sign in…</p>
             </div>
           ) : invalid ? (
             <div className="text-center">
-              <div className="mx-auto w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mb-4">
-                <AlertCircle size={24} className="text-red-600 dark:text-red-500" />
+              <div className="mx-auto w-12 h-12 bg-red-500/10 flex items-center justify-center mb-4">
+                <AlertCircle size={24} className="text-red-600" />
               </div>
               <p className="text-sm text-ink">
                 This reset link is invalid or has expired.
@@ -112,7 +112,7 @@ export default function ResetPasswordPage() {
           ) : (
             <>
               {error && (
-                <div className="mb-4 flex items-start gap-2 rounded-control border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-600 dark:text-red-500">
+                <div className="mb-4 flex items-start gap-2 border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-600">
                   <AlertCircle size={16} className="mt-0.5 shrink-0" />
                   <span>{error}</span>
                 </div>
@@ -120,7 +120,7 @@ export default function ResetPasswordPage() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-xs font-medium text-ink-muted mb-1.5">New password</label>
-                  <div className="flex items-center gap-2 w-full bg-surface border border-line-strong rounded-control px-3 focus-within:border-gold transition-colors">
+                  <div className="flex items-center gap-2 w-full bg-surface border border-line-strong px-3 focus-within:border-gold transition-colors">
                     <Lock size={16} className="text-ink-faint shrink-0" />
                     <input
                       type={showPassword ? 'text' : 'password'}
@@ -143,7 +143,7 @@ export default function ResetPasswordPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-ink-muted mb-1.5">Confirm password</label>
-                  <div className="flex items-center gap-2 w-full bg-surface border border-line-strong rounded-control px-3 focus-within:border-gold transition-colors">
+                  <div className="flex items-center gap-2 w-full bg-surface border border-line-strong px-3 focus-within:border-gold transition-colors">
                     <Lock size={16} className="text-ink-faint shrink-0" />
                     <input
                       type={showPassword ? 'text' : 'password'}
@@ -159,7 +159,7 @@ export default function ResetPasswordPage() {
                 <button
                   type="submit"
                   disabled={loading || !ready}
-                  className="w-full bg-gold hover:bg-gold-bright text-on-gold font-semibold py-2.5 rounded-control transition-colors disabled:opacity-50"
+                  className="w-full bg-gold hover:bg-gold-bright text-on-gold font-bold py-3 transition-colors disabled:opacity-50"
                 >
                   {!ready ? 'Verifying link…' : loading ? 'Updating…' : 'Update password'}
                 </button>

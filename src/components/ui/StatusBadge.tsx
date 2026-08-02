@@ -13,10 +13,13 @@ export function StatusBadge({ status }: { status: string }) {
       colorClass = 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/30';
       break;
     case 'shipped':
-      colorClass = 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/30';
+      // Modernist: Shipped = solid accent fill (red in marketing, gold
+      // in admin — follows the scoped accent token).
+      colorClass = 'bg-gold text-on-gold border border-gold';
       break;
     case 'delivered':
-      colorClass = 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30';
+      // Delivered = green outline (semantic success, both scopes).
+      colorClass = 'bg-transparent text-green-700 border border-green-700';
       break;
     case 'approved':
     case 'published':

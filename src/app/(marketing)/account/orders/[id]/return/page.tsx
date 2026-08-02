@@ -62,8 +62,8 @@ export default async function ReturnOrderPage({ params }: PageProps) {
         >
           <ArrowLeft size={14} /> Back to account
         </Link>
-        <div className="border border-line rounded-card p-8 text-center">
-          <h1 className="font-serif text-2xl text-ink">
+        <div className="border border-line p-8 text-center">
+          <h1 className="text-2xl font-extrabold tracking-[-0.02em] text-ink">
             Order not found
           </h1>
           <p className="text-sm text-ink-muted mt-3">
@@ -85,11 +85,11 @@ export default async function ReturnOrderPage({ params }: PageProps) {
         >
           <ArrowLeft size={14} /> Back to account
         </Link>
-        <div className="border border-line rounded-card p-8">
+        <div className="border border-line p-8">
           <span className="text-xs tracking-[0.3em] uppercase text-gold-deep">
             Return Order
           </span>
-          <h1 className="font-serif text-2xl md:text-3xl text-ink mt-3">
+          <h1 className="text-2xl md:text-3xl font-extrabold tracking-[-0.02em] text-ink mt-3">
             This order isn&apos;t eligible for return
           </h1>
           <p className="text-sm text-ink-muted mt-4 leading-relaxed">
@@ -104,7 +104,7 @@ export default async function ReturnOrderPage({ params }: PageProps) {
           </p>
           <Link
             href="/account"
-            className="inline-block mt-6 border border-gold text-gold-deep hover:bg-gold hover:text-on-gold px-5 py-2 text-sm font-semibold transition duration-200 ease-in-out rounded-control"
+            className="inline-block mt-6 border border-gold text-gold-deep hover:bg-gold hover:text-on-gold px-5 py-2 text-sm font-semibold transition duration-200 ease-in-out"
           >
             Back to your orders
           </Link>
@@ -126,14 +126,14 @@ export default async function ReturnOrderPage({ params }: PageProps) {
       </Link>
 
       <div className="flex items-start gap-4">
-        <div className="w-11 h-11 flex items-center justify-center rounded-control bg-surface-sunken shrink-0">
+        <div className="w-11 h-11 flex items-center justify-center bg-surface-sunken shrink-0">
           <RotateCcw className="text-gold-deep" size={22} />
         </div>
         <div>
           <span className="text-xs tracking-[0.3em] uppercase text-gold-deep">
             Return Order
           </span>
-          <h1 className="font-serif text-2xl md:text-3xl text-ink mt-2">
+          <h1 className="text-2xl md:text-3xl font-extrabold tracking-[-0.02em] text-ink mt-2">
             How to return this order
           </h1>
         </div>
@@ -147,9 +147,9 @@ export default async function ReturnOrderPage({ params }: PageProps) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
         <a
           href={telHref(SITE_CONFIG.phone)}
-          className="group flex flex-col gap-4 bg-surface-raised border border-line hover:border-gold hover:shadow-lg dark:hover:shadow-[0_12px_40px_rgba(212,160,23,0.15)] hover:-translate-y-0.5 transition duration-200 ease-in-out rounded-card p-6"
+          className="group flex flex-col gap-4 bg-surface-raised border border-line hover:border-gold hover:-translate-y-0.5 transition duration-200 ease-in-out p-6"
         >
-          <div className="w-11 h-11 flex items-center justify-center rounded-control bg-surface-sunken group-hover:bg-gold/10 transition-colors">
+          <div className="w-11 h-11 flex items-center justify-center bg-surface-sunken group-hover:bg-gold/10 transition-colors">
             <Phone className="text-gold-deep" size={22} />
           </div>
           <div>
@@ -164,9 +164,9 @@ export default async function ReturnOrderPage({ params }: PageProps) {
 
         <a
           href={`mailto:${SITE_CONFIG.email}?subject=Return%20for%20order%20${reference}`}
-          className="group flex flex-col gap-4 bg-surface-raised border border-line hover:border-gold hover:shadow-lg dark:hover:shadow-[0_12px_40px_rgba(212,160,23,0.15)] hover:-translate-y-0.5 transition duration-200 ease-in-out rounded-card p-6"
+          className="group flex flex-col gap-4 bg-surface-raised border border-line hover:border-gold hover:-translate-y-0.5 transition duration-200 ease-in-out p-6"
         >
-          <div className="w-11 h-11 flex items-center justify-center rounded-control bg-surface-sunken group-hover:bg-gold/10 transition-colors">
+          <div className="w-11 h-11 flex items-center justify-center bg-surface-sunken group-hover:bg-gold/10 transition-colors">
             <Mail className="text-gold-deep" size={22} />
           </div>
           <div>
@@ -181,7 +181,7 @@ export default async function ReturnOrderPage({ params }: PageProps) {
       </div>
 
       <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="flex items-center gap-3 border border-line rounded-card p-4 bg-surface-sunken">
+        <div className="flex items-center gap-3 border border-line p-4 bg-surface-sunken">
           <Clock className="text-gold-deep shrink-0" size={18} />
           <div>
             <p className="text-[10px] tracking-widest uppercase text-ink-faint">
@@ -192,7 +192,7 @@ export default async function ReturnOrderPage({ params }: PageProps) {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-3 border border-line rounded-card p-4 bg-surface-sunken">
+        <div className="flex items-center gap-3 border border-line p-4 bg-surface-sunken">
           <RotateCcw className="text-gold-deep shrink-0" size={18} />
           <div>
             <p className="text-[10px] tracking-widest uppercase text-ink-faint">
