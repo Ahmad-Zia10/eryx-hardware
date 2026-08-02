@@ -6,47 +6,44 @@ import HeroSlider from "@/components/sections/HeroSlider";
 import CategoriesFocus, { type FocusPanel } from "@/components/sections/CategoriesFocus";
 import { CATALOG_CATEGORIES } from "@/lib/catalogue-data";
 import { getAllProducts, getTopPicks } from "@/lib/db/products";
-import { getCategoriesByProductLine } from "@/lib/db/categories";
+import { getFocusCategories, type ProductLine } from "@/lib/db/categories";
 import { getPublishedPosts } from "@/lib/db/blog";
+import { formatPrice } from "@/lib/pricing";
 import { SITE_CONFIG } from "@/constants";
 import FAQTeaser from "@/components/sections/FAQTeaser";
 import BlogTeaser from "@/components/sections/BlogTeaser";
 import FollowUsSection from "@/components/sections/FollowUsSection";
 
-// Curated lifestyle imagery for the "Categories in focus" filmstrip.
-// Live product counts are matched onto these by category name at render
-// time (see below) — the images stay hand-picked, the numbers stay real.
-const FOCUS_CARDS: { label: string; category: string; href: string; image: string }[] = [
-  {
-    label: "Basket Systems",
-    category: "Basket",
-    href: "/kitchen?category=Basket",
-    image: "/products/basket/basket-1.jpg",
-  },
-  {
-    label: "Glass Pull Down",
-    category: "Glass Pull Down",
-    href: "/kitchen?category=Glass Pull Down",
-    image: "/products/glass-pull-down/glass-pull-down-5-lifestyle.jpg",
-  },
-  {
-    label: "Rolling Shutter",
-    category: "Rolling Shutter",
-    href: "/kitchen?category=Rolling Shutter",
-    image: "/products/rolling-shutter/rolling-shutter-2.jpg",
-  },
-  {
-    label: "S Corner",
-    category: "S Corner",
-    href: "/kitchen?category=S Corner",
-    image: "/products/s-corner/s-corner-3-lifestyle-collage.jpg",
-  },
-  {
-    label: "Hinges",
-    category: "Hinges",
-    href: "/kitchen?category=Hinges",
-    image: "/products/hinges-new/hinges-new-1.jpg",
-  },
+// Curated imagery for the "Categories in focus" filmstrip. Each entry
+// is paired with a REAL category (productLine + category) so its live
+// count and cheapest "from" price get matched on at render time — the
+// images stay hand-picked, the numbers stay real. Only categories that
+// have curated imagery appear here (a fuller strip → smoother drag);
+// entries whose category isn't currently in the DB are dropped below.
+const PRODUCT_LINE_HREF: Record<ProductLine, string> = {
+  kitchen: "/kitchen",
+  wardrobe: "/wardrobe",
+  hardware: "/hardware",
+};
+
+type FocusCard = {
+  label: string;
+  category: string;
+  productLine: ProductLine;
+  image: string;
+};
+
+const FOCUS_CARDS: FocusCard[] = [
+  { label: "Basket Systems", category: "Basket", productLine: "kitchen", image: "/products/basket/basket-1.jpg" },
+  { label: "Glass Pull Down", category: "Glass Pull Down", productLine: "kitchen", image: "/products/glass-pull-down/glass-pull-down-5-lifestyle.jpg" },
+  { label: "Rolling Shutter", category: "Rolling Shutter", productLine: "kitchen", image: "/products/rolling-shutter/rolling-shutter-2.jpg" },
+  { label: "S-Corner & Carousels", category: "S Corner", productLine: "kitchen", image: "/products/s-corner/s-corner-3-lifestyle-collage.jpg" },
+  { label: "GTPT Systems", category: "GTPT", productLine: "kitchen", image: "/products/gtpt/gtpt-3-lifestyle.jpg" },
+  { label: "Slim Box Drawers", category: "Slim Box", productLine: "kitchen", image: "/products/gtpt/gtpt-4.jpg" },
+  { label: "Hinges & Fittings", category: "Hinges", productLine: "hardware", image: "/products/hinges-new/hinges-new-1.jpg" },
+  { label: "Channels & Slides", category: "Channels", productLine: "hardware", image: "/products/hinges-old/hinges-old-1.jpg" },
+  { label: "Trouser Racks", category: "Trouser Rack", productLine: "wardrobe", image: "/products/trouser-rack/trouser-rack-1.jpg" },
+  { label: "Wardrobe Baskets", category: "Baskets", productLine: "wardrobe", image: "/products/basket/basket-3-lifestyle.jpg" },
 ];
 
 // Modernist stat/trust strip — six ruled cells, last one inverted.
@@ -67,21 +64,28 @@ const STATS: { value: string; label: string; invert?: boolean }[] = [
 export default async function Home() {
   const topPicks = await getTopPicks();
   const blogPosts = await getPublishedPosts(2);
-  const categoryGroups = await getCategoriesByProductLine();
+  const focusCategories = await getFocusCategories();
 
-  // Match live product counts onto the curated filmstrip panels by
-  // category name (kitchen line). Counts stay real; images stay curated.
-  const kitchenCounts = new Map(
-    (categoryGroups.find((g) => g.productLine === "kitchen")?.categories ?? []).map(
-      (c) => [c.name, c.count] as const
-    )
+  // Match live count + cheapest "from" price onto each curated panel by
+  // (productLine, category). Counts and prices stay REAL; images stay
+  // curated. Cards whose category isn't currently live are dropped, so
+  // the strip never shows an empty/zero panel.
+  const focusLookup = new Map(
+    focusCategories.map((c) => [`${c.productLine}::${c.name}`, c] as const)
   );
-  const focusPanels: FocusPanel[] = FOCUS_CARDS.map((c) => ({
-    label: c.label,
-    href: c.href,
-    image: c.image,
-    count: kitchenCounts.get(c.category),
-  }));
+  const focusPanels: FocusPanel[] = FOCUS_CARDS.flatMap((card) => {
+    const match = focusLookup.get(`${card.productLine}::${card.category}`);
+    if (!match || match.count === 0) return [];
+    return [
+      {
+        label: card.label,
+        href: `${PRODUCT_LINE_HREF[card.productLine]}?category=${encodeURIComponent(card.category)}`,
+        image: card.image,
+        count: match.count,
+        fromPrice: match.minPrice !== null ? formatPrice(match.minPrice) : undefined,
+      },
+    ];
+  });
 
   // The section looks abandoned with one or two cards floating in a
   // row of four — backfill with catalogue products so it always shows

@@ -9,6 +9,16 @@ export type CategoryEntry = {
   count: number;
 };
 
+// A category enriched with its cheapest live "from" price, for the
+// home-page "Categories in focus" filmstrip. minPrice is null when no
+// variant in the category has a price (all "Price on request").
+export type FocusCategory = {
+  name: string;
+  productLine: ProductLine;
+  count: number;
+  minPrice: number | null;
+};
+
 export type CategoryGroup = {
   productLine: ProductLine;
   categories: CategoryEntry[];
@@ -77,4 +87,64 @@ export async function getCategoriesByProductLine(): Promise<CategoryGroup[]> {
       .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
     return { productLine: line, categories };
   });
+}
+
+/**
+ * Every active category across all product lines, enriched with a live
+ * count and cheapest "from" price. Powers the home-page "Categories in
+ * focus" filmstrip, which pairs each category with curated imagery.
+ *
+ * Single fetch of default active variants (~200 rows) — min price is
+ * computed with the same effective-price rule as `getEffectivePrice`
+ * (sale price when on sale, else mrp; nulls ignored) so the strip and
+ * the PLP agree on "from" pricing.
+ */
+export async function getFocusCategories(): Promise<FocusCategory[]> {
+  const { data, error } = await supabaseAdmin
+    .from("product_variants")
+    .select("product_line, category, mrp, is_on_sale, discount_price")
+    .eq("is_active", true)
+    .eq("is_default", true);
+
+  if (error) {
+    console.error("[getFocusCategories] fetch failed:", error.message);
+    return [];
+  }
+
+  // key = `${productLine}::${category}` → { count, minPrice }
+  const buckets = new Map<string, { line: ProductLine; name: string; count: number; minPrice: number | null }>();
+
+  for (const row of data || []) {
+    const line = row.product_line as ProductLine | null | undefined;
+    const name = row.category as string | null | undefined;
+    if (!line || !name || !PRODUCT_LINE_ORDER.includes(line)) continue;
+
+    const key = `${line}::${name}`;
+    const entry = buckets.get(key) ?? { line, name, count: 0, minPrice: null };
+    entry.count += 1;
+
+    // Effective price = discount_price when on sale (and valid), else mrp.
+    const onSale =
+      row.is_on_sale === true &&
+      typeof row.discount_price === "number" &&
+      row.discount_price >= 0;
+    const effective = onSale
+      ? (row.discount_price as number)
+      : typeof row.mrp === "number"
+        ? row.mrp
+        : null;
+    if (effective !== null) {
+      entry.minPrice =
+        entry.minPrice === null ? effective : Math.min(entry.minPrice, effective);
+    }
+
+    buckets.set(key, entry);
+  }
+
+  return Array.from(buckets.values()).map(({ line, name, count, minPrice }) => ({
+    name,
+    productLine: line,
+    count,
+    minPrice,
+  }));
 }

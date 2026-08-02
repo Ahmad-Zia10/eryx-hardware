@@ -9,6 +9,8 @@ export type FocusPanel = {
   href: string;
   image: string;
   count?: number;
+  // Preformatted cheapest price, e.g. "₹1,800". Rendered as "from ₹…".
+  fromPrice?: string;
 };
 
 /**
@@ -154,6 +156,7 @@ export default function CategoriesFocus({ panels }: { panels: FocusPanel[] }) {
               {typeof panel.count === "number" && (
                 <div className="text-xs text-brand-cream/60 mt-1">
                   {panel.count} {panel.count === 1 ? "product" : "products"}
+                  {panel.fromPrice ? ` · from ${panel.fromPrice}` : ""}
                 </div>
               )}
             </div>
