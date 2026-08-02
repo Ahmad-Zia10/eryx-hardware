@@ -122,7 +122,7 @@ function EnquiryModalContent({
           {submitted ? (
             <div className="flex flex-col items-center text-center gap-3 py-6">
               <CheckCircle className="text-gold" size={48} />
-              <h2 className="text-xl font-bold text-ink font-serif">
+              <h2 className="text-xl font-bold text-ink">
                 Enquiry Sent!
               </h2>
               <p className="text-ink-muted">
@@ -137,7 +137,7 @@ function EnquiryModalContent({
             </div>
           ) : (
             <>
-              <h2 className="text-xl font-bold text-ink font-serif">
+              <h2 className="text-xl font-bold text-ink">
                 {heading}
               </h2>
               {productName && (

@@ -36,7 +36,7 @@ export default function CartDrawer() {
       <div className="absolute inset-0 bg-black/60" onClick={closeCartDrawer} />
       <div className="absolute right-0 top-0 h-full w-full max-w-md bg-surface-raised flex flex-col border-l border-line">
         <div className="flex items-center justify-between p-4 border-b border-line">
-          <h2 className="text-lg font-semibold text-ink font-serif">
+          <h2 className="text-lg font-semibold text-ink">
             Your Cart ({cartCount} {cartCount === 1 ? "item" : "items"})
           </h2>
           <button
@@ -86,7 +86,7 @@ export default function CartDrawer() {
                     <Link
                       href={`/kitchen/${item.product.slug}`}
                       onClick={closeCartDrawer}
-                      className="text-sm font-semibold text-ink font-serif hover:text-gold-deep transition-colors duration-200"
+                      className="text-sm font-semibold text-ink hover:text-gold-deep transition-colors duration-200"
                     >
                       {item.product.name}
                     </Link>

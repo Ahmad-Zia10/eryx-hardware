@@ -173,7 +173,7 @@ export default function SearchOverlay({ onClose }: SearchOverlayProps) {
                       </div>
                       <div className="min-w-0 flex-1">
                         <h4
-                          className={`font-medium font-serif truncate transition-colors duration-150 ${
+                          className={`font-medium truncate transition-colors duration-150 ${
                             active ? "text-gold-deep" : "text-ink group-hover/row:text-gold-deep"
                           }`}
                         >
