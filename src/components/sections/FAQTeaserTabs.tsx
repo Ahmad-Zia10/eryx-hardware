@@ -24,11 +24,11 @@ export default function FAQTeaserTabs({
   if (!active) return null;
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-3xl">
       {categories.length > 1 && (
         <div
           role="tablist"
-          className="flex flex-wrap items-center justify-center gap-2 mb-6"
+          className="flex flex-wrap items-center gap-2 mb-6"
         >
           {categories.map((cat) => {
             const isActive = cat.id === active.id;
@@ -39,10 +39,10 @@ export default function FAQTeaserTabs({
                 aria-selected={isActive}
                 type="button"
                 onClick={() => setActiveId(cat.id)}
-                className={`text-xs px-4 py-2 rounded-full border transition-colors duration-200 ${
+                className={`text-xs px-4 py-2 border transition-colors duration-200 ${
                   isActive
-                    ? 'bg-[#D4A017] border-[#D4A017] text-[#0A0A0A] font-semibold'
-                    : 'bg-transparent border-[#D4D4D4] dark:border-[#2A2A2A] text-[#555555] dark:text-[#9A9A9A] hover:border-[#D4A017] hover:text-[#D4A017]'
+                    ? 'bg-gold border-gold text-on-gold font-bold'
+                    : 'bg-transparent border-line-strong text-ink-muted hover:border-gold hover:text-gold-deep'
                 }`}
               >
                 {cat.name}
@@ -55,15 +55,15 @@ export default function FAQTeaserTabs({
       <ul className="space-y-3">
         {active.questions.map((item) => (
           <li key={item.id}>
-            <details className="group bg-white dark:bg-[#141414] border border-[#D4D4D4] dark:border-[#2A2A2A] rounded-sm hover:border-[#D4A017] open:border-[#D4A017] transition-colors duration-200">
-              <summary className="list-none cursor-pointer px-5 py-4 flex items-center justify-between gap-4 text-sm font-medium text-[#0A0A0A] dark:text-[#F5F5F5]">
+            <details className="group bg-surface-raised border border-line hover:border-gold open:border-gold transition-colors duration-200">
+              <summary className="list-none cursor-pointer px-5 py-4 flex items-center justify-between gap-4 text-sm font-medium text-ink">
                 <span>{item.question}</span>
                 <ChevronDown
                   size={18}
-                  className="shrink-0 text-[#D4A017] group-open:rotate-180 transition-transform duration-200"
+                  className="shrink-0 text-gold group-open:rotate-180 transition-transform duration-200"
                 />
               </summary>
-              <div className="px-5 pb-4 text-sm text-[#555555] dark:text-[#9A9A9A] leading-relaxed border-t border-[#D4D4D4] dark:border-[#2A2A2A] pt-4 whitespace-pre-line">
+              <div className="px-5 pb-4 text-sm text-ink-muted leading-relaxed border-t border-line pt-4 whitespace-pre-line">
                 {item.answer}
               </div>
             </details>

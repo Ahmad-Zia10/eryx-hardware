@@ -4,15 +4,16 @@ import type { BlogPostSummary } from '@/lib/db/blog';
 export default function BlogTeaser({ posts }: { posts: BlogPostSummary[] }) {
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="font-serif text-2xl text-[#0A0A0A] dark:text-[#F5F5F5]">
-          From Our Blog
+      {/* Ruled section header, Modernist. */}
+      <div className="flex items-baseline justify-between gap-4 border-b-2 border-line-strong pb-3.5 mb-7">
+        <h2 className="text-2xl sm:text-3xl font-extrabold tracking-[-0.02em] text-ink">
+          From our blog
         </h2>
         <Link
           href="/blog"
-          className="text-sm text-[#D4A017] hover:text-[#E8B820] transition duration-200 ease-in-out"
+          className="text-sm font-bold text-gold-deep hover:text-gold transition duration-200 ease-in-out"
         >
-          View All →
+          View all →
         </Link>
       </div>
 
@@ -21,18 +22,19 @@ export default function BlogTeaser({ posts }: { posts: BlogPostSummary[] }) {
           <Link
             key={post.id}
             href={`/blog/${post.slug}`}
-            className="group bg-white dark:bg-[#141414] border border-[#D4D4D4] dark:border-[#2A2A2A] rounded-sm overflow-hidden hover:border-[#D4A017] transition duration-200 ease-in-out"
+            className="group bg-surface-raised border border-line overflow-hidden hover:border-gold transition duration-200 ease-in-out"
           >
             {post.cover_image_url && (
+              // Blog covers are EDITORIAL imagery → grayscale (Modernist).
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={post.cover_image_url}
                 alt=""
-                className="w-full h-48 object-cover"
+                className="w-full h-48 object-cover grayscale contrast-[1.06]"
               />
             )}
             <div className="p-5">
-              <p className="text-xs text-[#9A9A9A] mb-2">
+              <p className="text-xs text-ink-faint mb-2">
                 {post.published_at
                   ? new Date(post.published_at).toLocaleDateString('en-IN', {
                       day: 'numeric',
@@ -41,11 +43,11 @@ export default function BlogTeaser({ posts }: { posts: BlogPostSummary[] }) {
                     })
                   : ''}
               </p>
-              <h3 className="font-semibold text-[#0A0A0A] dark:text-[#F5F5F5] group-hover:text-[#D4A017] transition duration-200 mb-2">
+              <h3 className="font-bold text-ink group-hover:text-gold-deep transition duration-200 mb-2">
                 {post.title}
               </h3>
               {post.excerpt && (
-                <p className="text-sm text-[#555555] dark:text-[#9A9A9A] line-clamp-2">
+                <p className="text-sm text-ink-muted line-clamp-2">
                   {post.excerpt}
                 </p>
               )}

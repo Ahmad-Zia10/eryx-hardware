@@ -6,8 +6,29 @@ import Image from "next/image";
 import Link from "next/link";
 import HeroActions from "./HeroActions";
 
+// Modernist hero CTA — flat red primary fill, flush-left label.
 const slideCta =
-  "bg-gold hover:bg-gold-bright text-on-gold font-semibold px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base rounded-control transition duration-200 ease-in-out inline-block";
+  "bg-gold hover:bg-gold-bright text-on-gold font-bold px-6 sm:px-7 py-3.5 sm:py-4 text-sm sm:text-base transition duration-200 ease-in-out inline-flex items-center";
+
+// Kicker: NN (bold) + 2px red tick + uppercase label. Left-aligned,
+// the Modernist hero signature. Shared across every slide.
+function HeroKicker({ n, label }: { n: string; label: string }) {
+  return (
+    <div className="flex items-center gap-3.5 text-brand-cream">
+      <span className="text-xs sm:text-sm font-extrabold tracking-[0.06em]">{n}</span>
+      <span className="w-11 h-[2px] bg-gold" />
+      <span className="text-[10px] sm:text-[11px] tracking-[0.2em] uppercase text-brand-cream/70">
+        {label}
+      </span>
+    </div>
+  );
+}
+
+// Modernist display headline — huge Archivo, tight tracking, near-1
+// leading, flush-left, never centered.
+const heroHeading =
+  "text-4xl sm:text-6xl md:text-7xl font-extrabold leading-[0.94] tracking-[-0.035em] text-brand-cream font-display";
+const heroSub = "text-sm sm:text-lg text-brand-cream/78 max-w-lg leading-relaxed";
 
 const SLIDES = [
   {
@@ -15,18 +36,16 @@ const SLIDES = [
     // Modern beige+walnut modular kitchen with fridge
     image: "/products/hero/slide-1-modular-kitchen.jpg",
     content: (
-      <div className="flex flex-col gap-4 sm:gap-6 w-full max-w-2xl">
-        <span className="text-[10px] sm:text-xs tracking-[0.3em] uppercase text-gold">
-          A Division of Modular India
-        </span>
-        <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold leading-[1.05] text-white font-display">
+      <div className="flex flex-col gap-5 sm:gap-6 w-full max-w-2xl">
+        <HeroKicker n="01" label="A Division of Modular India" />
+        <h1 className={heroHeading}>
           Precision
           <br />
           Hardware for
           <br />
-          <span className="text-gold">Modular Spaces</span>
+          Modular Spaces
         </h1>
-        <p className="text-sm sm:text-lg text-brand-cream/80 max-w-lg">
+        <p className={heroSub}>
           Hinges, fittings, sliding systems, baskets, pull-downs, shutters, and
           wardrobe hardware engineered for modern Indian homes.
         </p>
@@ -40,16 +59,14 @@ const SLIDES = [
     // Light-wood kitchen with tiled backsplash
     image: "/products/hero/slide-2-light-kitchen.jpg",
     content: (
-      <div className="flex flex-col gap-4 sm:gap-6 w-full max-w-2xl">
-        <span className="text-[10px] sm:text-xs tracking-[0.3em] uppercase text-gold">
-          Premium Kitchen Solutions
-        </span>
-        <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold leading-[1.05] text-white font-display">
+      <div className="flex flex-col gap-5 sm:gap-6 w-full max-w-2xl">
+        <HeroKicker n="02" label="Premium Kitchen Solutions" />
+        <h1 className={heroHeading}>
           Kitchen Hardware,
           <br />
-          Engineered <span className="text-gold">Right</span>
+          Engineered Right
         </h1>
-        <p className="text-sm sm:text-lg text-brand-cream/80 max-w-lg">
+        <p className={heroSub}>
           Discover a complete range of intelligent kitchen storage systems designed
           to maximize space and ease of use.
         </p>
@@ -69,16 +86,14 @@ const SLIDES = [
     image: "/products/basket/basket-5-brand.jpg",
     fit: "contain" as const,
     content: (
-      <div className="flex flex-col gap-4 sm:gap-6 w-full max-w-2xl">
-        <span className="text-[10px] sm:text-xs tracking-[0.3em] uppercase text-gold">
-          Basket Systems
-        </span>
-        <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold leading-[1.05] text-white font-display">
+      <div className="flex flex-col gap-5 sm:gap-6 w-full max-w-2xl">
+        <HeroKicker n="03" label="Basket Systems" />
+        <h1 className={heroHeading}>
           Every Item,
           <br />
-          <span className="text-gold">In Its Place</span>
+          In Its Place
         </h1>
-        <p className="text-sm sm:text-lg text-brand-cream/80 max-w-lg">
+        <p className={heroSub}>
           Pull-out baskets and drawer systems built for the way modern
           kitchens actually work.
         </p>
@@ -96,16 +111,14 @@ const SLIDES = [
     image: "/products/rolling-shutter/rolling-shutter-1-brand.jpg",
     fit: "contain" as const,
     content: (
-      <div className="flex flex-col gap-4 sm:gap-6 w-full max-w-2xl">
-        <span className="text-[10px] sm:text-xs tracking-[0.3em] uppercase text-gold">
-          Rolling Shutter Systems
-        </span>
-        <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold leading-[1.05] text-white font-display">
+      <div className="flex flex-col gap-5 sm:gap-6 w-full max-w-2xl">
+        <HeroKicker n="04" label="Rolling Shutter Systems" />
+        <h1 className={heroHeading}>
           Countertop
           <br />
-          <span className="text-gold">Clarity</span>
+          Clarity
         </h1>
-        <p className="text-sm sm:text-lg text-brand-cream/80 max-w-lg">
+        <p className={heroSub}>
           Appliance garages and rolling shutters that hide the mess and
           keep the counter open.
         </p>
@@ -125,16 +138,14 @@ const SLIDES = [
     image: "/products/hinges-new/hinges-new-1.jpg",
     fit: "contain" as const,
     content: (
-      <div className="flex flex-col gap-4 sm:gap-6 w-full max-w-2xl">
-        <span className="text-[10px] sm:text-xs tracking-[0.3em] uppercase text-gold">
-          Hinges &amp; Fittings
-        </span>
-        <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold leading-[1.05] text-white font-display">
+      <div className="flex flex-col gap-5 sm:gap-6 w-full max-w-2xl">
+        <HeroKicker n="05" label="Hinges & Fittings" />
+        <h1 className={heroHeading}>
           Soft-Close,
           <br />
-          <span className="text-gold">Every Time</span>
+          Every Time
         </h1>
-        <p className="text-sm sm:text-lg text-brand-cream/80 max-w-lg">
+        <p className={heroSub}>
           German-engineered hinges rated for a lifetime of daily use.
         </p>
         <div className="flex flex-wrap gap-4 mt-1 sm:mt-2">
@@ -197,7 +208,8 @@ export default function HeroSlider() {
                   image, so the extended backdrop naturally matches the
                   product's own color/lighting instead of a hardcoded
                   gradient that seams against the shot. Lifestyle slides
-                  use object-cover to fill the frame directly. */}
+                  use object-cover to fill the frame directly.
+                  Modernist: hero imagery is EDITORIAL → grayscale. */}
               {slide.fit === "contain" && (
                 <Image
                   src={slide.image}
@@ -206,7 +218,7 @@ export default function HeroSlider() {
                   aria-hidden="true"
                   sizes="100vw"
                   quality={40}
-                  className="object-cover object-center scale-110 blur-2xl opacity-70"
+                  className="object-cover object-center scale-110 blur-2xl opacity-70 grayscale contrast-[1.06]"
                 />
               )}
               <Image
@@ -216,22 +228,21 @@ export default function HeroSlider() {
                 priority={index === 0}
                 sizes="100vw"
                 quality={80}
-                className={
+                className={`grayscale contrast-[1.06] ${
                   slide.fit === "contain"
                     ? "object-contain object-center"
                     : "object-cover object-center"
-                }
+                }`}
               />
 
-              {/* Bottom-left legibility scrim (Ozone-style): dark at the
-                  bottom, transparent at the top so the image dominates.
-                  Second wash on the left gives horizontal contrast for the
-                  text stack without washing out the right side. */}
-              <div className="absolute inset-0 bg-gradient-to-t from-brand-dark/85 via-brand-dark/30 to-transparent" />
-              <div className="absolute inset-0 bg-gradient-to-r from-brand-dark/60 via-transparent to-transparent" />
+              {/* Modernist legibility scrim: strong dark on the LEFT
+                  (where the flush-left text stack sits) fading to
+                  transparent on the right, plus a bottom wash. */}
+              <div className="absolute inset-0 bg-gradient-to-r from-brand-dark/85 via-brand-dark/45 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-brand-dark/70 via-transparent to-transparent" />
 
-              {/* Content — bottom-left stack */}
-              <div className="relative z-20 h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-end pb-14 sm:pb-16 lg:pb-20">
+              {/* Content — left-aligned, vertically centered stack */}
+              <div className="relative z-20 h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
                 {slide.content}
               </div>
             </>
@@ -239,37 +250,37 @@ export default function HeroSlider() {
         </div>
       ))}
 
-      {/* Slide indicators */}
-      <div className="absolute bottom-5 sm:bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2">
+      {/* Slide indicators — flush-left, flat bars. Active = wide red. */}
+      <div className="absolute bottom-6 left-4 sm:left-6 lg:left-8 z-30 flex items-center gap-2">
         {SLIDES.map((slide, index) => (
           <button
             key={slide.id}
             onClick={() => setCurrentSlide(index)}
             aria-label={`Go to slide ${index + 1}`}
             aria-current={index === currentSlide}
-            className={`h-1.5 rounded-pill transition-all duration-300 ${
+            className={`h-[5px] transition-all duration-300 ${
               index === currentSlide
-                ? "w-6 bg-gold"
-                : "w-1.5 bg-white/40 hover:bg-white/70"
+                ? "w-[34px] bg-gold"
+                : "w-3 bg-brand-cream/45 hover:bg-brand-cream/70"
             }`}
           />
         ))}
       </div>
 
-      {/* Navigation Arrows — minimal, edge-hugging, hover-reveal */}
+      {/* Navigation Arrows — edge-hugging Modernist blocks, hover-reveal */}
       <button
         onClick={prevSlide}
-        className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-30 p-2 text-white/70 hover:text-white opacity-0 group-hover:opacity-100 transition-all duration-300"
+        className="absolute left-0 top-1/2 -translate-y-1/2 z-30 w-11 sm:w-[52px] h-16 bg-brand-dark/50 border-r border-brand-cream/20 text-brand-cream/80 hover:text-brand-cream flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300"
         aria-label="Previous slide"
       >
-        <ChevronLeft size={40} strokeWidth={1.25} />
+        <ChevronLeft size={24} strokeWidth={2} />
       </button>
       <button
         onClick={nextSlide}
-        className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-30 p-2 text-white/70 hover:text-white opacity-0 group-hover:opacity-100 transition-all duration-300"
+        className="absolute right-0 top-1/2 -translate-y-1/2 z-30 w-11 sm:w-[52px] h-16 bg-brand-dark/50 border-l border-brand-cream/20 text-brand-cream/80 hover:text-brand-cream flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300"
         aria-label="Next slide"
       >
-        <ChevronRight size={40} strokeWidth={1.25} />
+        <ChevronRight size={24} strokeWidth={2} />
       </button>
     </section>
   );

@@ -23,26 +23,29 @@ export default async function FAQTeaser() {
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-      <div className="text-center mb-10">
-        <span className="text-xs tracking-[0.3em] uppercase text-[#D4A017]">
-          FAQ
-        </span>
-        <h2 className="font-serif text-3xl text-[#0A0A0A] dark:text-[#F5F5F5] mt-3">
-          Common Questions
+      <div className="mb-10">
+        <div className="flex items-center gap-3">
+          <span className="w-11 h-[2px] bg-gold" />
+          <span className="text-xs tracking-[0.2em] uppercase font-extrabold text-gold">
+            FAQ
+          </span>
+        </div>
+        <h2 className="text-2xl sm:text-3xl font-extrabold tracking-[-0.02em] text-ink mt-3">
+          Common questions
         </h2>
-        <p className="text-sm text-[#6B6B6B] dark:text-[#9A9A9A] mt-3">
+        <p className="text-sm text-ink-muted mt-2">
           Quick answers to help you get started
         </p>
       </div>
 
       <FAQTeaserTabs categories={trimmed} />
 
-      <div className="text-center mt-8">
+      <div className="mt-8">
         <Link
           href="/faqs"
-          className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#D4A017] hover:text-[#E8B820] transition duration-200 ease-in-out"
+          className="inline-flex items-center gap-1.5 text-sm font-bold text-gold-deep hover:text-gold transition duration-200 ease-in-out"
         >
-          View All FAQs
+          View all FAQs
           <span aria-hidden="true">→</span>
         </Link>
       </div>

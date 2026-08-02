@@ -30,10 +30,12 @@ export default function HeroActions() {
   }, []);
 
   return (
-    <div className="flex flex-wrap gap-4 mt-2">
+    // Modernist CTA pair: a single bordered box, no gap, a hairline
+    // divider between the red primary fill and the ghost secondary.
+    <div className="flex mt-2 w-fit border border-brand-cream/35">
       <button
         onClick={() => router.push("/kitchen")}
-        className="bg-gold hover:bg-gold-bright text-on-gold font-semibold px-8 py-4 rounded-control transition duration-200 ease-in-out"
+        className="bg-gold hover:bg-gold-bright text-on-gold font-bold px-6 sm:px-7 py-3.5 sm:py-4 text-sm sm:text-base transition duration-200 ease-in-out"
       >
         Explore Products
       </button>
@@ -42,7 +44,7 @@ export default function HeroActions() {
         target="_blank"
         rel="noopener noreferrer"
         aria-label={`${ROTATING_LABELS[labelIndex]} — visit Modular India`}
-        className="relative border border-white/50 text-white hover:border-gold hover:text-gold font-semibold px-8 py-4 rounded-control transition duration-200 ease-in-out inline-flex items-center justify-center min-w-[220px]"
+        className="relative border-l border-brand-cream/35 text-brand-cream hover:text-gold font-bold px-6 sm:px-7 py-3.5 sm:py-4 text-sm sm:text-base transition duration-200 ease-in-out inline-flex items-center justify-center min-w-[200px]"
       >
         <span
           className={`transition-opacity duration-200 ease-in-out ${
