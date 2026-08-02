@@ -29,7 +29,7 @@ export default async function WishlistPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="mb-8">
-        <h1 className="font-serif text-3xl text-ink">My Wishlist</h1>
+        <h1 className="font-extrabold tracking-[-0.02em] text-3xl text-ink">My Wishlist</h1>
         <p className="text-sm text-ink-muted mt-1">
           {products.length > 0
             ? `${products.length} saved ${products.length === 1 ? 'item' : 'items'}`

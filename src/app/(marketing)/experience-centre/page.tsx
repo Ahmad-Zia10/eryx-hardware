@@ -68,24 +68,27 @@ export default function ExperienceCentrePage() {
           fill
           priority
           sizes="100vw"
-          className="object-cover"
+          className="object-cover grayscale contrast-[1.06]"
         />
-        <div className="absolute inset-0 bg-gradient-to-tr from-black/85 via-black/55 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-brand-dark/90 via-brand-dark/50 to-transparent pointer-events-none" />
         <div className="relative z-10 h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-end pb-12 lg:pb-16">
           <div className="flex flex-col gap-3 sm:gap-4 max-w-2xl">
-            <p className="text-xs text-white/70">
+            <p className="text-xs text-brand-cream/70">
               <Link href="/" className="hover:text-gold hover:underline">
                 Home
               </Link>{" "}
               / Experience Centre
             </p>
-            <span className="text-[10px] sm:text-xs tracking-[0.3em] uppercase text-gold">
-              Visit Us In Person
-            </span>
-            <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold leading-[1.05] text-white font-display">
+            <div className="flex items-center gap-3">
+              <span className="w-11 h-[2px] bg-gold" />
+              <span className="text-[10px] sm:text-xs tracking-[0.2em] uppercase font-extrabold text-gold">
+                Visit Us In Person
+              </span>
+            </div>
+            <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold leading-[0.96] tracking-[-0.03em] text-brand-cream font-display">
               Experience Eryx in Person
             </h1>
-            <p className="text-sm sm:text-base text-white/80 max-w-lg leading-relaxed">
+            <p className="text-sm sm:text-base text-brand-cream/80 max-w-lg leading-relaxed">
               Specifications only tell half the story. Visit our Greater Noida
               Experience Centre to feel the engineering behind every mechanism.
             </p>
@@ -94,14 +97,14 @@ export default function ExperienceCentrePage() {
                 href={directionsHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 bg-gold hover:bg-gold-bright text-on-gold font-semibold px-6 py-3 rounded-control transition duration-200 ease-in-out"
+                className="inline-flex items-center justify-center gap-2 bg-gold hover:bg-gold-bright text-on-gold font-semibold px-6 py-3 transition duration-200 ease-in-out"
               >
                 <Navigation size={16} />
                 Get Directions
               </a>
               <Link
                 href="/contact"
-                className="inline-flex items-center justify-center gap-2 border border-white/40 text-white hover:border-gold hover:text-gold font-semibold px-6 py-3 rounded-control transition duration-200 ease-in-out"
+                className="inline-flex items-center justify-center gap-2 border border-brand-cream/40 text-brand-cream hover:border-gold hover:text-gold font-semibold px-6 py-3 transition duration-200 ease-in-out"
               >
                 Book a Visit
                 <ArrowRight size={16} />
@@ -117,7 +120,7 @@ export default function ExperienceCentrePage() {
           <span className="text-xs tracking-[0.3em] uppercase text-gold-deep">
             Why Visit
           </span>
-          <h2 className="font-serif text-2xl sm:text-3xl text-ink mt-3">
+          <h2 className="font-extrabold tracking-[-0.02em] text-2xl sm:text-3xl text-ink mt-3">
             The showroom experience
           </h2>
           <p className="text-sm text-ink-muted mt-3 leading-relaxed">
@@ -129,9 +132,9 @@ export default function ExperienceCentrePage() {
           {HIGHLIGHTS.map(({ Icon, title, body }) => (
             <div
               key={title}
-              className="border border-line rounded-card p-6 bg-surface-raised hover:border-gold/50 transition-colors duration-200"
+              className="border border-line p-6 bg-surface-raised hover:border-gold/50 transition-colors duration-200"
             >
-              <div className="w-11 h-11 rounded-control bg-gold-tint flex items-center justify-center mb-4">
+              <div className="w-11 h-11 bg-gold-tint flex items-center justify-center mb-4">
                 <Icon size={20} className="text-gold-deep" />
               </div>
               <h3 className="text-base font-semibold text-ink">{title}</h3>
@@ -149,7 +152,7 @@ export default function ExperienceCentrePage() {
             <span className="text-xs tracking-[0.3em] uppercase text-gold-deep">
               Find Us
             </span>
-            <h2 className="font-serif text-2xl sm:text-3xl text-ink mt-3 mb-6">
+            <h2 className="font-extrabold tracking-[-0.02em] text-2xl sm:text-3xl text-ink mt-3 mb-6">
               Plan your visit
             </h2>
 
@@ -214,7 +217,7 @@ export default function ExperienceCentrePage() {
               href={directionsHref}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-gold hover:bg-gold-bright text-on-gold font-semibold px-6 py-3 rounded-control transition duration-200 ease-in-out mt-8"
+              className="inline-flex items-center gap-2 bg-gold hover:bg-gold-bright text-on-gold font-semibold px-6 py-3 transition duration-200 ease-in-out mt-8"
             >
               <Navigation size={16} />
               Get Directions
@@ -228,7 +231,7 @@ export default function ExperienceCentrePage() {
             href={directionsHref}
             target="_blank"
             rel="noopener noreferrer"
-            className="group relative block rounded-card overflow-hidden border border-line min-h-[320px] bg-brand-dark"
+            className="group relative block overflow-hidden border border-line min-h-[320px] bg-brand-dark"
             aria-label="Open Eryx Experience Centre location in Google Maps"
           >
             <Image
@@ -236,14 +239,14 @@ export default function ExperienceCentrePage() {
               alt=""
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"
-              className="object-cover opacity-40 group-hover:opacity-50 group-hover:scale-[1.03] transition-all duration-500"
+              className="object-cover grayscale contrast-[1.06] opacity-40 group-hover:opacity-50 group-hover:scale-[1.03] transition-all duration-500"
             />
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
-              <div className="w-14 h-14 rounded-full bg-gold flex items-center justify-center mb-4 shadow-lg">
+              <div className="w-14 h-14 bg-gold flex items-center justify-center mb-4 shadow-lg">
                 <MapPin size={24} className="text-on-gold" />
               </div>
-              <p className="text-white font-semibold text-lg">Greater Noida</p>
-              <p className="text-white/70 text-sm mt-1 max-w-xs">
+              <p className="text-brand-cream font-semibold text-lg">Greater Noida</p>
+              <p className="text-brand-cream/70 text-sm mt-1 max-w-xs">
                 Surajpur Site 4, Industrial Area
               </p>
               <span className="inline-flex items-center gap-1.5 text-gold text-sm font-semibold mt-4 group-hover:gap-2.5 transition-all">
@@ -261,7 +264,7 @@ export default function ExperienceCentrePage() {
           <span className="text-xs tracking-[0.3em] uppercase text-gold-deep">
             Inside the Centre
           </span>
-          <h2 className="font-serif text-2xl sm:text-3xl text-ink mt-3">
+          <h2 className="font-extrabold tracking-[-0.02em] text-2xl sm:text-3xl text-ink mt-3">
             The range, on display
           </h2>
         </div>
@@ -269,7 +272,7 @@ export default function ExperienceCentrePage() {
           {GALLERY.map((img, i) => (
             <div
               key={img.src}
-              className={`relative rounded-card overflow-hidden bg-surface-sunken ${
+              className={`relative overflow-hidden bg-surface-sunken ${
                 i === 0 ? "col-span-2 aspect-[2/1] lg:aspect-square" : "aspect-square"
               }`}
             >
@@ -279,7 +282,7 @@ export default function ExperienceCentrePage() {
                 fill
                 loading="lazy"
                 sizes="(max-width: 1024px) 50vw, 25vw"
-                className="object-cover hover:scale-[1.04] transition-transform duration-500"
+                className="object-cover grayscale contrast-[1.06] hover:scale-[1.04] transition-transform duration-500"
               />
             </div>
           ))}
@@ -298,13 +301,13 @@ export default function ExperienceCentrePage() {
           <div className="flex flex-col sm:flex-row gap-3">
             <a
               href={telHref}
-              className="bg-brand-dark text-gold font-semibold px-6 py-3 rounded-control hover:bg-black transition duration-200 ease-in-out text-center"
+              className="bg-brand-dark text-gold font-semibold px-6 py-3 hover:bg-brand-dark/80 transition duration-200 ease-in-out text-center"
             >
               Call {EXPERIENCE_CENTRE.phone}
             </a>
             <Link
               href="/contact"
-              className="bg-brand-dark text-gold font-semibold px-6 py-3 rounded-control hover:bg-black transition duration-200 ease-in-out text-center"
+              className="bg-brand-dark text-gold font-semibold px-6 py-3 hover:bg-brand-dark/80 transition duration-200 ease-in-out text-center"
             >
               Book a Visit
             </Link>

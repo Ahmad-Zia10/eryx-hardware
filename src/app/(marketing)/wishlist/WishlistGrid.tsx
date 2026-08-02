@@ -31,7 +31,7 @@ export default function WishlistGrid({ initialProducts }: WishlistGridProps) {
   if (visible.length === 0) {
     return (
       <div className="text-center py-20 flex flex-col items-center">
-        <div className="w-16 h-16 rounded-full bg-surface-sunken flex items-center justify-center mb-5">
+        <div className="w-16 h-16 bg-surface-sunken flex items-center justify-center mb-5">
           <Heart size={28} className="text-ink-faint" />
         </div>
         <p className="text-lg font-semibold text-ink">Your wishlist is empty</p>

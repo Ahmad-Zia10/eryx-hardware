@@ -21,7 +21,7 @@ export default function RefundPolicyPage() {
           You may cancel your order at any time <strong>before it is dispatched</strong>{" "}
           for a full refund. Once an order has been dispatched, it can no longer be
           cancelled, but it may be eligible for return under our{" "}
-          <a href="/return-policy" className="text-[#D4A017] hover:underline">
+          <a href="/return-policy" className="text-gold-deep hover:underline">
             Return Policy
           </a>
           . To cancel, contact us at {SITE_CONFIG.email} or {SITE_CONFIG.phone} with

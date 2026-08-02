@@ -59,15 +59,15 @@ export default function TermsPage() {
       <PolicySection heading="5. Returns, refunds and shipping">
         <p>
           Returns, refunds, cancellations and delivery are governed by our{" "}
-          <a href="/return-policy" className="text-[#D4A017] hover:underline">
+          <a href="/return-policy" className="text-gold-deep hover:underline">
             Return Policy
           </a>
           ,{" "}
-          <a href="/refund-policy" className="text-[#D4A017] hover:underline">
+          <a href="/refund-policy" className="text-gold-deep hover:underline">
             Refund &amp; Cancellation Policy
           </a>{" "}
           and{" "}
-          <a href="/shipping-policy" className="text-[#D4A017] hover:underline">
+          <a href="/shipping-policy" className="text-gold-deep hover:underline">
             Shipping Policy
           </a>
           , which form part of these terms.

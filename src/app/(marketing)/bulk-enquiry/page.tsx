@@ -20,8 +20,8 @@ export default async function BulkEnquiryPage() {
   return (
     <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="mb-8">
-        <h1 className="font-serif text-3xl md:text-4xl">Bulk Enquiry</h1>
-        <p className="text-sm text-[#555555] dark:text-[#9A9A9A] mt-3 max-w-2xl">
+        <h1 className="font-extrabold tracking-[-0.02em] text-3xl md:text-4xl">Bulk Enquiry</h1>
+        <p className="text-sm text-ink-muted mt-3 max-w-2xl">
           Share the products and quantities you need. Our team will prepare a quote and contact you.
         </p>
       </div>

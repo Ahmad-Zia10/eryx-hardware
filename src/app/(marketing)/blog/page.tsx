@@ -13,15 +13,15 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="mb-10">
-        <h1 className="font-serif text-3xl text-[#0A0A0A] dark:text-[#F5F5F5]">Blog</h1>
-        <p className="text-sm text-[#555555] dark:text-[#9A9A9A] mt-2">
+        <h1 className="font-extrabold tracking-[-0.02em] text-3xl text-ink">Blog</h1>
+        <p className="text-sm text-ink-muted mt-2">
           Guides, inspiration, and tips for your home.
         </p>
       </div>
 
       {visiblePosts.length === 0 ? (
         <div className="text-center py-20">
-          <p className="text-[#555555] dark:text-[#9A9A9A]">
+          <p className="text-ink-muted">
             Coming soon. We&apos;re working on helpful guides and inspiration for your home.
           </p>
         </div>
@@ -30,18 +30,18 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
           {visiblePosts.map((post) => (
             <article
               key={post.id}
-              className="bg-white dark:bg-[#141414] border border-[#D4D4D4] dark:border-[#2A2A2A] rounded-sm overflow-hidden flex flex-col"
+              className="bg-surface-raised border border-line-strong overflow-hidden flex flex-col"
             >
               {post.cover_image_url && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={post.cover_image_url}
                   alt=""
-                  className="w-full h-48 object-cover"
+                  className="w-full h-48 object-cover grayscale contrast-[1.06]"
                 />
               )}
               <div className="p-5 flex flex-col flex-1">
-                <p className="text-xs text-[#9A9A9A] mb-2">
+                <p className="text-xs text-ink-faint mb-2">
                   {post.published_at
                     ? new Date(post.published_at).toLocaleDateString('en-IN', {
                         day: 'numeric',
@@ -50,17 +50,17 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
                       })
                     : ''}
                 </p>
-                <h2 className="font-semibold text-lg text-[#0A0A0A] dark:text-[#F5F5F5] mb-2">
+                <h2 className="font-semibold text-lg text-ink mb-2">
                   {post.title}
                 </h2>
                 {post.excerpt && (
-                  <p className="text-sm text-[#555555] dark:text-[#9A9A9A] mb-4 flex-1 line-clamp-3">
+                  <p className="text-sm text-ink-muted mb-4 flex-1 line-clamp-3">
                     {post.excerpt}
                   </p>
                 )}
                 <Link
                   href={`/blog/${post.slug}`}
-                  className="text-sm text-[#D4A017] hover:text-[#E8B820] transition duration-200 ease-in-out"
+                  className="text-sm text-gold-deep hover:text-gold transition duration-200 ease-in-out"
                 >
                   Read More →
                 </Link>
@@ -75,7 +75,7 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
           {page > 1 && (
             <Link
               href={`/blog?page=${page - 1}`}
-              className="border border-[#D4D4D4] dark:border-[#2A2A2A] px-4 py-2 text-sm text-[#555555] dark:text-[#9A9A9A] hover:border-[#D4A017] hover:text-[#D4A017] transition duration-200"
+              className="border border-line-strong px-4 py-2 text-sm text-ink-muted hover:border-gold hover:text-gold-deep transition duration-200"
             >
               Previous
             </Link>
@@ -83,7 +83,7 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
           {hasNextPage && (
             <Link
               href={`/blog?page=${page + 1}`}
-              className="border border-[#D4D4D4] dark:border-[#2A2A2A] px-4 py-2 text-sm text-[#555555] dark:text-[#9A9A9A] hover:border-[#D4A017] hover:text-[#D4A017] transition duration-200"
+              className="border border-line-strong px-4 py-2 text-sm text-ink-muted hover:border-gold hover:text-gold-deep transition duration-200"
             >
               Next
             </Link>

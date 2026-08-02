@@ -40,7 +40,7 @@ export default function DealerEnquiryForm() {
   if (success) {
     return (
       <div className="border border-line rounded-card p-8 bg-surface-raised">
-        <h2 className="font-serif text-2xl mb-3">Dealer enquiry received</h2>
+        <h2 className="font-extrabold tracking-[-0.02em] text-2xl mb-3">Dealer enquiry received</h2>
         <p className="text-sm text-ink-muted">Thanks for your interest. Our team will review your details and get in touch.</p>
       </div>
     );

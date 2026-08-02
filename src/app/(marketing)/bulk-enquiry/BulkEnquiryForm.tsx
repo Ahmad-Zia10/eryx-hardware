@@ -100,7 +100,7 @@ export default function BulkEnquiryForm({ products }: { products: ProductOption[
   if (success) {
     return (
       <div className="border border-line rounded-card p-8 bg-surface-raised">
-        <h2 className="font-serif text-2xl mb-3">Bulk enquiry received</h2>
+        <h2 className="font-extrabold tracking-[-0.02em] text-2xl mb-3">Bulk enquiry received</h2>
         <p className="text-sm text-ink-muted">Our sales team will review your requirement and contact you soon.</p>
       </div>
     );
@@ -108,7 +108,7 @@ export default function BulkEnquiryForm({ products }: { products: ProductOption[
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {error && <div className="bg-red-500/10 border border-red-500/30 text-red-500 p-3 rounded-sm text-sm">{error}</div>}
+      {error && <div className="bg-red-500/10 border border-red-500/30 text-red-500 p-3 text-sm">{error}</div>}
       <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
 
       <section className="border border-line rounded-card p-5 space-y-4">

@@ -58,11 +58,11 @@ export default function ReturnPolicyPage() {
       <PolicySection heading="Related policies">
         <p>
           Refund timelines and cancellations are covered in our{" "}
-          <a href="/refund-policy" className="text-[#D4A017] hover:underline">
+          <a href="/refund-policy" className="text-gold-deep hover:underline">
             Refund &amp; Cancellation Policy
           </a>
           . Delivery details are in our{" "}
-          <a href="/shipping-policy" className="text-[#D4A017] hover:underline">
+          <a href="/shipping-policy" className="text-gold-deep hover:underline">
             Shipping Policy
           </a>
           .

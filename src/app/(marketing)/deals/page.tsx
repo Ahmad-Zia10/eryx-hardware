@@ -13,30 +13,35 @@ export default async function DealsPage() {
 
   return (
     <main>
-      {/* Hero band — matches the /faqs and Contact page style */}
-      <section className="bg-surface-sunken border-b border-line">
+      {/* Red poster hero (Modernist statement band) + live sale count. */}
+      <section className="bg-gold text-on-gold">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 md:py-16">
-          <span className="text-xs tracking-[0.3em] uppercase text-gold-deep">
-            Limited Time
+          <span className="text-xs tracking-[0.2em] uppercase font-extrabold text-on-gold/75">
+            Limited time
           </span>
-          <h1 className="font-serif text-3xl md:text-4xl text-ink mt-3">
+          <h1 className="text-4xl md:text-6xl font-extrabold leading-[1] tracking-[-0.03em] mt-3">
             Deals &amp; Offers
           </h1>
-          <p className="text-sm md:text-base text-ink-muted mt-3 max-w-2xl">
+          <p className="text-sm md:text-base text-on-gold/85 mt-4 max-w-2xl">
             Every product currently on sale, in one place. Prices update
             automatically when the admin toggles a sale on or off.
           </p>
+          {products.length > 0 && (
+            <p className="text-sm font-bold uppercase tracking-[0.1em] mt-6">
+              {products.length} product{products.length === 1 ? "" : "s"} on sale now
+            </p>
+          )}
         </div>
       </section>
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {products.length === 0 ? (
           <>
-            <div className="border border-line rounded-card p-12 text-center max-w-2xl mx-auto">
-              <span className="inline-flex w-14 h-14 items-center justify-center rounded-pill bg-gold-tint mb-4">
+            <div className="border border-line p-12 text-center max-w-2xl mx-auto">
+              <span className="inline-flex w-14 h-14 items-center justify-center bg-gold-tint mb-4">
                 <Tag className="text-gold-deep" size={26} />
               </span>
-              <p className="text-ink font-semibold">No active deals right now.</p>
+              <p className="text-ink font-extrabold">No active deals right now.</p>
               <p className="text-sm text-ink-muted mt-2 max-w-md mx-auto">
                 Check back soon — meanwhile, these are the products our
                 customers reach for most.
@@ -52,7 +57,7 @@ export default async function DealsPage() {
 
             {fallback.length > 0 && (
               <div className="mt-14">
-                <h2 className="font-heading text-2xl text-ink mb-6">
+                <h2 className="text-2xl font-extrabold tracking-[-0.02em] text-ink mb-6 border-b-2 border-line-strong pb-3.5">
                   Popular right now
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">

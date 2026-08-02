@@ -35,17 +35,17 @@ export default async function BlogPostPage({ params }: PageProps) {
         <img
           src={post.cover_image_url}
           alt=""
-          className="w-full h-64 md:h-80 object-cover rounded-sm mb-8"
+          className="w-full h-64 md:h-80 object-cover grayscale contrast-[1.06] mb-8"
         />
       )}
       <header className="mb-8">
-        <h1 className="font-serif text-3xl md:text-4xl text-[#0A0A0A] dark:text-[#F5F5F5] mb-3">
+        <h1 className="font-extrabold tracking-[-0.02em] text-3xl md:text-4xl text-ink mb-3">
           {post.title}
         </h1>
         {post.published_at && (
           <time
             dateTime={post.published_at}
-            className="text-sm text-[#555555] dark:text-[#9A9A9A]"
+            className="text-sm text-ink-muted"
           >
             {new Date(post.published_at).toLocaleDateString('en-IN', {
               day: 'numeric',
@@ -55,13 +55,13 @@ export default async function BlogPostPage({ params }: PageProps) {
           </time>
         )}
         {post.author && (
-          <p className="text-sm text-[#555555] dark:text-[#9A9A9A] mt-2">
+          <p className="text-sm text-ink-muted mt-2">
             By {post.author}
           </p>
         )}
       </header>
       <div
-        className="prose prose-neutral dark:prose-invert max-w-none text-[#0A0A0A] dark:text-[#F5F5F5] leading-relaxed"
+        className="prose prose-neutral max-w-none text-ink leading-relaxed"
         dangerouslySetInnerHTML={{ __html: post.content }}
       />
     </article>
