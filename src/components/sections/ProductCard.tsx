@@ -15,9 +15,26 @@ interface ProductCardProps {
   className?: string;
   averageRating?: number;
   reviewCount?: number;
+  /**
+   * Hover treatment. Two surfaces exist across the site:
+   *  - "still" (default): only the product image scales a touch; the card
+   *    itself stays put. Used in dense grids — PLP, All Products, Deals,
+   *    Wishlist — where lifting every card feels noisy.
+   *  - "lift": the whole card scales up and casts a drop shadow. Used in
+   *    curated, spaced-out rails — Home "Top picks", PDP "You may also
+   *    like" — where a card is a feature, not a list row.
+   * Both share every other style; only the wrapper's hover changes.
+   */
+  variant?: "still" | "lift";
 }
 
-export default function ProductCard({ product, className = "", averageRating, reviewCount }: ProductCardProps) {
+export default function ProductCard({
+  product,
+  className = "",
+  averageRating,
+  reviewCount,
+  variant = "still",
+}: ProductCardProps) {
   const router = useRouter();
   const { addItem } = useCart();
   const { showToast } = useUI();
@@ -46,16 +63,28 @@ export default function ProductCard({ product, className = "", averageRating, re
     router.push(`/kitchen/${product.slug}?notify=1#notify`);
   };
 
+  // Wrapper hover differs by variant; everything else is shared. No red
+  // border on hover on either — the border stays a quiet hairline.
+  const wrapperHover =
+    variant === "lift"
+      ? "hover:-translate-y-1 hover:scale-[1.02] hover:shadow-[0_18px_40px_-12px_rgba(0,0,0,0.28)] hover:border-line-strong"
+      : "hover:border-line-strong";
+
+  // "still" scales the image on hover; "lift" moves the whole card, so
+  // the image holds steady inside it (double-scaling looks jittery).
+  const imageHover =
+    variant === "still" ? "group-hover:scale-[1.04]" : "";
+
   return (
     <div
       onClick={handleCardClick}
-      className={`group bg-surface-raised border border-line hover:border-gold hover:-translate-y-0.5 transition duration-300 ease-out cursor-pointer overflow-hidden flex flex-col ${className}`}
+      className={`group bg-surface-raised border border-line transition duration-300 ease-out cursor-pointer overflow-hidden flex flex-col ${wrapperHover} ${className}`}
     >
       <div className="relative overflow-hidden aspect-square w-full bg-surface-sunken">
         <ProductImage
           src={product.image}
           alt={product.name}
-          className="h-full w-full transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+          className={`h-full w-full transition-transform duration-500 ease-out ${imageHover}`}
         />
         {outOfStock ? (
           <span className="absolute top-3 left-3 px-2.5 py-1 text-[10px] font-extrabold tracking-[0.06em] uppercase bg-brand-cream text-gold border border-gold">

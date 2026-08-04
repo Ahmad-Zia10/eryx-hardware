@@ -554,11 +554,15 @@ export default function ProductDetail({
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-[-0.02em] text-ink mb-6">
             You may also like
           </h2>
-          <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
+          {/* px-1 py-3 gives the "lift" cards room so their scale + shadow
+              isn't clipped: overflow-x-auto forces overflow-y to auto per
+              spec, so an unpadded scroll container would crop the lift. */}
+          <div className="flex gap-4 overflow-x-auto no-scrollbar px-1 py-3">
             {relatedProducts.map((p) => (
               <ProductCard
                 key={p.slug}
                 product={p}
+                variant="lift"
                 className="min-w-65 sm:min-w-70 w-65 sm:w-70 shrink-0"
               />
             ))}
