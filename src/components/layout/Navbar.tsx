@@ -28,7 +28,7 @@ import type { CategoryGroup, ProductLine } from "@/lib/db/categories";
 // bar. Both remain reachable via Products, the footer, and the home
 // category strip.
 const NAV_LINKS = [
-  { label: "Deals & Offers", href: "/deals" },
+  { label: "Deals", href: "/deals" },
   { label: "Blog", href: "/blog" },
 ];
 
@@ -163,13 +163,18 @@ export default function Navbar({
 
   return (
     <nav className="sticky top-9.25 z-40 bg-surface border-b-2 border-line-strong relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 shrink-0">
+      <div className="max-w-7xl mx-auto pr-4 sm:pr-6 lg:pr-8 h-16 flex items-center justify-between">
+        {/* Modernist: the logo lives in its own bordered compartment,
+            a 2px rule splitting it from the nav — architectural, boxed. */}
+        <Link
+          href="/"
+          className="flex items-center gap-2 shrink-0 self-stretch px-4 sm:px-6 lg:px-8 border-r-2 border-line-strong"
+        >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/eryx-logo-transparent.png" alt="ERYX" className="h-12 object-contain" />
         </Link>
 
-        <div className="hidden lg:flex items-center gap-8">
+        <div className="hidden lg:flex items-center gap-8 pl-2">
           <Link href="/" className={navLinkClass(pathname === "/")}>
             Home
           </Link>
@@ -180,9 +185,9 @@ export default function Navbar({
           >
             <button
               onClick={() => setProductsOpen((open) => !open)}
-              className="flex items-center gap-1 text-sm text-ink transition duration-200 ease-in-out hover:text-gold"
+              className="text-sm text-ink transition duration-200 ease-in-out hover:text-gold"
             >
-              Products <ChevronDown size={14} />
+              Products
             </button>
           </div>
 
@@ -199,20 +204,24 @@ export default function Navbar({
             href="/contact"
             className={navLinkClass(pathname === "/contact")}
           >
-            Contact Us
+            Contact
           </Link>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center">
             {/* Search */}
-            <button 
+            <button
               onClick={() => setSearchOpen(true)}
-              className="p-2 text-ink hover:text-gold transition duration-200" 
+              className="px-3 text-ink hover:text-gold transition duration-200"
               aria-label="Search"
             >
               <Search size={20} />
             </button>
-          <div className="relative" ref={userMenuRef}>
+
+            {/* Modernist: 2px rules compartmentalize the icon cluster. */}
+            <span className="hidden sm:block h-6 w-px bg-line-strong" aria-hidden="true" />
+
+          <div className="relative px-3 flex items-center" ref={userMenuRef}>
             {user ? (
               <button
                 onClick={() => setUserDropdownOpen(!userDropdownOpen)}
@@ -299,14 +308,17 @@ export default function Navbar({
               </div>
             )}
           </div>
+            {/* Modernist: 2px rule between account and wishlist. */}
+            <span className="hidden sm:block h-6 w-px bg-line-strong" aria-hidden="true" />
+
           <Link
             href="/wishlist"
-            className="relative text-ink-muted hover:text-gold transition duration-200 ease-in-out"
+            className="relative px-3 text-ink-muted hover:text-gold transition duration-200 ease-in-out"
             aria-label="Wishlist"
           >
             <Heart size={20} />
             {wishlistCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-gold text-on-gold text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-pill">
+              <span className="absolute top-0 right-0 bg-gold text-on-gold text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-pill">
                 {wishlistCount}
               </span>
             )}
@@ -316,7 +328,7 @@ export default function Navbar({
               than a floating badge. */}
           <button
             onClick={openCartDrawer}
-            className="relative flex items-center gap-2 bg-gold hover:bg-gold-bright text-on-gold font-extrabold text-sm px-4 py-2 transition duration-200 ease-in-out"
+            className="relative flex items-center gap-2 ml-3 bg-gold hover:bg-gold-bright text-on-gold font-extrabold text-sm px-4 py-2 transition duration-200 ease-in-out"
             aria-label="Cart"
           >
             <ShoppingCart size={18} />
@@ -328,7 +340,7 @@ export default function Navbar({
             )}
           </button>
           <button
-            className="lg:hidden text-ink"
+            className="lg:hidden text-ink ml-3"
             onClick={() => setMobileOpen((open) => !open)}
             aria-label="Menu"
           >
@@ -435,7 +447,7 @@ export default function Navbar({
                   : "text-ink-muted"
               }`}
             >
-              Contact Us
+              Contact
             </Link>
           </div>
         </div>
