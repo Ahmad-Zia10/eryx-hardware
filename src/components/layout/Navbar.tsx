@@ -47,7 +47,7 @@ const MOBILE_PRODUCT_LINE_HREF: Record<ProductLine, string> = {
 // Mirrors react-router's <NavLink isActive> behavior — Next.js has no
 // built-in equivalent, so we compare the current pathname ourselves.
 function navLinkClass(isActive: boolean) {
-  return `text-sm transition duration-200 ease-in-out hover:text-gold ${
+  return `px-5 text-[13px] transition duration-200 ease-in-out hover:text-gold ${
     isActive ? "text-gold font-bold" : "text-ink"
   }`;
 }
@@ -163,18 +163,18 @@ export default function Navbar({
 
   return (
     <nav className="sticky top-9.25 z-40 bg-surface border-b-2 border-line-strong relative">
-      <div className="max-w-7xl mx-auto pr-4 sm:pr-6 lg:pr-8 h-16 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto h-16 flex items-stretch justify-between">
         {/* Modernist: the logo lives in its own bordered compartment,
             a 2px rule splitting it from the nav — architectural, boxed. */}
         <Link
           href="/"
-          className="flex items-center gap-2 shrink-0 self-stretch px-4 sm:px-6 lg:px-8 border-r-2 border-line-strong"
+          className="flex items-center shrink-0 px-6 lg:px-[30px] border-r-2 border-line-strong"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/eryx-logo-transparent.png" alt="ERYX" className="h-12 object-contain" />
+          <img src="/eryx-logo-transparent.png" alt="ERYX" className="h-8.5 object-contain" />
         </Link>
 
-        <div className="hidden lg:flex items-center gap-8 pl-2">
+        <div className="hidden lg:flex items-center pl-4">
           <Link href="/" className={navLinkClass(pathname === "/")}>
             Home
           </Link>
@@ -185,7 +185,7 @@ export default function Navbar({
           >
             <button
               onClick={() => setProductsOpen((open) => !open)}
-              className="text-sm text-ink transition duration-200 ease-in-out hover:text-gold"
+              className="px-5 text-[13px] text-ink transition duration-200 ease-in-out hover:text-gold"
             >
               Products
             </button>
@@ -208,36 +208,37 @@ export default function Navbar({
           </Link>
         </div>
 
-        <div className="flex items-center">
+        {/* Modernist action cluster: full-height edge-to-edge cells, each
+            split by a 1px hairline rule. Cart is the red-filled cell flush
+            to the right edge. */}
+        <div className="flex items-stretch ml-auto">
             {/* Search */}
             <button
               onClick={() => setSearchOpen(true)}
-              className="px-3 text-ink hover:text-gold transition duration-200"
+              className="flex items-center px-4 text-ink hover:text-gold border-l border-line transition duration-200"
               aria-label="Search"
             >
-              <Search size={20} />
+              <Search size={18} />
             </button>
 
-            {/* Modernist: 2px rules compartmentalize the icon cluster. */}
-            <span className="hidden sm:block h-6 w-px bg-line-strong" aria-hidden="true" />
-
-          <div className="relative px-3 flex items-center" ref={userMenuRef}>
+          <div className="relative flex items-stretch border-l border-line" ref={userMenuRef}>
             {user ? (
               <button
                 onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                className="hidden sm:block text-ink-muted hover:text-gold transition duration-200 ease-in-out"
+                className="hidden sm:flex items-center px-4 text-ink hover:text-gold transition duration-200 ease-in-out"
                 aria-label="Account"
                 aria-expanded={userDropdownOpen}
                 aria-haspopup="menu"
               >
-                <User size={20} />
+                <User size={18} />
               </button>
             ) : (
               <Link
                 href="/login"
-                className="hidden sm:block text-sm font-medium text-ink-muted hover:text-gold transition duration-200 ease-in-out"
+                className="hidden sm:flex items-center px-4 text-ink hover:text-gold transition duration-200 ease-in-out"
+                aria-label="Sign in"
               >
-                Sign In
+                <User size={18} />
               </Link>
             )}
 
@@ -308,39 +309,31 @@ export default function Navbar({
               </div>
             )}
           </div>
-            {/* Modernist: 2px rule between account and wishlist. */}
-            <span className="hidden sm:block h-6 w-px bg-line-strong" aria-hidden="true" />
-
           <Link
             href="/wishlist"
-            className="relative px-3 text-ink-muted hover:text-gold transition duration-200 ease-in-out"
+            className="relative flex items-center px-4 text-ink hover:text-gold border-l border-line transition duration-200 ease-in-out"
             aria-label="Wishlist"
           >
-            <Heart size={20} />
+            <Heart size={18} />
             {wishlistCount > 0 && (
-              <span className="absolute top-0 right-0 bg-gold text-on-gold text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-pill">
+              <span className="absolute top-2.5 right-2 bg-gold text-on-gold text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-pill">
                 {wishlistCount}
               </span>
             )}
           </Link>
-          {/* Modernist: Cart is the one filled control in the bar —
-              red fill, weight 800, count inline (poster-style) rather
-              than a floating badge. */}
+          {/* Modernist: Cart is the one filled cell in the bar — red fill,
+              weight 800, full-height, count inline (poster-style), flush
+              to the right edge. */}
           <button
             onClick={openCartDrawer}
-            className="relative flex items-center gap-2 ml-3 bg-gold hover:bg-gold-bright text-on-gold font-extrabold text-sm px-4 py-2 transition duration-200 ease-in-out"
+            className="flex items-center gap-2 px-5.5 bg-gold hover:bg-gold-bright text-on-gold font-extrabold text-[13px] border-l border-line transition duration-200 ease-in-out"
             aria-label="Cart"
           >
-            <ShoppingCart size={18} />
-            <span className="hidden sm:inline">Cart{cartCount > 0 ? ` · ${cartCount}` : ""}</span>
-            {cartCount > 0 && (
-              <span className="sm:hidden absolute -top-1.5 -right-1.5 bg-ink text-brand-cream text-[10px] font-bold w-4 h-4 flex items-center justify-center">
-                {cartCount}
-              </span>
-            )}
+            <ShoppingCart size={17} />
+            <span>Cart{cartCount > 0 ? ` · ${cartCount}` : ""}</span>
           </button>
           <button
-            className="lg:hidden text-ink ml-3"
+            className="lg:hidden flex items-center px-4 text-ink border-l border-line"
             onClick={() => setMobileOpen((open) => !open)}
             aria-label="Menu"
           >
