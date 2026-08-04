@@ -163,7 +163,7 @@ export default function Navbar({
 
   return (
     <nav className="sticky top-9.25 z-40 bg-surface border-b-2 border-line-strong relative">
-      <div className="max-w-7xl mx-auto h-16 flex items-stretch">
+      <div className="h-16 flex items-stretch">
         {/* Modernist: the logo lives in its own bordered compartment,
             a 2px rule splitting it from the nav — architectural, boxed. */}
         <Link
@@ -215,13 +215,13 @@ export default function Navbar({
             {/* Search */}
             <button
               onClick={() => setSearchOpen(true)}
-              className="flex items-center px-4 text-ink hover:text-gold border-l border-line transition duration-200"
+              className="flex items-center px-4 text-ink hover:text-gold border-l border-line-strong transition duration-200"
               aria-label="Search"
             >
               <Search size={18} />
             </button>
 
-          <div className="relative flex items-stretch border-l border-line" ref={userMenuRef}>
+          <div className="relative flex items-stretch border-l border-line-strong" ref={userMenuRef}>
             {user ? (
               <button
                 onClick={() => setUserDropdownOpen(!userDropdownOpen)}
@@ -311,7 +311,7 @@ export default function Navbar({
           </div>
           <Link
             href="/wishlist"
-            className="relative flex items-center px-4 text-ink hover:text-gold border-l border-line transition duration-200 ease-in-out"
+            className="relative flex items-center px-4 text-ink hover:text-gold border-l border-line-strong transition duration-200 ease-in-out"
             aria-label="Wishlist"
           >
             <Heart size={18} />
@@ -326,14 +326,14 @@ export default function Navbar({
               to the right edge. */}
           <button
             onClick={openCartDrawer}
-            className="flex items-center gap-2 px-5.5 bg-gold hover:bg-gold-bright text-on-gold font-extrabold text-[13px] border-l border-line transition duration-200 ease-in-out"
+            className="flex items-center gap-2 px-5.5 bg-gold hover:bg-gold-bright text-on-gold font-extrabold text-[13px] border-l border-line-strong transition duration-200 ease-in-out"
             aria-label="Cart"
           >
             <ShoppingCart size={17} />
             <span>Cart{cartCount > 0 ? ` · ${cartCount}` : ""}</span>
           </button>
           <button
-            className="lg:hidden flex items-center px-4 text-ink border-l border-line"
+            className="lg:hidden flex items-center px-4 text-ink border-l border-line-strong"
             onClick={() => setMobileOpen((open) => !open)}
             aria-label="Menu"
           >
