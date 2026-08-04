@@ -330,12 +330,13 @@ export default function Navbar({
           </Link>
             <span className="hidden sm:block self-center h-6 w-px bg-line" aria-hidden="true" />
 
-          {/* Modernist: Cart is the one filled cell in the bar — red fill,
-              weight 800, full-height, count inline (poster-style), flush
-              to the right edge. */}
+          {/* Modernist: Cart is the one filled control in the bar — red fill,
+              weight 800, count inline (poster-style). self-center + fixed
+              height insets the red block vertically so it sits inline with
+              the icons instead of stretching the full bar height. */}
           <button
             onClick={openCartDrawer}
-            className="flex items-center gap-2 px-5.5 bg-gold hover:bg-gold-bright text-on-gold font-extrabold text-[13px] transition duration-200 ease-in-out"
+            className="self-center flex items-center gap-2 h-11 px-5.5 bg-gold hover:bg-gold-bright text-on-gold font-extrabold text-[13px] transition duration-200 ease-in-out"
             aria-label="Cart"
           >
             <ShoppingCart size={17} />
