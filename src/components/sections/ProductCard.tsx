@@ -80,14 +80,17 @@ export default function ProductCard({
       onClick={handleCardClick}
       className={`group bg-surface-raised border border-line transition duration-300 ease-out cursor-pointer overflow-hidden flex flex-col ${wrapperHover} ${className}`}
     >
-      <div className="relative overflow-hidden aspect-square w-full bg-surface-sunken">
+      {/* Image well is white so the product reads cleanly; the info
+          footer below sits on the greyer surface-sunken band, giving the
+          card the two-tone split from the redesign. */}
+      <div className="relative overflow-hidden aspect-square w-full bg-surface-raised">
         <ProductImage
           src={product.image}
           alt={product.name}
           className={`h-full w-full transition-transform duration-500 ease-out ${imageHover}`}
         />
         {outOfStock ? (
-          <span className="absolute top-3 left-3 px-2.5 py-1 text-[10px] font-extrabold tracking-[0.06em] uppercase bg-brand-cream text-gold border border-gold">
+          <span className="absolute top-3 left-3 px-2.5 py-1 text-[10px] font-extrabold tracking-[0.06em] uppercase bg-transparent text-gold border border-gold">
             Out of Stock
           </span>
         ) : (
@@ -97,9 +100,14 @@ export default function ProductCard({
             </span>
           )
         )}
-        {/* Wishlist heart — top-right, always visible so saving is one tap
-            on mobile too. Sits opposite the Sale/Out-of-Stock badge. */}
-        <WishlistButton variantId={variantId} className="absolute top-3 right-3" />
+        {/* Wishlist heart — top-right, opposite the badge. Hidden on
+            desktop until card hover (revealOnHover) to keep the resting
+            card clean; stays visible on mobile and when already saved. */}
+        <WishlistButton
+          variantId={variantId}
+          revealOnHover
+          className="absolute top-3 right-3"
+        />
         {/* Primary action floats on the image. Mobile: always visible
             (no hover). Desktop: revealed on card hover / keyboard focus. */}
         {outOfStock ? (
@@ -121,7 +129,9 @@ export default function ProductCard({
           </button>
         )}
       </div>
-      <div className="p-4 flex flex-col gap-1 flex-1">
+      {/* Info footer sits on the greyer surface-sunken band with a
+          hairline divider above, giving the card its two-tone split. */}
+      <div className="p-4 flex flex-col gap-1 flex-1 bg-surface-sunken border-t border-line">
         <span className="text-[11px] uppercase tracking-wider text-ink-faint">
           {product.code}
         </span>
@@ -144,26 +154,15 @@ export default function ProductCard({
           </div>
         )}
         <span className="text-xs text-ink-faint">{product.dimensions}</span>
-        <div className="mt-auto pt-3 flex items-end justify-between gap-2">
-          <div className="flex items-baseline gap-2">
-            <span className={`font-extrabold ${discounted ? "text-gold-deep" : "text-ink"}`}>
-              {formatPrice(effectivePrice)}
+        <div className="mt-auto pt-3 flex items-baseline gap-2">
+          <span className={`font-extrabold ${discounted ? "text-gold-deep" : "text-ink"}`}>
+            {formatPrice(effectivePrice)}
+          </span>
+          {discounted && (
+            <span className="text-xs text-ink-faint line-through">
+              {formatPrice(product.mrp)}
             </span>
-            {discounted && (
-              <span className="text-xs text-ink-faint line-through">
-                {formatPrice(product.mrp)}
-              </span>
-            )}
-          </div>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              router.push(`/bulk-enquiry?variant=${variantId}`);
-            }}
-            className="text-xs text-ink-muted hover:text-gold-deep underline-offset-4 hover:underline transition-colors duration-200 whitespace-nowrap"
-          >
-            Bulk Enquiry
-          </button>
+          )}
         </div>
       </div>
     </div>

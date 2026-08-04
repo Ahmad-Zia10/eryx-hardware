@@ -9,6 +9,15 @@ interface WishlistButtonProps {
   variant?: "floating" | "inline";
   size?: number;
   className?: string;
+  /**
+   * When true, the heart is hidden on desktop until the parent `.group`
+   * is hovered/focused (or keyboard focus lands on it) — used on product
+   * cards so the resting card stays clean. It ALWAYS stays visible when
+   * the item is already saved (so a saved state never disappears) and on
+   * touch viewports (no hover → one-tap saving must stay reachable).
+   * Requires an ancestor with the `group` class.
+   */
+  revealOnHover?: boolean;
 }
 
 /**
@@ -21,9 +30,18 @@ export default function WishlistButton({
   variant = "floating",
   size = 18,
   className = "",
+  revealOnHover = false,
 }: WishlistButtonProps) {
   const { isWishlisted, toggle } = useWishlist();
   const saved = isWishlisted(variantId);
+
+  // Hover-reveal on desktop only. Saved hearts and touch viewports keep
+  // it visible. lg: guards the hide so mobile (no hover) never loses it;
+  // focus-visible keeps it keyboard-reachable.
+  const reveal =
+    revealOnHover && !saved
+      ? "lg:opacity-0 lg:group-hover:opacity-100 lg:focus-visible:opacity-100 lg:focus-within:opacity-100"
+      : "";
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -47,7 +65,7 @@ export default function WishlistButton({
       aria-label={saved ? "Remove from wishlist" : "Save to wishlist"}
       aria-pressed={saved}
       title={saved ? "Saved — remove from wishlist" : "Save to wishlist"}
-      className={`group/heart transition duration-300 ease-out ${base} ${
+      className={`group/heart transition duration-300 ease-out ${base} ${reveal} ${
         saved ? "text-gold" : "text-ink-muted hover:text-gold-deep"
       } ${className}`}
     >

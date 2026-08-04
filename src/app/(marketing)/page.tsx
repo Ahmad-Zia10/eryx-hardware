@@ -154,7 +154,7 @@ export default async function Home() {
         {featured.length === 0 ? (
           <p className="text-ink-muted">Featured products coming soon.</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {featured.slice(0, 4).map((product) => (
               <ProductCard key={product.slug} product={product} variant="lift" />
             ))}
