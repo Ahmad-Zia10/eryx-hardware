@@ -5,10 +5,17 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import HeroActions from "./HeroActions";
+import { SITE_CONFIG } from "@/constants";
 
 // Modernist hero CTA — flat red primary fill, flush-left label.
 const slideCta =
   "bg-gold hover:bg-gold-bright text-on-gold font-bold px-6 sm:px-7 py-3.5 sm:py-4 text-sm sm:text-base transition duration-200 ease-in-out inline-flex items-center";
+
+// Secondary "ghost" CTA — hairline outline on the cream text, used
+// alongside the red primary on the two overview slides. Deliberately
+// quieter so the red button stays the clear primary action.
+const slideCtaGhost =
+  "border border-brand-cream/40 text-brand-cream hover:bg-brand-cream/10 font-bold px-6 sm:px-7 py-3.5 sm:py-4 text-sm sm:text-base transition duration-200 ease-in-out inline-flex items-center";
 
 // Kicker: NN (bold) + 2px red tick + uppercase label. Left-aligned,
 // the Modernist hero signature. Shared across every slide.
@@ -24,11 +31,13 @@ function HeroKicker({ n, label }: { n: string; label: string }) {
   );
 }
 
-// Modernist display headline — huge Archivo, tight tracking, near-1
-// leading, flush-left, never centered.
+// Refined display headline (Direction A) — Archivo dialled back to
+// semibold and one scale-step smaller so the photo breathes. Narrower
+// max-width on the stack keeps the line lengths tight instead of
+// spanning the full frame. Flush-left, never centered.
 const heroHeading =
-  "text-4xl sm:text-6xl md:text-7xl font-extrabold leading-[0.94] tracking-[-0.035em] text-brand-cream font-display";
-const heroSub = "text-sm sm:text-lg text-brand-cream/78 max-w-lg leading-relaxed";
+  "text-4xl sm:text-5xl md:text-6xl font-semibold leading-[0.98] tracking-[-0.03em] text-brand-cream font-display";
+const heroSub = "text-sm sm:text-lg text-brand-cream/78 max-w-md leading-relaxed";
 
 const SLIDES = [
   {
@@ -36,7 +45,7 @@ const SLIDES = [
     // Modern beige+walnut modular kitchen with fridge
     image: "/products/hero/slide-1-modular-kitchen.jpg",
     content: (
-      <div className="flex flex-col gap-5 sm:gap-6 w-full max-w-2xl">
+      <div className="flex flex-col gap-5 sm:gap-6 w-full max-w-xl">
         <HeroKicker n="01" label="A Division of Modular India" />
         <h1 className={heroHeading}>
           Precision
@@ -59,7 +68,7 @@ const SLIDES = [
     // Light-wood kitchen with tiled backsplash
     image: "/products/hero/slide-2-light-kitchen.jpg",
     content: (
-      <div className="flex flex-col gap-5 sm:gap-6 w-full max-w-2xl">
+      <div className="flex flex-col gap-5 sm:gap-6 w-full max-w-xl">
         <HeroKicker n="02" label="Premium Kitchen Solutions" />
         <h1 className={heroHeading}>
           Kitchen Hardware,
@@ -74,6 +83,13 @@ const SLIDES = [
           <Link href="/kitchen" className={slideCta}>
             Shop Kitchen Accessories
           </Link>
+          <a
+            href={SITE_CONFIG.catalogueUrl}
+            download="Eryx-Hardware-Catalogue.pdf"
+            className={slideCtaGhost}
+          >
+            View Catalogue
+          </a>
         </div>
       </div>
     ),
@@ -86,7 +102,7 @@ const SLIDES = [
     image: "/products/basket/basket-5-brand.jpg",
     fit: "contain" as const,
     content: (
-      <div className="flex flex-col gap-5 sm:gap-6 w-full max-w-2xl">
+      <div className="flex flex-col gap-5 sm:gap-6 w-full max-w-xl">
         <HeroKicker n="03" label="Basket Systems" />
         <h1 className={heroHeading}>
           Every Item,
@@ -111,7 +127,7 @@ const SLIDES = [
     image: "/products/rolling-shutter/rolling-shutter-1-brand.jpg",
     fit: "contain" as const,
     content: (
-      <div className="flex flex-col gap-5 sm:gap-6 w-full max-w-2xl">
+      <div className="flex flex-col gap-5 sm:gap-6 w-full max-w-xl">
         <HeroKicker n="04" label="Rolling Shutter Systems" />
         <h1 className={heroHeading}>
           Countertop
@@ -138,7 +154,7 @@ const SLIDES = [
     image: "/products/hinges-new/hinges-new-1.jpg",
     fit: "contain" as const,
     content: (
-      <div className="flex flex-col gap-5 sm:gap-6 w-full max-w-2xl">
+      <div className="flex flex-col gap-5 sm:gap-6 w-full max-w-xl">
         <HeroKicker n="05" label="Hinges & Fittings" />
         <h1 className={heroHeading}>
           Soft-Close,

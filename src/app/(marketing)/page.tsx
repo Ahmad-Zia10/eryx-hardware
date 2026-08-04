@@ -1,10 +1,8 @@
 import Link from "next/link";
 import { Download, ArrowRight } from "lucide-react";
-import ProductImage from "@/components/ui/ProductImage";
 import ProductCard from "@/components/sections/ProductCard";
 import HeroSlider from "@/components/sections/HeroSlider";
 import CategoriesFocus, { type FocusPanel } from "@/components/sections/CategoriesFocus";
-import { CATALOG_CATEGORIES } from "@/lib/catalogue-data";
 import { getAllProducts, getTopPicks } from "@/lib/db/products";
 import { getFocusCategories, type ProductLine } from "@/lib/db/categories";
 import { getPublishedPosts } from "@/lib/db/blog";
@@ -103,36 +101,6 @@ export default async function Home() {
   return (
     <div>
       <HeroSlider />
-
-      {/* Category index strip — flat square wells, red hover. Product
-          thumbnails are specific SKUs → shown in COLOR. */}
-      <section className="bg-surface-sunken border-b-2 border-line-strong py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex gap-7 overflow-x-auto no-scrollbar lg:justify-center">
-            {CATALOG_CATEGORIES.map((category) => (
-              <Link
-                key={category.slug}
-                href={`/products?category=${encodeURIComponent(category.name)}`}
-                className="flex flex-col items-center gap-2 min-w-28 shrink-0 group"
-              >
-                {/* Uniform treatment for mixed-crop source shots: white
-                    well + contain + padding shows each product whole. */}
-                <div className="w-20 h-20 border border-line overflow-hidden bg-surface-raised p-2.5 group-hover:border-gold transition duration-200 ease-in-out">
-                  <ProductImage
-                    src={category.image}
-                    alt={category.name}
-                    fit="contain"
-                    className="w-full h-full"
-                  />
-                </div>
-                <span className="text-xs text-ink-muted group-hover:text-gold-deep text-center transition-colors duration-200">
-                  {category.name}
-                </span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Stat / trust strip — six ruled cells, last one inverted. */}
       <section className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 border-b-2 border-line-strong">
