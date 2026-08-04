@@ -48,7 +48,7 @@ const MOBILE_PRODUCT_LINE_HREF: Record<ProductLine, string> = {
 // built-in equivalent, so we compare the current pathname ourselves.
 function navLinkClass(isActive: boolean) {
   return `px-5 text-[13px] transition duration-200 ease-in-out hover:text-gold ${
-    isActive ? "text-gold font-bold" : "text-ink"
+    isActive ? "text-gold font-extrabold" : "text-ink"
   }`;
 }
 
@@ -163,7 +163,7 @@ export default function Navbar({
 
   return (
     <nav className="sticky top-9.25 z-40 bg-surface border-b-2 border-line-strong relative">
-      <div className="max-w-7xl mx-auto h-16 flex items-stretch justify-between">
+      <div className="max-w-7xl mx-auto h-16 flex items-stretch">
         {/* Modernist: the logo lives in its own bordered compartment,
             a 2px rule splitting it from the nav — architectural, boxed. */}
         <Link
@@ -174,7 +174,7 @@ export default function Navbar({
           <img src="/eryx-logo-transparent.png" alt="ERYX" className="h-8.5 object-contain" />
         </Link>
 
-        <div className="hidden lg:flex items-center pl-4">
+        <div className="hidden lg:flex items-center">
           <Link href="/" className={navLinkClass(pathname === "/")}>
             Home
           </Link>
