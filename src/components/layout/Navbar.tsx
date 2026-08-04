@@ -208,20 +208,25 @@ export default function Navbar({
           </Link>
         </div>
 
-        {/* Modernist action cluster: full-height edge-to-edge cells, each
-            split by a 1px hairline rule. Cart is the red-filled cell flush
-            to the right edge. */}
+        {/* Modernist action cluster: full-height cells separated by short,
+            centered 1px hairline rules (icon-height, floating). Cart is the
+            red-filled cell flush to the right edge. */}
         <div className="flex items-stretch ml-auto">
+            {/* Leading rule between the links region and the icon cluster. */}
+            <span className="hidden sm:block self-center h-6 w-px bg-line" aria-hidden="true" />
+
             {/* Search */}
             <button
               onClick={() => setSearchOpen(true)}
-              className="flex items-center px-4 text-ink hover:text-gold border-l border-line-strong transition duration-200"
+              className="flex items-center px-4 text-ink hover:text-gold transition duration-200"
               aria-label="Search"
             >
               <Search size={18} />
             </button>
 
-          <div className="relative flex items-stretch border-l border-line-strong" ref={userMenuRef}>
+            <span className="hidden sm:block self-center h-6 w-px bg-line" aria-hidden="true" />
+
+          <div className="relative flex items-stretch" ref={userMenuRef}>
             {user ? (
               <button
                 onClick={() => setUserDropdownOpen(!userDropdownOpen)}
@@ -309,9 +314,11 @@ export default function Navbar({
               </div>
             )}
           </div>
+            <span className="hidden sm:block self-center h-6 w-px bg-line" aria-hidden="true" />
+
           <Link
             href="/wishlist"
-            className="relative flex items-center px-4 text-ink hover:text-gold border-l border-line-strong transition duration-200 ease-in-out"
+            className="relative flex items-center px-4 text-ink hover:text-gold transition duration-200 ease-in-out"
             aria-label="Wishlist"
           >
             <Heart size={18} />
@@ -321,19 +328,21 @@ export default function Navbar({
               </span>
             )}
           </Link>
+            <span className="hidden sm:block self-center h-6 w-px bg-line" aria-hidden="true" />
+
           {/* Modernist: Cart is the one filled cell in the bar — red fill,
               weight 800, full-height, count inline (poster-style), flush
               to the right edge. */}
           <button
             onClick={openCartDrawer}
-            className="flex items-center gap-2 px-5.5 bg-gold hover:bg-gold-bright text-on-gold font-extrabold text-[13px] border-l border-line-strong transition duration-200 ease-in-out"
+            className="flex items-center gap-2 px-5.5 bg-gold hover:bg-gold-bright text-on-gold font-extrabold text-[13px] transition duration-200 ease-in-out"
             aria-label="Cart"
           >
             <ShoppingCart size={17} />
             <span>Cart{cartCount > 0 ? ` · ${cartCount}` : ""}</span>
           </button>
           <button
-            className="lg:hidden flex items-center px-4 text-ink border-l border-line-strong"
+            className="lg:hidden flex items-center pl-4 text-ink"
             onClick={() => setMobileOpen((open) => !open)}
             aria-label="Menu"
           >
