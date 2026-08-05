@@ -137,10 +137,12 @@ export default async function Home() {
       {/* Categories in focus — floating WebGL gallery (client island).
           Greyscale at rest, colour on the hovered card; light section
           surface, consistent with the rest of the page. */}
-      <section className="bg-surface-sunken border-b-2 border-line-strong py-14 sm:py-20 overflow-hidden">
+      <section className="bg-surface-sunken border-b-2 border-line-strong pt-14 sm:pt-16 pb-12 sm:pb-14 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Ruled section header — matches the other home sections. */}
-          <div className="flex items-baseline justify-between gap-4 border-b-2 border-line-strong pb-3.5 mb-2">
+          {/* Ruled section header — matches the other home sections. A
+              short intro line under the title gives the header enough
+              weight to balance the full-bleed gallery below it. */}
+          <div className="flex items-baseline justify-between gap-4 border-b-2 border-line-strong pb-3.5">
             <div className="flex items-baseline gap-4">
               <span className="text-sm font-extrabold text-gold">02</span>
               <h2 className="text-2xl sm:text-3xl font-extrabold tracking-[-0.02em] text-ink">
@@ -151,8 +153,14 @@ export default async function Home() {
               Drag or scroll · hover to reveal →
             </span>
           </div>
+          <p className="mt-4 max-w-xl text-sm text-ink-muted leading-relaxed">
+            Seven hardware systems, engineered for modern kitchens and wardrobes.
+            Drag through the range — hover any card to bring it to life.
+          </p>
         </div>
-        <CategoryGallery panels={focusPanels} />
+        <div className="mt-6 sm:mt-8">
+          <CategoryGallery panels={focusPanels} />
+        </div>
       </section>
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">

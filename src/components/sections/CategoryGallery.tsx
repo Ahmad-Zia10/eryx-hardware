@@ -36,12 +36,17 @@ import type { FocusPanel } from "@/components/sections/CategoriesFocus";
  */
 
 // ─── Tunables ────────────────────────────────────────────────────────
-// Deliberately LIGHT bend — the user asked for "horizontal with a very
-// light bend", not the deep circular arc. Higher = more curve.
-const BEND = 0.7;
+// Horizontal row with a gentle arc. BEND controls the curve depth (a
+// little more than the first pass), SCROLL_SPEED the drag/wheel pace
+// (eased down), and CARD_SCALE the on-screen card size (bumped up).
+const BEND = 1.2;
 const BORDER_RADIUS = 0.06;
-const SCROLL_EASE = 0.06;
-const SCROLL_SPEED = 1.6;
+const SCROLL_EASE = 0.055;
+const SCROLL_SPEED = 1.15;
+// Base card dimensions in "design px" (scaled to the viewport in
+// onResize). Larger = bigger cards; the width/height ratio stays ~0.8.
+const CARD_W = 680;
+const CARD_H = 840;
 
 type CardData = FocusPanel;
 
@@ -99,21 +104,24 @@ export default function CategoryGallery({ panels }: { panels: CardData[] }) {
   const activePanel = panels[active] ?? panels[0];
 
   return (
-    <div className="relative">
-      {/* WebGL canvas mounts here */}
+    <div className="flex flex-col">
+      {/* WebGL canvas — its own fixed height. The caption lives in a
+          separate band BELOW so text never overlaps a card. A soft
+          horizontal mask fades cards out at both edges instead of hard-
+          clipping them at the section boundary. */}
       <div
         ref={containerRef}
-        className="relative h-[62vh] min-h-[440px] max-h-[560px] w-full cursor-grab active:cursor-grabbing select-none touch-pan-y"
+        className="relative h-[46vh] min-h-[360px] max-h-[520px] w-full cursor-grab active:cursor-grabbing select-none touch-pan-y [mask-image:linear-gradient(to_right,transparent,#000_7%,#000_93%,transparent)] [-webkit-mask-image:linear-gradient(to_right,transparent,#000_7%,#000_93%,transparent)]"
         aria-hidden="true"
       />
 
-      {/* Crisp HTML caption for the centered card + a real link so the
-          gallery is navigable. Sits below the arc, centered. */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-6 z-10 flex flex-col items-center px-4 text-center">
-        <div className="text-xl sm:text-2xl font-extrabold tracking-[-0.02em] text-ink">
+      {/* Reserved caption band — fixed min-height so the arc above never
+          shifts as labels of different lengths swap in. Centered. */}
+      <div className="mt-6 flex min-h-[132px] flex-col items-center px-4 text-center">
+        <div className="text-2xl sm:text-3xl font-extrabold tracking-[-0.02em] text-ink">
           {activePanel.label}
         </div>
-        <div className="mt-1 text-xs sm:text-sm text-ink-muted">
+        <div className="mt-1.5 text-sm text-ink-muted">
           {typeof activePanel.count === "number" && (
             <>
               {activePanel.count}{" "}
@@ -131,7 +139,7 @@ export default function CategoryGallery({ panels }: { panels: CardData[] }) {
         </div>
         <Link
           href={activePanel.href}
-          className="pointer-events-auto mt-3 inline-flex items-center gap-2 bg-gold hover:bg-gold-bright text-on-gold text-sm font-bold px-5 py-2.5 transition-colors duration-200"
+          className="mt-4 inline-flex items-center gap-2 bg-gold hover:bg-gold-bright text-on-gold text-sm font-bold px-6 py-3 transition-colors duration-200"
         >
           Explore {activePanel.label}
         </Link>
@@ -313,15 +321,16 @@ class GalleryMedia {
   update(scroll: number, direction: "left" | "right") {
     this.plane.position.x = this.x - scroll - this.extra;
 
-    // Light arc bend: y dips slightly and the card tilts as it moves off
-    // center. Small BEND keeps it "nearly horizontal".
+    // Gentle arc: cards tilt as they move off-centre (rotation carries
+    // the "bend" feel), with the vertical drop DAMPENED so cards stay
+    // roughly centred in the canvas rather than bowing to the bottom.
     const x = this.plane.position.x;
     const H = this.viewport.width / 2;
     const B = Math.abs(BEND);
     const R = (H * H + B * B) / (2 * B);
     const effX = Math.min(Math.abs(x), H);
     const arc = R - Math.sqrt(Math.max(0, R * R - effX * effX));
-    this.plane.position.y = -arc;
+    this.plane.position.y = -arc * 0.55;
     this.plane.rotation.z = -Math.sign(x) * Math.asin(Math.min(1, effX / R));
 
     // Ease the per-card colour toward its target (hovered = 1).
@@ -347,9 +356,9 @@ class GalleryMedia {
     }
     this.scale = this.screen.height / 1500;
     this.plane.scale.y =
-      (this.viewport.height * (720 * this.scale)) / this.screen.height;
+      (this.viewport.height * (CARD_H * this.scale)) / this.screen.height;
     this.plane.scale.x =
-      (this.viewport.width * (580 * this.scale)) / this.screen.width;
+      (this.viewport.width * (CARD_W * this.scale)) / this.screen.width;
     this.program.uniforms.uPlaneSizes.value = [
       this.plane.scale.x,
       this.plane.scale.y,
@@ -380,6 +389,7 @@ class GalleryApp {
   viewport = { width: 0, height: 0 };
   hovered = -1;
   lastActive = -1;
+  resizeObserver: ResizeObserver | null = null;
 
   // Bound handlers (so add/removeEventListener match).
   bOnResize = () => this.onResize();
@@ -443,6 +453,10 @@ class GalleryApp {
       width: this.container.clientWidth,
       height: this.container.clientHeight,
     };
+    // Guard: if the container has no width yet (mounted while hidden or
+    // below the fold), skip — the ResizeObserver re-fires this once the
+    // element gets real dimensions, so we don't init at a 0-width canvas.
+    if (this.screen.width === 0 || this.screen.height === 0) return;
     this.renderer.setSize(this.screen.width, this.screen.height);
     this.camera.perspective({ aspect: this.screen.width / this.screen.height });
     const fov = (this.camera.fov * Math.PI) / 180;
@@ -539,6 +553,13 @@ class GalleryApp {
     this.container.addEventListener("pointerdown", this.bOnDown);
     window.addEventListener("pointermove", this.bOnMove);
     window.addEventListener("pointerup", this.bOnUp);
+    // Re-size to the container itself, not just the window. Handles the
+    // element getting its first non-zero width (mounted below the fold /
+    // while hidden) and any layout-driven width changes.
+    if (typeof ResizeObserver !== "undefined") {
+      this.resizeObserver = new ResizeObserver(() => this.onResize());
+      this.resizeObserver.observe(this.container);
+    }
   }
 
   destroy() {
@@ -548,6 +569,8 @@ class GalleryApp {
     this.container.removeEventListener("pointerdown", this.bOnDown);
     window.removeEventListener("pointermove", this.bOnMove);
     window.removeEventListener("pointerup", this.bOnUp);
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = null;
     const canvas = this.gl.canvas;
     if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
     const ext = this.gl.getExtension("WEBGL_lose_context");
