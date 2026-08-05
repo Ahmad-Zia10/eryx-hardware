@@ -1,8 +1,10 @@
 import Link from "next/link";
-import { Download, ArrowRight } from "lucide-react";
+import { Download, ArrowRight, ShieldCheck, Truck, Award, MapPin } from "lucide-react";
+import ProductImage from "@/components/ui/ProductImage";
 import ProductCard from "@/components/sections/ProductCard";
 import HeroSlider from "@/components/sections/HeroSlider";
-import CategoriesFocus, { type FocusPanel } from "@/components/sections/CategoriesFocus";
+import { type FocusPanel } from "@/components/sections/CategoriesFocus";
+import CategoryGallery from "@/components/sections/CategoryGallery";
 import { getAllProducts, getTopPicks } from "@/lib/db/products";
 import { getFocusCategories, type ProductLine } from "@/lib/db/categories";
 import { getPublishedPosts } from "@/lib/db/blog";
@@ -132,10 +134,28 @@ export default async function Home() {
         ))}
       </section>
 
-      {/* Categories in focus — draggable filmstrip (client island). */}
-      <CategoriesFocus panels={focusPanels} />
+      {/* Categories in focus — floating WebGL gallery (client island).
+          Greyscale at rest, colour on the hovered card; light section
+          surface, consistent with the rest of the page. */}
+      <section className="bg-surface-sunken border-b-2 border-line-strong py-14 sm:py-20 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Ruled section header — matches the other home sections. */}
+          <div className="flex items-baseline justify-between gap-4 border-b-2 border-line-strong pb-3.5 mb-2">
+            <div className="flex items-baseline gap-4">
+              <span className="text-sm font-extrabold text-gold">02</span>
+              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-[-0.02em] text-ink">
+                Categories in focus
+              </h2>
+            </div>
+            <span className="hidden sm:block text-[11px] tracking-[0.16em] uppercase text-ink-faint">
+              Drag or scroll · hover to reveal →
+            </span>
+          </div>
+        </div>
+        <CategoryGallery panels={focusPanels} />
+      </section>
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         {/* Ruled section header: red kicker + title + link, 2px rule. */}
         <div className="flex items-baseline justify-between gap-4 border-b-2 border-line-strong pb-3.5 mb-7">
           <div className="flex items-baseline gap-4">
@@ -164,7 +184,7 @@ export default async function Home() {
 
       {/* Catalogue red poster — full-red statement band (Modernist). */}
       <section className="bg-gold text-on-gold">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 flex flex-col md:flex-row md:items-center justify-between gap-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 flex flex-col md:flex-row md:items-center justify-between gap-8">
           <div className="max-w-2xl">
             <span className="text-xs tracking-[0.2em] uppercase font-extrabold text-on-gold/75">
               Product catalogue
@@ -191,7 +211,82 @@ export default async function Home() {
 
       {blogPosts.length > 0 && <BlogTeaser posts={blogPosts} />}
 
+      {/* Why Eryx — trust band. Three ruled cells of reassurance before
+          the FAQ, closing the page with confidence. */}
+      <section className="bg-surface-sunken border-t-2 border-b-2 border-line-strong">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="flex items-baseline gap-4 border-b-2 border-line-strong pb-3.5 mb-8">
+            <span className="text-sm font-extrabold text-gold">05</span>
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-[-0.02em] text-ink">
+              Why Eryx
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-line border border-line">
+            {[
+              {
+                icon: ShieldCheck,
+                title: "German-engineered motion",
+                body: "Soft-close hinges and runners rated for a lifetime of daily use.",
+              },
+              {
+                icon: Truck,
+                title: "Pan-India delivery",
+                body: "Stocked SKUs shipped nationwide and tracked to your door.",
+              },
+              {
+                icon: Award,
+                title: "Trusted since 2016",
+                body: "Specified by designers and modular builders across the country.",
+              },
+            ].map(({ icon: Icon, title, body }) => (
+              <div key={title} className="bg-surface-raised p-7">
+                <div className="w-10 h-10 flex items-center justify-center border border-gold text-gold mb-4">
+                  <Icon size={20} />
+                </div>
+                <h3 className="text-base font-extrabold tracking-[-0.01em] text-ink mb-1.5">
+                  {title}
+                </h3>
+                <p className="text-sm text-ink-muted leading-relaxed">{body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <FAQTeaser />
+
+      {/* Experience Centre invite — a real showroom CTA that closes the
+          page with an in-person next step. */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="grid grid-cols-1 md:grid-cols-[1.2fr_1fr] border border-line overflow-hidden">
+          <div className="flex flex-col justify-center gap-3 p-8 md:p-12 bg-surface-raised">
+            <span className="text-xs tracking-[0.2em] uppercase font-extrabold text-gold">
+              Experience Centre
+            </span>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-[-0.02em] text-ink leading-[1.05]">
+              See the full range in person.
+            </h2>
+            <p className="text-sm text-ink-muted leading-relaxed max-w-md mt-1">
+              Touch the finishes, test the soft-close, and plan your kitchen with
+              our team at the Eryx Experience Centre.
+            </p>
+            <Link
+              href="/experience-centre"
+              className="mt-4 self-start inline-flex items-center gap-2 bg-gold hover:bg-gold-bright text-on-gold font-bold px-6 py-3.5 transition duration-200 ease-in-out"
+            >
+              <MapPin size={18} />
+              Plan a visit
+            </Link>
+          </div>
+          <div className="relative min-h-[240px] bg-surface-sunken">
+            <ProductImage
+              src="/products/hero/oak-marble-kitchen.jpg"
+              alt="Eryx Experience Centre"
+              className="absolute inset-0 w-full h-full"
+            />
+          </div>
+        </div>
+      </section>
 
       <FollowUsSection />
     </div>

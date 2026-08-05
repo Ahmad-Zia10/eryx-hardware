@@ -65,19 +65,20 @@ const SLIDES = [
   },
   {
     id: 2,
-    // Light-wood kitchen with tiled backsplash
-    image: "/products/hero/slide-2-light-kitchen.jpg",
+    // Oak handleless + black-marble minimalist kitchen (approved hero
+    // photo P5). Full-frame lifestyle → object-cover, full colour.
+    image: "/products/hero/oak-marble-kitchen.jpg",
     content: (
       <div className="flex flex-col gap-5 sm:gap-6 w-full max-w-xl">
-        <HeroKicker n="02" label="Premium Kitchen Solutions" />
+        <HeroKicker n="02" label="Complete Systems" />
         <h1 className={heroHeading}>
-          Kitchen Hardware,
+          Fittings You Never
           <br />
-          Engineered Right
+          Think About
         </h1>
         <p className={heroSub}>
-          Discover a complete range of intelligent kitchen storage systems designed
-          to maximize space and ease of use.
+          Soft-close motion and precision alignment, built to disappear into a
+          kitchen that simply works.
         </p>
         <div className="flex flex-wrap gap-4 mt-1 sm:mt-2">
           <Link href="/kitchen" className={slideCta}>
@@ -96,77 +97,24 @@ const SLIDES = [
   },
   {
     id: 3,
-    // Actual basket product brand shot (square). Rendered with
-    // object-contain over a dark gradient so the whole product shows
-    // instead of being cropped by object-cover.
-    image: "/products/basket/basket-5-brand.jpg",
-    fit: "contain" as const,
+    // Graphite-marble + brass kitchen (approved hero photo P6) — a
+    // cooler, moodier contrast beat. Full colour, object-cover.
+    image: "/products/hero/graphite-marble-kitchen.jpg",
     content: (
       <div className="flex flex-col gap-5 sm:gap-6 w-full max-w-xl">
-        <HeroKicker n="03" label="Basket Systems" />
+        <HeroKicker n="03" label="Premium Finishes" />
         <h1 className={heroHeading}>
-          Every Item,
+          From Basket
           <br />
-          In Its Place
+          to Brass
         </h1>
         <p className={heroSub}>
-          Pull-out baskets and drawer systems built for the way modern
-          kitchens actually work.
+          A complete hardware range across kitchen and wardrobe — stocked and
+          shipped pan-India.
         </p>
         <div className="flex flex-wrap gap-4 mt-1 sm:mt-2">
-          <Link href="/kitchen?category=Basket" className={slideCta}>
-            Explore Basket Systems
-          </Link>
-        </div>
-      </div>
-    ),
-  },
-  {
-    id: 4,
-    // Actual rolling-shutter product brand shot (square).
-    image: "/products/rolling-shutter/rolling-shutter-1-brand.jpg",
-    fit: "contain" as const,
-    content: (
-      <div className="flex flex-col gap-5 sm:gap-6 w-full max-w-xl">
-        <HeroKicker n="04" label="Rolling Shutter Systems" />
-        <h1 className={heroHeading}>
-          Countertop
-          <br />
-          Clarity
-        </h1>
-        <p className={heroSub}>
-          Appliance garages and rolling shutters that hide the mess and
-          keep the counter open.
-        </p>
-        <div className="flex flex-wrap gap-4 mt-1 sm:mt-2">
-          <Link href="/kitchen?category=Rolling Shutter" className={slideCta}>
-            Explore Rolling Shutters
-          </Link>
-        </div>
-      </div>
-    ),
-  },
-  {
-    id: 5,
-    // Actual hinges product shot (4:3-ish, low-res). object-contain
-    // avoids the massive close-up crop that object-cover produced on
-    // wide viewports.
-    image: "/products/hinges-new/hinges-new-1.jpg",
-    fit: "contain" as const,
-    content: (
-      <div className="flex flex-col gap-5 sm:gap-6 w-full max-w-xl">
-        <HeroKicker n="05" label="Hinges & Fittings" />
-        <h1 className={heroHeading}>
-          Soft-Close,
-          <br />
-          Every Time
-        </h1>
-        <p className={heroSub}>
-          German-engineered hinges rated for a lifetime of daily use.
-        </p>
-        <div className="flex flex-wrap gap-4 mt-1 sm:mt-2">
-          <Link href="/kitchen?category=Hinges" className={slideCta}>
-            Explore Hinges
+          <Link href="/kitchen" className={slideCta}>
+            Shop the Range
           </Link>
         </div>
       </div>
@@ -219,36 +167,18 @@ export default function HeroSlider() {
         >
           {isNear(index) && (
             <>
-              {/* Product shots (slides marked fit: 'contain') fill the
-                  letterbox gap with a blurred + scaled copy of the same
-                  image, so the extended backdrop naturally matches the
-                  product's own color/lighting instead of a hardcoded
-                  gradient that seams against the shot. Lifestyle slides
-                  use object-cover to fill the frame directly.
-                  Modernist: hero imagery is EDITORIAL → grayscale. */}
-              {slide.fit === "contain" && (
-                <Image
-                  src={slide.image}
-                  alt=""
-                  fill
-                  aria-hidden="true"
-                  sizes="100vw"
-                  quality={40}
-                  className="object-cover object-center scale-110 blur-2xl opacity-70 grayscale contrast-[1.06]"
-                />
-              )}
+              {/* Hero photography now runs in FULL COLOUR (the approved
+                  warm kitchen shots). All slides are full-frame lifestyle
+                  → object-cover fills the frame directly; no grayscale,
+                  no letterbox backdrop needed. */}
               <Image
                 src={slide.image}
                 alt=""
                 fill
                 priority={index === 0}
                 sizes="100vw"
-                quality={80}
-                className={`grayscale contrast-[1.06] ${
-                  slide.fit === "contain"
-                    ? "object-contain object-center"
-                    : "object-cover object-center"
-                }`}
+                quality={82}
+                className="object-cover object-center"
               />
 
               {/* Modernist legibility scrim: strong dark on the LEFT
