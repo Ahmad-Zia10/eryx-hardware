@@ -139,9 +139,7 @@ export default async function Home() {
           surface, consistent with the rest of the page. */}
       <section className="bg-surface-sunken border-b-2 border-line-strong pt-14 sm:pt-16 pb-12 sm:pb-14 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Ruled section header — matches the other home sections. A
-              short intro line under the title gives the header enough
-              weight to balance the full-bleed gallery below it. */}
+          {/* Ruled section header — matches the other home sections. */}
           <div className="flex items-baseline justify-between gap-4 border-b-2 border-line-strong pb-3.5">
             <div className="flex items-baseline gap-4">
               <span className="text-sm font-extrabold text-gold">02</span>
@@ -153,12 +151,8 @@ export default async function Home() {
               Drag or scroll · hover to reveal →
             </span>
           </div>
-          <p className="mt-4 max-w-xl text-sm text-ink-muted leading-relaxed">
-            Seven hardware systems, engineered for modern kitchens and wardrobes.
-            Drag through the range — hover any card to bring it to life.
-          </p>
         </div>
-        <div className="mt-6 sm:mt-8">
+        <div className="mt-8 sm:mt-10">
           <CategoryGallery panels={focusPanels} />
         </div>
       </section>

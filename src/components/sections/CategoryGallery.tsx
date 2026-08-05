@@ -45,8 +45,9 @@ const SCROLL_EASE = 0.055;
 const SCROLL_SPEED = 1.15;
 // Base card dimensions in "design px" (scaled to the viewport in
 // onResize). Larger = bigger cards; the width/height ratio stays ~0.8.
-const CARD_W = 680;
-const CARD_H = 840;
+// A modest step up from the original 680×840.
+const CARD_W = 820;
+const CARD_H = 1010;
 
 type CardData = FocusPanel;
 
@@ -111,7 +112,7 @@ export default function CategoryGallery({ panels }: { panels: CardData[] }) {
           clipping them at the section boundary. */}
       <div
         ref={containerRef}
-        className="relative h-[46vh] min-h-[360px] max-h-[520px] w-full cursor-grab active:cursor-grabbing select-none touch-pan-y [mask-image:linear-gradient(to_right,transparent,#000_7%,#000_93%,transparent)] [-webkit-mask-image:linear-gradient(to_right,transparent,#000_7%,#000_93%,transparent)]"
+        className="relative h-[52vh] min-h-[400px] max-h-[580px] w-full cursor-grab active:cursor-grabbing select-none touch-pan-y [mask-image:linear-gradient(to_right,transparent,#000_7%,#000_93%,transparent)] [-webkit-mask-image:linear-gradient(to_right,transparent,#000_7%,#000_93%,transparent)]"
         aria-hidden="true"
       />
 
