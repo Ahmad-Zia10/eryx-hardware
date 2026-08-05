@@ -138,8 +138,10 @@ export default async function Home() {
           Greyscale at rest, colour on the hovered card; light section
           surface, consistent with the rest of the page. */}
       <section className="bg-surface-sunken border-b-2 border-line-strong pt-14 sm:pt-16 pb-12 sm:pb-14 overflow-hidden">
+        {/* Left-aligned ruled header — matches every other home section
+            (Top picks, Why Eryx). Kicker + title on the left, the
+            interaction hint on the right, over a 2px rule. */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Ruled section header — matches the other home sections. */}
           <div className="flex items-baseline justify-between gap-4 border-b-2 border-line-strong pb-3.5">
             <div className="flex items-baseline gap-4">
               <span className="text-sm font-extrabold text-gold">02</span>

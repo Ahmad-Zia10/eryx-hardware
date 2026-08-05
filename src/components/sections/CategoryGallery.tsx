@@ -46,8 +46,8 @@ const SCROLL_SPEED = 1.15;
 // Base card dimensions in "design px" (scaled to the viewport in
 // onResize). Larger = bigger cards; the width/height ratio stays ~0.8.
 // A modest step up from the original 680×840.
-const CARD_W = 820;
-const CARD_H = 1010;
+const CARD_W = 840;
+const CARD_H = 1035;
 
 type CardData = FocusPanel;
 
@@ -270,6 +270,12 @@ class GalleryMedia {
   padding = 1.4;
   colorTarget = 0; // 1 when hovered
   colorCurrent = 0;
+  hoverTarget = 0; // 1 when hovered → eased into a subtle scale-up
+  hoverCurrent = 0;
+  baseScaleX = 1; // resting plane scale (hover multiplies this)
+  baseScaleY = 1;
+  cardW = CARD_W; // live-tunable card size (design px)
+  cardH = CARD_H;
 
   constructor(opts: {
     gl: OGLRenderingContext;
@@ -338,6 +344,17 @@ class GalleryMedia {
     this.colorCurrent = lerp(this.colorCurrent, this.colorTarget, 0.12);
     this.program.uniforms.uColor.value = this.colorCurrent;
 
+    // Ease a subtle scale-up on the hovered card (lifts it toward the
+    // viewer — the "pop" cue that pairs with the colour reveal).
+    this.hoverCurrent = lerp(this.hoverCurrent, this.hoverTarget, 0.14);
+    const hoverScale = 1 + this.hoverCurrent * 0.07;
+    this.plane.scale.x = this.baseScaleX * hoverScale;
+    this.plane.scale.y = this.baseScaleY * hoverScale;
+    this.program.uniforms.uPlaneSizes.value = [
+      this.plane.scale.x,
+      this.plane.scale.y,
+    ];
+
     // Infinite wrap.
     const half = this.plane.scale.x / 2;
     const vpHalf = this.viewport.width / 2;
@@ -356,15 +373,20 @@ class GalleryMedia {
       this.viewport = sizes.viewport;
     }
     this.scale = this.screen.height / 1500;
-    this.plane.scale.y =
-      (this.viewport.height * (CARD_H * this.scale)) / this.screen.height;
-    this.plane.scale.x =
-      (this.viewport.width * (CARD_W * this.scale)) / this.screen.width;
+    // Base (resting) scale. Card size comes from the app's live cardW/H
+    // (defaults to the CARD_W/CARD_H constants) so it can be tuned at
+    // runtime without a rebuild.
+    this.baseScaleY =
+      (this.viewport.height * (this.cardH * this.scale)) / this.screen.height;
+    this.baseScaleX =
+      (this.viewport.width * (this.cardW * this.scale)) / this.screen.width;
+    this.plane.scale.x = this.baseScaleX;
+    this.plane.scale.y = this.baseScaleY;
     this.program.uniforms.uPlaneSizes.value = [
       this.plane.scale.x,
       this.plane.scale.y,
     ];
-    this.width = this.plane.scale.x + this.padding;
+    this.width = this.baseScaleX + this.padding;
     this.widthTotal = this.width * this.length;
     this.x = this.width * this.index;
   }
@@ -391,6 +413,8 @@ class GalleryApp {
   hovered = -1;
   lastActive = -1;
   resizeObserver: ResizeObserver | null = null;
+  cardW = CARD_W;
+  cardH = CARD_H;
 
   // Bound handlers (so add/removeEventListener match).
   bOnResize = () => this.onResize();
@@ -482,22 +506,33 @@ class GalleryApp {
   }
 
   onMove(e: PointerEvent) {
-    // Hover hit-test in viewport-space: whichever card is nearest the
-    // pointer's x (and within a card width) gets colour.
     const rect = this.gl.canvas.getBoundingClientRect();
     const relX = e.clientX - rect.left;
+    const relY = e.clientY - rect.top;
     if (this.isDown) {
       const distance = (this.startX - e.clientX) * (SCROLL_SPEED * 0.02);
       this.scroll.target = this.startScroll + distance;
     }
-    // Map pointer x → viewport units around the plane origin.
+    // Map the pointer into viewport units around the plane origin. Y is
+    // flipped (screen y grows down, world y grows up).
     const vpX = (relX / rect.width - 0.5) * this.viewport.width;
+    const vpY = -(relY / rect.height - 0.5) * this.viewport.height;
+    // 2D hit-test: the pointer must fall inside a card's actual x/y box
+    // (cards dip on the arc, so a y-check is required — an x-only test
+    // let some cards, e.g. the taller shutter/glass shots, never win).
+    // Use the RESTING scale so a card doesn't grow itself out from under
+    // the cursor. Tie-break by nearest centre.
     let best = -1;
     let bestDist = Infinity;
     this.medias.forEach((m, i) => {
-      const dist = Math.abs(m.plane.position.x - vpX);
-      if (dist < m.plane.scale.x / 2 && dist < bestDist) {
-        bestDist = dist;
+      const dx = Math.abs(m.plane.position.x - vpX);
+      const dy = Math.abs(m.plane.position.y - vpY);
+      if (
+        dx < m.baseScaleX / 2 &&
+        dy < m.baseScaleY / 2 &&
+        dx < bestDist
+      ) {
+        bestDist = dx;
         best = i;
       }
     });
@@ -521,8 +556,16 @@ class GalleryApp {
     );
     const direction = this.scroll.current > this.scroll.last ? "right" : "left";
 
+    // The list is doubled for the seamless loop, so colour/scale BOTH
+    // copies of the hovered category (compare by original panel index),
+    // not just the single matched media — otherwise the on-screen copy
+    // can stay grey while its off-screen twin is the one that matched.
+    const hoveredOrig =
+      this.hovered >= 0 ? this.hovered % this.panels.length : -1;
     this.medias.forEach((m, i) => {
-      m.colorTarget = i === this.hovered ? 1 : 0;
+      const isHovered = i % this.panels.length === hoveredOrig;
+      m.colorTarget = isHovered ? 1 : 0;
+      m.hoverTarget = isHovered ? 1 : 0;
       m.update(this.scroll.current, direction);
     });
 
