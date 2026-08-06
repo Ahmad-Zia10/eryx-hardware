@@ -55,29 +55,30 @@ export default function AllProducts({ overview }: AllProductsProps) {
   return (
     <div className="bg-surface">
       {/* Header — Modernist: breadcrumb kicker, oversized Archivo display,
-          left-aligned, with the live SKU/collection stat pinned right. */}
+          left-aligned, with the live SKU/collection stat pinned right.
+          Compact vertical rhythm so it doesn't eat the fold. */}
       <header className="border-b-2 border-line-strong">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <div className="max-w-2xl">
-            <p className="text-[11px] tracking-[0.2em] uppercase text-ink-faint font-bold mb-4">
+            <p className="text-[11px] tracking-[0.2em] uppercase text-ink-faint font-bold mb-2.5">
               <Link href="/" className="hover:text-gold transition-colors">
                 Home
               </Link>{" "}
               / <span className="text-ink">Products</span>
             </p>
-            <h1 className="text-5xl sm:text-6xl md:text-7xl font-extrabold leading-[0.92] tracking-[-0.03em] text-ink font-display">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-[0.92] tracking-[-0.03em] text-ink font-display">
               All products.
             </h1>
-            <p className="text-sm sm:text-base text-ink-muted mt-4 max-w-md leading-relaxed">
+            <p className="text-sm text-ink-muted mt-3 max-w-md leading-relaxed">
               Every line across kitchen, wardrobe and hardware fittings — browse a
               category to see the full range.
             </p>
           </div>
           <div className="shrink-0 md:text-right">
-            <p className="text-5xl sm:text-6xl font-extrabold tracking-[-0.03em] text-ink font-display leading-none">
+            <p className="text-4xl sm:text-5xl font-extrabold tracking-[-0.03em] text-ink font-display leading-none">
               {overview.totalProducts}+
             </p>
-            <p className="text-[11px] tracking-[0.14em] uppercase text-ink-faint font-bold mt-2">
+            <p className="text-[11px] tracking-[0.14em] uppercase text-ink-faint font-bold mt-1.5">
               SKUs across {overview.collectionCount}{" "}
               {overview.collectionCount === 1 ? "collection" : "collections"}
             </p>
@@ -126,23 +127,19 @@ function CollectionBlock({
   const meta = LINE_META[line.productLine];
   const tag = String(index + 1).padStart(2, "0");
 
-  // The photo tile is a FIXED height (four rows tall). The first four
-  // categories sit beside it; any remaining categories flow full-width
-  // below the photo. This keeps every collection block a consistent,
-  // contained height instead of the photo stretching to a long list.
-  const BESIDE = 4;
-  const beside = line.categories.slice(0, BESIDE);
-  const below = line.categories.slice(BESIDE);
-
   return (
+    // Two equal columns. The grid stretches both cells to the taller one
+    // (the category list), so the photo cell fills exactly the list's
+    // height — no fixed px, no gap, no overflow-below. A min-height keeps
+    // short lists from making the block feel cramped.
     <section className="border-b-2 border-line-strong">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2">
-        {/* Photo tile — numbered red tag, name + blurb overlaid at the
-            bottom. order-* flips the photo side without reordering the DOM
-            (categories stay first in source for a11y/reading order). */}
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 items-stretch">
+        {/* Photo tile — h-full fills the grid cell (= the list height).
+            order-* flips the photo side without reordering the DOM so
+            categories stay first in reading order. */}
         <Link
           href={meta.href}
-          className={`group relative h-64 sm:h-80 lg:h-[440px] overflow-hidden bg-brand-dark ${
+          className={`group relative h-64 sm:h-80 lg:h-full min-h-[280px] overflow-hidden bg-brand-dark ${
             photoRight ? "lg:order-2" : "lg:order-1"
           }`}
         >
@@ -167,13 +164,15 @@ function CollectionBlock({
           </div>
         </Link>
 
-        {/* Category rows beside the photo — locked to the photo height and
-            split into equal-height rows so they always line up with it. */}
+        {/* Category list — every category for the line, one ruled row each,
+            distributed to fill the column height evenly. */}
         <div
           className={`grid ${photoRight ? "lg:order-1" : "lg:order-2"}`}
-          style={{ gridTemplateRows: `repeat(${beside.length}, minmax(0, 1fr))` }}
+          style={{
+            gridTemplateRows: `repeat(${line.categories.length}, minmax(56px, 1fr))`,
+          }}
         >
-          {beside.map((cat, ci) => (
+          {line.categories.map((cat, ci) => (
             <CategoryRow
               key={cat.slug}
               cat={cat}
@@ -184,48 +183,28 @@ function CollectionBlock({
           ))}
         </div>
       </div>
-
-      {/* Overflow categories — full-width row below the photo. */}
-      {below.length > 0 && (
-        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 border-t border-line-strong">
-          {below.map((cat, ci) => (
-            <CategoryRow
-              key={cat.slug}
-              cat={cat}
-              index={BESIDE + ci}
-              href={`${meta.href}?category=${encodeURIComponent(cat.name)}`}
-              // Rule between stacked rows; on 2-col, also rule the right cell.
-              ruled={ci >= (below.length > 1 ? 2 : 1)}
-              className={ci % 2 === 1 ? "sm:border-l border-line" : ""}
-            />
-          ))}
-        </div>
-      )}
     </section>
   );
 }
 
-// One category row — number, name, "X products · from ₹Y", arrow. Shared
-// between the beside-photo grid and the overflow row below.
+// One category row — number, name, "X products · from ₹Y", arrow.
 function CategoryRow({
   cat,
   index,
   href,
   ruled,
-  className = "",
 }: {
   cat: OverviewCategory;
   index: number;
   href: string;
   ruled: boolean;
-  className?: string;
 }) {
   return (
     <Link
       href={href}
       className={`group flex items-center gap-4 sm:gap-6 px-4 sm:px-6 lg:px-8 py-4 transition-colors duration-200 hover:bg-surface-sunken ${
         ruled ? "border-t border-line" : ""
-      } ${className}`}
+      }`}
     >
       <span className="text-xs font-bold text-ink-faint tabular-nums w-6 shrink-0">
         {String(index + 1).padStart(2, "0")}
