@@ -48,9 +48,17 @@ interface AllProductsProps {
 // list of that line's categories. Every row links into the line's PLP
 // filtered to the category. Pure server markup — filtering lives on the
 // per-line pages.
+// Fixed row height (desktop) and the block height derived from the
+// most-populated line — every collection block shares this height, so
+// lines with fewer categories simply leave blank space below their rows
+// (rather than stretching rows or resizing the photo).
+const ROW_H = 72;
+
 export default function AllProducts({ overview }: AllProductsProps) {
   // Only lines that actually have stock render a block.
   const liveLines = overview.lines.filter((l) => l.categoryCount > 0);
+  const maxRows = Math.max(1, ...liveLines.map((l) => l.categoryCount));
+  const blockHeight = maxRows * ROW_H;
 
   return (
     <div className="bg-surface">
@@ -86,13 +94,15 @@ export default function AllProducts({ overview }: AllProductsProps) {
         </div>
       </header>
 
-      {/* Collection blocks — photo side alternates left / right / left. */}
+      {/* Collection blocks — photo side alternates left / right / left.
+          All share blockHeight so the three lines read as equal bands. */}
       {liveLines.map((line, i) => (
         <CollectionBlock
           key={line.productLine}
           line={line}
           index={i}
           photoRight={i % 2 === 1}
+          blockHeight={blockHeight}
         />
       ))}
 
@@ -119,27 +129,33 @@ function CollectionBlock({
   line,
   index,
   photoRight,
+  blockHeight,
 }: {
   line: LineOverview;
   index: number;
   photoRight: boolean;
+  blockHeight: number;
 }) {
   const meta = LINE_META[line.productLine];
   const tag = String(index + 1).padStart(2, "0");
 
   return (
-    // Two equal columns. The grid stretches both cells to the taller one
-    // (the category list), so the photo cell fills exactly the list's
-    // height — no fixed px, no gap, no overflow-below. A min-height keeps
-    // short lists from making the block feel cramped.
+    // Every block is the SAME fixed height (blockHeight, set from the
+    // most-populated line). Photo cell = 2/5, list = 3/5. The list packs
+    // its rows from the top; lines with fewer categories leave blank space
+    // below rather than stretching rows or resizing the photo.
     <section className="border-b-2 border-line-strong">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 items-stretch">
-        {/* Photo tile — h-full fills the grid cell (= the list height).
-            order-* flips the photo side without reordering the DOM so
-            categories stay first in reading order. */}
+      <div
+        className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-5 items-stretch"
+        style={{ ["--block-h" as string]: `${blockHeight}px` }}
+      >
+        {/* Photo tile — spans 2 of 5 columns (narrower than the list, per
+            the design). Fills the block height on desktop. order-* flips
+            the photo side without reordering the DOM so categories stay
+            first in reading order. */}
         <Link
           href={meta.href}
-          className={`group relative h-64 sm:h-80 lg:h-full min-h-[280px] overflow-hidden bg-brand-dark ${
+          className={`group relative h-64 sm:h-80 lg:h-[var(--block-h)] lg:col-span-2 overflow-hidden bg-brand-dark ${
             photoRight ? "lg:order-2" : "lg:order-1"
           }`}
         >
@@ -164,13 +180,12 @@ function CollectionBlock({
           </div>
         </Link>
 
-        {/* Category list — every category for the line, one ruled row each,
-            distributed to fill the column height evenly. */}
+        {/* Category list — spans 3 of 5 columns, fixed block height. Rows
+            sit at ROW_H from the top; leftover height stays blank. */}
         <div
-          className={`grid ${photoRight ? "lg:order-1" : "lg:order-2"}`}
-          style={{
-            gridTemplateRows: `repeat(${line.categories.length}, minmax(56px, 1fr))`,
-          }}
+          className={`flex flex-col lg:h-[var(--block-h)] lg:col-span-3 ${
+            photoRight ? "lg:order-1" : "lg:order-2"
+          }`}
         >
           {line.categories.map((cat, ci) => (
             <CategoryRow
@@ -202,7 +217,7 @@ function CategoryRow({
   return (
     <Link
       href={href}
-      className={`group flex items-center gap-4 sm:gap-6 px-4 sm:px-6 lg:px-8 py-4 transition-colors duration-200 hover:bg-surface-sunken ${
+      className={`group flex items-center gap-4 sm:gap-6 px-4 sm:px-6 lg:px-8 py-4 lg:h-[72px] lg:shrink-0 transition-colors duration-200 hover:bg-surface-sunken ${
         ruled ? "border-t border-line" : ""
       }`}
     >
