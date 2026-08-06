@@ -7,15 +7,10 @@ import Footer from '@/components/layout/Footer';
 import CartDrawer from '@/components/layout/CartDrawer';
 import EnquiryModal from '@/components/layout/EnquiryModal';
 import Toast from '@/components/layout/Toast';
-import { getCategoriesByProductLine } from '@/lib/db/categories';
 
-// Layout is async so we can fetch the category groups once per request
-// and hand them to Navbar as a serialisable prop — keeps Navbar a
-// pure client component while the mega-menu content stays DB-driven.
-export default async function MarketingLayout({ children } :  {
+export default function MarketingLayout({ children } :  {
   children: React.ReactNode;
 }) {
-  const categoryGroups = await getCategoriesByProductLine();
   return (
     <CartProvider>
       <UIProvider>
@@ -26,7 +21,7 @@ export default async function MarketingLayout({ children } :  {
               here because the body-level utility resolved against :root. */}
           <div className="modernist bg-surface text-ink font-sans">
             <AnnouncementBar />
-            <Navbar categoryGroups={categoryGroups} />
+            <Navbar />
             <main>{children}</main>
             <Footer />
             <CartDrawer />

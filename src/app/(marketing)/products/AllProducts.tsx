@@ -3,7 +3,12 @@ import { ArrowRight } from "lucide-react";
 import ProductImage from "@/components/ui/ProductImage";
 import TalkToExpertButton from "./TalkToExpertButton";
 import { IMAGES } from "@/lib/catalogue-data";
-import type { LineOverview, ProductLine, ProductsOverview } from "@/lib/db/categories";
+import type {
+  LineOverview,
+  OverviewCategory,
+  ProductLine,
+  ProductsOverview,
+} from "@/lib/db/categories";
 import { formatPrice } from "@/lib/pricing";
 
 // Per-line presentation: the listing-page href, hero photo, and the
@@ -121,19 +126,23 @@ function CollectionBlock({
   const meta = LINE_META[line.productLine];
   const tag = String(index + 1).padStart(2, "0");
 
+  // The photo tile is a FIXED height (four rows tall). The first four
+  // categories sit beside it; any remaining categories flow full-width
+  // below the photo. This keeps every collection block a consistent,
+  // contained height instead of the photo stretching to a long list.
+  const BESIDE = 4;
+  const beside = line.categories.slice(0, BESIDE);
+  const below = line.categories.slice(BESIDE);
+
   return (
     <section className="border-b-2 border-line-strong">
-      <div
-        className={`max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 ${
-          photoRight ? "" : ""
-        }`}
-      >
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2">
         {/* Photo tile — numbered red tag, name + blurb overlaid at the
             bottom. order-* flips the photo side without reordering the DOM
             (categories stay first in source for a11y/reading order). */}
         <Link
           href={meta.href}
-          className={`group relative min-h-[320px] lg:min-h-[440px] overflow-hidden bg-brand-dark ${
+          className={`group relative h-64 sm:h-80 lg:h-[440px] overflow-hidden bg-brand-dark ${
             photoRight ? "lg:order-2" : "lg:order-1"
           }`}
         >
@@ -158,40 +167,80 @@ function CollectionBlock({
           </div>
         </Link>
 
-        {/* Category list — one ruled row per category. */}
+        {/* Category rows beside the photo — locked to the photo height and
+            split into equal-height rows so they always line up with it. */}
         <div
-          className={`flex flex-col justify-center ${
-            photoRight ? "lg:order-1" : "lg:order-2"
-          }`}
+          className={`grid ${photoRight ? "lg:order-1" : "lg:order-2"}`}
+          style={{ gridTemplateRows: `repeat(${beside.length}, minmax(0, 1fr))` }}
         >
-          {line.categories.map((cat, ci) => (
-            <Link
+          {beside.map((cat, ci) => (
+            <CategoryRow
               key={cat.slug}
+              cat={cat}
+              index={ci}
               href={`${meta.href}?category=${encodeURIComponent(cat.name)}`}
-              className={`group flex items-center gap-4 sm:gap-6 px-4 sm:px-6 lg:px-8 py-5 transition-colors duration-200 hover:bg-surface-sunken ${
-                ci > 0 ? "border-t border-line" : ""
-              }`}
-            >
-              <span className="text-xs font-bold text-ink-faint tabular-nums w-6 shrink-0">
-                {String(ci + 1).padStart(2, "0")}
-              </span>
-              <span className="text-base sm:text-lg font-bold text-ink group-hover:text-gold-deep transition-colors flex-1 min-w-0">
-                {cat.name}
-              </span>
-              <span className="hidden sm:block text-xs text-ink-muted whitespace-nowrap">
-                {cat.count} {cat.count === 1 ? "product" : "products"}
-                {cat.minPrice !== null && (
-                  <> · from {formatPrice(cat.minPrice)}</>
-                )}
-              </span>
-              <ArrowRight
-                size={18}
-                className="text-gold shrink-0 opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all"
-              />
-            </Link>
+              ruled={ci > 0}
+            />
           ))}
         </div>
       </div>
+
+      {/* Overflow categories — full-width row below the photo. */}
+      {below.length > 0 && (
+        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 border-t border-line-strong">
+          {below.map((cat, ci) => (
+            <CategoryRow
+              key={cat.slug}
+              cat={cat}
+              index={BESIDE + ci}
+              href={`${meta.href}?category=${encodeURIComponent(cat.name)}`}
+              // Rule between stacked rows; on 2-col, also rule the right cell.
+              ruled={ci >= (below.length > 1 ? 2 : 1)}
+              className={ci % 2 === 1 ? "sm:border-l border-line" : ""}
+            />
+          ))}
+        </div>
+      )}
     </section>
+  );
+}
+
+// One category row — number, name, "X products · from ₹Y", arrow. Shared
+// between the beside-photo grid and the overflow row below.
+function CategoryRow({
+  cat,
+  index,
+  href,
+  ruled,
+  className = "",
+}: {
+  cat: OverviewCategory;
+  index: number;
+  href: string;
+  ruled: boolean;
+  className?: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className={`group flex items-center gap-4 sm:gap-6 px-4 sm:px-6 lg:px-8 py-4 transition-colors duration-200 hover:bg-surface-sunken ${
+        ruled ? "border-t border-line" : ""
+      } ${className}`}
+    >
+      <span className="text-xs font-bold text-ink-faint tabular-nums w-6 shrink-0">
+        {String(index + 1).padStart(2, "0")}
+      </span>
+      <span className="text-base sm:text-lg font-bold text-ink group-hover:text-gold-deep transition-colors flex-1 min-w-0">
+        {cat.name}
+      </span>
+      <span className="hidden sm:block text-xs text-ink-muted whitespace-nowrap">
+        {cat.count} {cat.count === 1 ? "product" : "products"}
+        {cat.minPrice !== null && <> · from {formatPrice(cat.minPrice)}</>}
+      </span>
+      <ArrowRight
+        size={18}
+        className="text-gold shrink-0 opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all"
+      />
+    </Link>
   );
 }

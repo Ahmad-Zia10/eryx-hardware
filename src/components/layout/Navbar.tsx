@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import {
-  ChevronDown,
   ChevronRight,
   Search,
   User,
@@ -20,29 +19,14 @@ import { useCart } from "@/context/CartContext";
 import { useUI } from "@/context/UIContext";
 import { useWishlist } from "@/context/WishlistContext";
 import SearchOverlay from "./SearchOverlay";
-import ProductsMegaMenu from "./ProductsMegaMenu";
-import type { CategoryGroup, ProductLine } from "@/lib/db/categories";
 
-// Kitchen/Wardrobe entries removed on purpose — they duplicated the
-// Products mega-menu (which groups by product line) and crowded the
-// bar. Both remain reachable via Products, the footer, and the home
+// Kitchen/Wardrobe entries removed on purpose — both lines are reachable
+// via Products (the category directory), the footer, and the home
 // category strip.
 const NAV_LINKS = [
   { label: "Deals", href: "/deals" },
   { label: "Blog", href: "/blog" },
 ];
-
-const MOBILE_PRODUCT_LINE_LABELS: Record<ProductLine, string> = {
-  kitchen: "Kitchen",
-  wardrobe: "Wardrobe",
-  hardware: "Hardware",
-};
-
-const MOBILE_PRODUCT_LINE_HREF: Record<ProductLine, string> = {
-  kitchen: "/kitchen",
-  wardrobe: "/wardrobe",
-  hardware: "/hardware",
-};
 
 // Mirrors react-router's <NavLink isActive> behavior — Next.js has no
 // built-in equivalent, so we compare the current pathname ourselves.
@@ -52,49 +36,13 @@ function navLinkClass(isActive: boolean) {
   }`;
 }
 
-export default function Navbar({
-  categoryGroups = [],
-}: {
-  categoryGroups?: CategoryGroup[];
-}) {
+export default function Navbar() {
   const { cartCount } = useCart();
   const { openCartDrawer } = useUI();
   const { wishlistCount } = useWishlist();
   const router = useRouter();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [productsOpen, setProductsOpen] = useState(false);
-  // Hover-with-forgiveness pattern for the Products mega-menu. Open on
-  // hover after 150ms (avoid accidental triggers), close after 250ms
-  // (lets the cursor traverse from trigger → panel without a flash-close).
-  const productsHoverRef = useRef<{ open: ReturnType<typeof setTimeout> | null; close: ReturnType<typeof setTimeout> | null }>({
-    open: null,
-    close: null,
-  });
-
-  const openProductsWithDelay = () => {
-    if (productsHoverRef.current.close) {
-      clearTimeout(productsHoverRef.current.close);
-      productsHoverRef.current.close = null;
-    }
-    if (productsHoverRef.current.open) return;
-    productsHoverRef.current.open = setTimeout(() => {
-      setProductsOpen(true);
-      productsHoverRef.current.open = null;
-    }, 150);
-  };
-
-  const closeProductsWithDelay = () => {
-    if (productsHoverRef.current.open) {
-      clearTimeout(productsHoverRef.current.open);
-      productsHoverRef.current.open = null;
-    }
-    if (productsHoverRef.current.close) return;
-    productsHoverRef.current.close = setTimeout(() => {
-      setProductsOpen(false);
-      productsHoverRef.current.close = null;
-    }, 250);
-  };
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
@@ -158,7 +106,6 @@ export default function Navbar({
 
   const closeMenus = () => {
     setMobileOpen(false);
-    setProductsOpen(false);
   };
 
   return (
@@ -179,17 +126,9 @@ export default function Navbar({
             Home
           </Link>
 
-          <div
-            onMouseEnter={openProductsWithDelay}
-            onMouseLeave={closeProductsWithDelay}
-          >
-            <button
-              onClick={() => setProductsOpen((open) => !open)}
-              className="px-5 text-[13px] text-ink transition duration-200 ease-in-out hover:text-gold"
-            >
-              Products
-            </button>
-          </div>
+          <Link href="/products" className={navLinkClass(pathname === "/products")}>
+            Products
+          </Link>
 
           {NAV_LINKS.map((link) => (
             <Link
@@ -352,81 +291,18 @@ export default function Navbar({
         </div>
       </div>
 
-      {/* Desktop-only mega menu — rendered at nav level (not inside the button's
-          wrapper) so its absolute positioning binds to <nav>. This keeps the
-          panel centered within the max-w-7xl content area on wide viewports
-          instead of getting clipped when anchored to the narrow Products
-          trigger. */}
-      {productsOpen && (
-        <div
-          className="hidden lg:block"
-          onMouseEnter={openProductsWithDelay}
-          onMouseLeave={closeProductsWithDelay}
-        >
-          <ProductsMegaMenu
-            categoryGroups={categoryGroups}
-            onNavigate={closeMenus}
-            onMouseEnter={openProductsWithDelay}
-            onMouseLeave={closeProductsWithDelay}
-          />
-        </div>
-      )}
-
       {mobileOpen && (
         <div className="lg:hidden border-t border-line bg-surface">
           <div className="flex flex-col px-4 py-2">
-            <button
-              onClick={() => setProductsOpen((open) => !open)}
-              className="flex items-center justify-between py-3 text-sm border-b border-line text-ink-muted"
+            <Link
+              href="/products"
+              onClick={closeMenus}
+              className={`py-3 text-sm border-b border-line hover:text-gold transition duration-200 ease-in-out ${
+                pathname === "/products" ? "text-gold" : "text-ink-muted"
+              }`}
             >
-              Products{" "}
-              <ChevronDown size={14} className={productsOpen ? "rotate-180" : ""} />
-            </button>
-            {productsOpen && (
-              <div className="py-3 border-b border-line space-y-4">
-                {categoryGroups
-                  .filter(
-                    (g) =>
-                      g.productLine === "kitchen" ||
-                      g.productLine === "wardrobe" ||
-                      g.productLine === "hardware"
-                  )
-                  .map((group) => (
-                    <div key={group.productLine}>
-                      <p className="text-[10px] tracking-[0.3em] uppercase text-gold font-semibold mb-2">
-                        {MOBILE_PRODUCT_LINE_LABELS[group.productLine]}
-                      </p>
-                      {group.categories.length > 0 ? (
-                        <div className="grid grid-cols-2 gap-x-3 gap-y-2">
-                          {group.categories.map((cat) => (
-                            <Link
-                              key={cat.slug}
-                              href={`${MOBILE_PRODUCT_LINE_HREF[group.productLine]}?category=${encodeURIComponent(cat.name)}`}
-                              onClick={closeMenus}
-                              className="text-xs text-ink-muted hover:text-gold"
-                            >
-                              {cat.name}{" "}
-                              <span className="text-ink-faint">({cat.count})</span>
-                            </Link>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-xs text-ink-muted">
-                          Range coming soon —{" "}
-                          <Link
-                            href="/contact"
-                            onClick={closeMenus}
-                            className="text-gold"
-                          >
-                            contact us
-                          </Link>
-                          .
-                        </p>
-                      )}
-                    </div>
-                  ))}
-              </div>
-            )}
+              Products
+            </Link>
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.label}
