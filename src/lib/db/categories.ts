@@ -148,3 +148,75 @@ export async function getFocusCategories(): Promise<FocusCategory[]> {
     minPrice,
   }));
 }
+
+// A single product line rolled up for the /products directory page: its
+// total SKU count plus every live category under it (name, slug, count,
+// cheapest "from" price). Categories are sorted most-stocked first.
+export type OverviewCategory = {
+  name: string;
+  slug: string;
+  count: number;
+  minPrice: number | null;
+};
+
+export type LineOverview = {
+  productLine: ProductLine;
+  categoryCount: number;
+  productCount: number;
+  categories: OverviewCategory[];
+};
+
+export type ProductsOverview = {
+  lines: LineOverview[];
+  totalProducts: number;
+  collectionCount: number;
+};
+
+/**
+ * The whole catalogue grouped by product line for the /products
+ * directory page. Each line carries a total count and its category
+ * list (count + cheapest "from" price per category), so every row in
+ * the directory shows live "X products · from ₹Y" with no extra query.
+ *
+ * Reuses `getFocusCategories()` — one fetch of active default variants,
+ * same effective-price rule as the PLP — then rolls the flat
+ * category list up per line. Lines always appear in the fixed
+ * kitchen → wardrobe → hardware order, matching the mega-menu.
+ */
+export async function getProductsOverview(): Promise<ProductsOverview> {
+  const focus = await getFocusCategories();
+
+  const byLine = new Map<ProductLine, OverviewCategory[]>();
+  for (const line of PRODUCT_LINE_ORDER) byLine.set(line, []);
+
+  for (const c of focus) {
+    byLine.get(c.productLine)?.push({
+      name: c.name,
+      slug: slugify(c.name),
+      count: c.count,
+      minPrice: c.minPrice,
+    });
+  }
+
+  let totalProducts = 0;
+  const lines: LineOverview[] = PRODUCT_LINE_ORDER.map((line) => {
+    const categories = (byLine.get(line) ?? []).sort(
+      (a, b) => b.count - a.count || a.name.localeCompare(b.name)
+    );
+    const productCount = categories.reduce((sum, cat) => sum + cat.count, 0);
+    totalProducts += productCount;
+    return {
+      productLine: line,
+      categoryCount: categories.length,
+      productCount,
+      categories,
+    };
+  });
+
+  return {
+    lines,
+    totalProducts,
+    // Only lines that actually have stock count as a live "collection".
+    collectionCount: lines.filter((l) => l.categoryCount > 0).length,
+  };
+}

@@ -176,7 +176,6 @@ export const IMAGES = {
   // Per-line listing banners. Drop the source photos at these paths.
   wardrobeHero: "/products/hero/wardrobe-hero.jpg",
   hardwareHero: "/products/hero/hardware-hero.jpg",
-  allProductsHero: "/products/hero/all-products-hero.jpg",
   categoriesFocusLarge: productPath("basket", "basket-5-brand.jpg"),
 };
 
