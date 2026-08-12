@@ -47,13 +47,17 @@ const FOCUS_CARDS: FocusCard[] = [
 ];
 
 // Modernist stat/trust strip — six ruled cells, last one inverted.
+// Numbers are source-of-truth facts; keep them in sync with PRODUCT.md,
+// the About page (about/page.tsx), and BRAND_HIGHLIGHTS in constants.
+// Founded 2000 (Modular India) · 200+ SKUs · 8 core categories ·
+// 10-year hardware warranty (business-confirmed). Do not drift these.
 const STATS: { value: string; label: string; invert?: boolean }[] = [
-  { value: "08", label: "Product lines" },
-  { value: "180+", label: "SKUs in stock" },
+  { value: "08", label: "Core categories" },
+  { value: "200+", label: "SKUs in stock" },
   { value: "Pan-India", label: "Delivery network" },
   { value: "10yr", label: "Hardware warranty" },
   { value: "70111 84853", label: "Expert support" },
-  { value: "Since 2016", label: "Est. quality", invert: true },
+  { value: "Since 2000", label: "Est. quality", invert: true },
 ];
 
 // Server Component — no "use client" here. This now fetches real data
@@ -239,7 +243,7 @@ export default async function Home() {
               },
               {
                 icon: Award,
-                title: "Trusted since 2016",
+                title: "Trusted since 2000",
                 body: "Specified by designers and modular builders across the country.",
               },
             ].map(({ icon: Icon, title, body }) => (
