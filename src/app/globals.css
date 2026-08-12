@@ -237,6 +237,18 @@ body {
   }
 }
 
+/* Hero carousel active-indicator fill — sweeps left→right across a
+   slide's dwell so the visitor can see how long until it advances.
+   Compositor-only (transform), restarted per slide via a React key. */
+@keyframes hero-indicator-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
 /* hide scrollbar for horizontal scroll strips */
 .no-scrollbar::-webkit-scrollbar {
   display: none;

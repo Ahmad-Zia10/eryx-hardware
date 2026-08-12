@@ -122,9 +122,26 @@ const SLIDES = [
   },
 ];
 
+// Dwell per slide. 7s (was 4s) so a visitor can actually read the
+// headline + subhead and reach for a CTA before the slide moves on — the
+// primary action no longer disappears mid-read. The indicator bar fills
+// across this same window so the timing is visible, not a surprise.
+const SLIDE_DURATION_MS = 7000;
+
 export default function HeroSlider() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  // Honour the OS "reduce motion" setting: no autoplay, no crossfade.
+  // The visitor drives the carousel manually with the arrows/indicators.
+  const [reducedMotion, setReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const apply = () => setReducedMotion(mq.matches);
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
 
   const nextSlide = useCallback(() => {
     setCurrentSlide((prev) => (prev === SLIDES.length - 1 ? 0 : prev + 1));
@@ -135,10 +152,10 @@ export default function HeroSlider() {
   }, []);
 
   useEffect(() => {
-    if (isPaused) return;
-    const timer = setInterval(nextSlide, 4000);
+    if (isPaused || reducedMotion) return;
+    const timer = setInterval(nextSlide, SLIDE_DURATION_MS);
     return () => clearInterval(timer);
-  }, [isPaused, nextSlide]);
+  }, [isPaused, reducedMotion, nextSlide]);
 
   // Only the active slide and its two neighbours mount their images
   // and content. Previously all five slides (plus the blurred backdrop
@@ -156,12 +173,20 @@ export default function HeroSlider() {
       className="relative w-full h-[calc(88vh-104px)] min-h-[520px] sm:min-h-[600px] overflow-hidden bg-brand-dark group"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
+      // Pause while a keyboard user is tabbing through the hero's links
+      // and controls, so the slide doesn't change out from under them.
+      onFocusCapture={() => setIsPaused(true)}
+      onBlurCapture={() => setIsPaused(false)}
+      aria-roledescription="carousel"
+      aria-label="Featured collections"
     >
       {/* Slides */}
       {SLIDES.map((slide, index) => (
         <div
           key={slide.id}
-          className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
+          className={`absolute inset-0 w-full h-full ease-in-out ${
+            reducedMotion ? "transition-none" : "transition-opacity duration-1000"
+          } ${
             index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
           }`}
         >
@@ -196,21 +221,45 @@ export default function HeroSlider() {
         </div>
       ))}
 
-      {/* Slide indicators — flush-left, flat bars. Active = wide red. */}
+      {/* Slide indicators — flush-left, flat bars. The active bar widens
+          and, while autoplay is running, fills left→right across the
+          slide's dwell so the visitor can see how long until it advances
+          (and that hovering/focusing paused it). Under reduced motion the
+          active bar is simply solid — no fill animation. */}
       <div className="absolute bottom-6 left-4 sm:left-6 lg:left-8 z-30 flex items-center gap-2">
-        {SLIDES.map((slide, index) => (
-          <button
-            key={slide.id}
-            onClick={() => setCurrentSlide(index)}
-            aria-label={`Go to slide ${index + 1}`}
-            aria-current={index === currentSlide}
-            className={`h-[5px] transition-all duration-300 ${
-              index === currentSlide
-                ? "w-[34px] bg-gold"
-                : "w-3 bg-brand-cream/45 hover:bg-brand-cream/70"
-            }`}
-          />
-        ))}
+        {SLIDES.map((slide, index) => {
+          const isActive = index === currentSlide;
+          return (
+            <button
+              key={slide.id}
+              onClick={() => setCurrentSlide(index)}
+              aria-label={`Go to slide ${index + 1}`}
+              aria-current={isActive}
+              className={`relative h-[5px] overflow-hidden transition-all duration-300 ${
+                isActive
+                  ? "w-[34px] bg-brand-cream/25"
+                  : "w-3 bg-brand-cream/45 hover:bg-brand-cream/70"
+              }`}
+            >
+              {isActive && (
+                <span
+                  // `key` restarts the fill keyframe on every advance.
+                  key={currentSlide}
+                  aria-hidden="true"
+                  className="absolute inset-0 origin-left bg-gold"
+                  style={
+                    reducedMotion
+                      ? { transform: "scaleX(1)" }
+                      : {
+                          animation: `hero-indicator-fill ${SLIDE_DURATION_MS}ms linear forwards`,
+                          animationPlayState: isPaused ? "paused" : "running",
+                        }
+                  }
+                />
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {/* Navigation Arrows — edge-hugging Modernist blocks, hover-reveal */}
