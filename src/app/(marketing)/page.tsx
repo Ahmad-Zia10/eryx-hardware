@@ -148,7 +148,7 @@ export default async function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-baseline justify-between gap-4 border-b-2 border-line-strong pb-3.5">
             <div className="flex items-baseline gap-4">
-              <span className="text-sm font-extrabold text-gold">02</span>
+              <span className="text-sm font-extrabold text-gold">01</span>
               <h2 className="text-2xl sm:text-3xl font-extrabold tracking-[-0.02em] text-ink">
                 Categories in focus
               </h2>
@@ -167,7 +167,7 @@ export default async function Home() {
         {/* Ruled section header: red kicker + title + link, 2px rule. */}
         <div className="flex items-baseline justify-between gap-4 border-b-2 border-line-strong pb-3.5 mb-7">
           <div className="flex items-baseline gap-4">
-            <span className="text-sm font-extrabold text-gold">03</span>
+            <span className="text-sm font-extrabold text-gold">02</span>
             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-[-0.02em] text-ink">
               Top picks
             </h2>
@@ -224,7 +224,7 @@ export default async function Home() {
       <section className="bg-surface-sunken border-t-2 border-b-2 border-line-strong">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="flex items-baseline gap-4 border-b-2 border-line-strong pb-3.5 mb-8">
-            <span className="text-sm font-extrabold text-gold">05</span>
+            <span className="text-sm font-extrabold text-gold">04</span>
             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-[-0.02em] text-ink">
               Why Eryx
             </h2>
@@ -263,17 +263,25 @@ export default async function Home() {
 
       <FAQTeaser />
 
-      {/* Experience Centre invite — a real showroom CTA that closes the
-          page with an in-person next step. */}
+      <FollowUsSection />
+
+      {/* Experience Centre invite — the page's closing peak. A real
+          showroom CTA that ends on an in-person next step (peak-end),
+          so it sits last, after the social strip. Numbered 05 to complete
+          the section index: 01 Categories → 02 Top picks →
+          03 From the journal → 04 Why Eryx → 05 Experience Centre. */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="flex items-baseline gap-4 border-b-2 border-line-strong pb-3.5 mb-8">
+          <span className="text-sm font-extrabold text-gold">05</span>
+          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-[-0.02em] text-ink">
+            Experience Centre
+          </h2>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-[1.2fr_1fr] border border-line overflow-hidden">
           <div className="flex flex-col justify-center gap-3 p-8 md:p-12 bg-surface-raised">
-            <span className="text-xs tracking-[0.2em] uppercase font-extrabold text-gold">
-              Experience Centre
-            </span>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-[-0.02em] text-ink leading-[1.05]">
+            <h3 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-[-0.02em] text-ink leading-[1.05]">
               See the full range in person.
-            </h2>
+            </h3>
             <p className="text-sm text-ink-muted leading-relaxed max-w-md mt-1">
               Touch the finishes, test the soft-close, and plan your kitchen with
               our team at the Eryx Experience Centre.
@@ -295,8 +303,6 @@ export default async function Home() {
           </div>
         </div>
       </section>
-
-      <FollowUsSection />
     </div>
   );
 }

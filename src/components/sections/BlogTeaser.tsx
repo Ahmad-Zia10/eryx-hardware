@@ -7,7 +7,7 @@ export default function BlogTeaser({ posts }: { posts: BlogPostSummary[] }) {
       {/* Ruled section header, Modernist. */}
       <div className="flex items-baseline justify-between gap-4 border-b-2 border-line-strong pb-3.5 mb-7">
         <div className="flex items-baseline gap-4">
-          <span className="text-sm font-extrabold text-gold">04</span>
+          <span className="text-sm font-extrabold text-gold">03</span>
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-[-0.02em] text-ink">
             From the journal
           </h2>
