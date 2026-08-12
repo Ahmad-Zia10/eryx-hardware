@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import {
   Camera,
   Mesh,
@@ -27,12 +28,20 @@ import type { FocusPanel } from "@/components/sections/CategoriesFocus";
  * lifting is one shader that samples the texture, mixes greyscale↔colour
  * by a per-card `uColor` uniform, and rounds the corners with an SDF.
  *
- * Accessibility / resilience: when WebGL is unavailable OR the user
- * prefers reduced motion, we render a plain CSS horizontal-scroll strip
- * of the same cards (see `<FallbackStrip>`), so the section is never
- * blank and stays keyboard-navigable. The captions (name / count / from
- * price) are real HTML overlaid on the canvas so text stays crisp and
- * the links remain clickable.
+ * Accessibility / resilience: when WebGL is unavailable, the user
+ * prefers reduced motion, OR the device is touch-only (no hover), we
+ * render a native CSS horizontal-scroll strip of the same cards (see
+ * `<FallbackStrip>`), so the section is never blank and stays keyboard-
+ * navigable. The captions (name / count / from price) are real HTML
+ * overlaid on the canvas so text stays crisp and the links remain
+ * clickable.
+ *
+ * Why route touch to the strip: the WebGL path reveals a card's colour
+ * on HOVER and hit-tests the pointer against the arc. Touch devices have
+ * no hover, so on a phone every card would sit greyscale with no way to
+ * "reveal" it — the signature interaction silently dies. A phone's native
+ * idiom is a thumb-swiped scroll strip, so that is what touch gets, with
+ * colour shown at rest (no hover to earn it) and a visible swipe cue.
  */
 
 // ─── Tunables ────────────────────────────────────────────────────────
@@ -67,6 +76,15 @@ export default function CategoryGallery({ panels }: { panels: CardData[] }) {
       typeof window !== "undefined" &&
       window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
+    // Touch / no-hover devices: the WebGL path is hover-driven, so it has
+    // nothing to reveal a card's colour with here. Route them to the
+    // native swipe strip instead. `hover: none` catches phones and most
+    // tablets; `pointer: coarse` backs it up for touch-primary devices.
+    const noHover =
+      typeof window !== "undefined" &&
+      (window.matchMedia?.("(hover: none)").matches ||
+        window.matchMedia?.("(pointer: coarse)").matches);
+
     // Probe WebGL availability up front.
     let hasWebGL = false;
     try {
@@ -78,7 +96,7 @@ export default function CategoryGallery({ panels }: { panels: CardData[] }) {
       hasWebGL = false;
     }
 
-    if (prefersReduced || !hasWebGL) {
+    if (prefersReduced || noHover || !hasWebGL) {
       setWebgl(false);
       return;
     }
@@ -159,40 +177,60 @@ export default function CategoryGallery({ panels }: { panels: CardData[] }) {
   );
 }
 
-// ─── CSS fallback: horizontal scroll strip ───────────────────────────
-// Greyscale → colour on hover (pure CSS), horizontal scroll. Shown when
-// WebGL is unavailable or reduced-motion is preferred.
+// ─── CSS fallback: native horizontal swipe strip ─────────────────────
+// The default for touch/no-hover devices (and reduced-motion / no-WebGL).
+//
+// Colour policy: cards render in FULL COLOUR at rest. On hover-capable
+// devices only (`[@media(hover:hover)]`) they start greyscale and bloom
+// to colour on hover — matching the WebGL card's reveal. On touch there
+// is no hover to earn the reveal, so colour is simply always on: the
+// buyer sees the product, not a grey block.
+//
+// Swipe affordance: the last card is partially clipped by the row's
+// right edge (the peek), and a persistent "Swipe" cue sits under the row
+// on touch, so the horizontal-scroll gesture is discoverable without the
+// desktop-only section hint. `snap` keeps cards landing cleanly.
 function FallbackStrip({ panels }: { panels: CardData[] }) {
   return (
-    <div className="flex gap-4 overflow-x-auto no-scrollbar px-4 sm:px-6 lg:px-12 py-4">
-      {panels.map((panel, i) => (
-        <Link
-          key={panel.href}
-          href={panel.href}
-          className="group relative shrink-0 w-[260px] sm:w-[300px] h-[400px] sm:h-[440px] overflow-hidden rounded-card bg-surface-sunken"
-        >
-          <ProductImage
-            src={panel.image}
-            alt={panel.label}
-            grayscale
-            className="absolute inset-0 h-full w-full transition-[filter,transform] duration-500 ease-out group-hover:[filter:grayscale(0)] group-hover:scale-[1.04]"
-          />
-          <span className="absolute top-3.5 left-3.5 text-xs font-extrabold text-white drop-shadow">
-            {String(i + 1).padStart(2, "0")}
-          </span>
-          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent pt-10 px-4 pb-4">
-            <div className="text-lg sm:text-xl font-extrabold tracking-[-0.01em] text-white">
-              {panel.label}
-            </div>
-            {typeof panel.count === "number" && (
-              <div className="text-xs text-white/70 mt-1">
-                {panel.count} {panel.count === 1 ? "product" : "products"}
-                {panel.fromPrice ? ` · from ${panel.fromPrice}` : ""}
+    <div>
+      <div className="flex gap-4 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-px-4 px-4 sm:px-6 lg:px-12 py-4 [-webkit-overflow-scrolling:touch]">
+        {panels.map((panel, i) => (
+          <Link
+            key={panel.href}
+            href={panel.href}
+            className="group relative shrink-0 snap-start w-[76vw] max-w-[300px] sm:w-[300px] h-[400px] sm:h-[440px] overflow-hidden rounded-card bg-surface-sunken active:scale-[0.99] transition-transform"
+          >
+            <ProductImage
+              src={panel.image}
+              alt={panel.label}
+              className="absolute inset-0 h-full w-full transition-[filter,transform] duration-500 ease-out [@media(hover:hover)]:[filter:grayscale(1)] group-hover:[filter:grayscale(0)] group-hover:scale-[1.04]"
+            />
+            <span className="absolute top-3.5 left-3.5 text-xs font-extrabold text-white drop-shadow">
+              {String(i + 1).padStart(2, "0")}
+            </span>
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent pt-10 px-4 pb-4">
+              <div className="text-lg sm:text-xl font-extrabold tracking-[-0.01em] text-white">
+                {panel.label}
               </div>
-            )}
-          </div>
-        </Link>
-      ))}
+              {typeof panel.count === "number" && (
+                <div className="text-xs text-white/80 mt-1">
+                  {panel.count} {panel.count === 1 ? "product" : "products"}
+                  {panel.fromPrice ? ` · from ${panel.fromPrice}` : ""}
+                </div>
+              )}
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      {/* Touch-only swipe cue — the section's "drag / hover" hint is
+          hidden on mobile, so give touch users an explicit affordance. */}
+      <div className="mt-2 flex items-center justify-center gap-2 px-4 [@media(hover:hover)]:hidden">
+        <span className="text-[11px] tracking-[0.18em] uppercase text-ink-faint">
+          Swipe for more
+        </span>
+        <ArrowRight size={13} className="text-ink-faint" aria-hidden="true" />
+      </div>
     </div>
   );
 }
