@@ -35,6 +35,11 @@ function HeroKicker({ n, label }: { n: string; label: string }) {
 // semibold and one scale-step smaller so the photo breathes. Narrower
 // max-width on the stack keeps the line lengths tight instead of
 // spanning the full frame. Flush-left, never centered.
+//
+// Heading levels: only slide 1 uses <h1> — it's the page's single top-
+// level heading (all three slides mount at once for the crossfade, so
+// three <h1>s would compete for SEO/AT). Slides 2–3 use <h2> with the
+// identical visual style.
 const heroHeading =
   "text-4xl sm:text-5xl md:text-6xl font-semibold leading-[0.98] tracking-[-0.03em] text-brand-cream font-display";
 const heroSub = "text-sm sm:text-lg text-brand-cream/78 max-w-md leading-relaxed";
@@ -71,11 +76,11 @@ const SLIDES = [
     content: (
       <div className="flex flex-col gap-5 sm:gap-6 w-full max-w-xl">
         <HeroKicker n="02" label="Complete Systems" />
-        <h1 className={heroHeading}>
+        <h2 className={heroHeading}>
           Fittings You Never
           <br />
           Think About
-        </h1>
+        </h2>
         <p className={heroSub}>
           Soft-close motion and precision alignment, built to disappear into a
           kitchen that simply works.
@@ -103,11 +108,11 @@ const SLIDES = [
     content: (
       <div className="flex flex-col gap-5 sm:gap-6 w-full max-w-xl">
         <HeroKicker n="03" label="Premium Finishes" />
-        <h1 className={heroHeading}>
+        <h2 className={heroHeading}>
           From Basket
           <br />
           to Brass
-        </h1>
+        </h2>
         <p className={heroSub}>
           A complete hardware range across kitchen and wardrobe — stocked and
           shipped pan-India.
