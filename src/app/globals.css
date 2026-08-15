@@ -178,9 +178,10 @@
    now — marketing is light-only. */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Font loading handled via next/font/google in layout.tsx — no @import
-   needed here. Next.js self-hosts the font files at build time, which
-   avoids the extra external request and prevents layout shift on load. */
+/* Font loading handled via next/font/local in layout.tsx (self-hosted
+   woff2 in src/app/fonts) — no @import needed here. Serving the files
+   from the app avoids the extra external request and prevents layout
+   shift on load. */
 
 * {
   box-sizing: border-box;

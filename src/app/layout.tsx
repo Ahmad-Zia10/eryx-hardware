@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Archivo, Fraunces, Inter } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from "@/context/ThemeContext";
 
@@ -17,24 +17,43 @@ import { ThemeProvider } from "@/context/ThemeContext";
 //   Archivo  → all marketing type (--font-archivo)
 //   Inter    → admin body + UI  (--font-inter)
 //   Fraunces → admin serif roles (--font-fraunces)
+//
+// Fonts are SELF-HOSTED (next/font/local) from ./fonts — the woff2
+// files ship in the repo, so the production build never fetches from
+// fonts.gstatic.com. This keeps builds working in sandboxed CI/hosts
+// (e.g. Railway) that restrict outbound network during the build.
+// Latin subset only; same weights and `display: swap` as before.
 
-const archivo = Archivo({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+const archivo = localFont({
+  src: [
+    { path: "./fonts/archivo-400.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/archivo-500.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/archivo-600.woff2", weight: "600", style: "normal" },
+    { path: "./fonts/archivo-700.woff2", weight: "700", style: "normal" },
+    { path: "./fonts/archivo-800.woff2", weight: "800", style: "normal" },
+  ],
   variable: "--font-archivo",
   display: "swap",
 });
 
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+const inter = localFont({
+  src: [
+    { path: "./fonts/inter-400.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/inter-500.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/inter-600.woff2", weight: "600", style: "normal" },
+    { path: "./fonts/inter-700.woff2", weight: "700", style: "normal" },
+  ],
   variable: "--font-inter",
   display: "swap",
 });
 
-const fraunces = Fraunces({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+const fraunces = localFont({
+  src: [
+    { path: "./fonts/fraunces-400.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/fraunces-500.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/fraunces-600.woff2", weight: "600", style: "normal" },
+    { path: "./fonts/fraunces-700.woff2", weight: "700", style: "normal" },
+  ],
   variable: "--font-fraunces",
   display: "swap",
 });
