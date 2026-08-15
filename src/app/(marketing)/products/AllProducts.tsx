@@ -145,17 +145,21 @@ function CollectionBlock({
     // its rows from the top; lines with fewer categories leave blank space
     // below rather than stretching rows or resizing the photo.
     <section className="border-b-2 border-line-strong">
+      {/* Fixed block height on desktop (inline style — the height comes
+          from the most-populated line at render time). max-lg:!h-auto lets
+          the grid stack and size naturally on mobile. Both children use
+          h-full so they fill this exact height. */}
       <div
-        className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-5 items-stretch"
-        style={{ ["--block-h" as string]: `${blockHeight}px` }}
+        className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-5 items-stretch max-lg:!h-auto"
+        style={{ height: `${blockHeight}px` }}
       >
         {/* Photo tile — spans 2 of 5 columns (narrower than the list, per
-            the design). Fills the block height on desktop. order-* flips
-            the photo side without reordering the DOM so categories stay
-            first in reading order. */}
+            the design). h-full fills the block height. order-* flips the
+            photo side without reordering the DOM so categories stay first
+            in reading order. */}
         <Link
           href={meta.href}
-          className={`group relative h-64 sm:h-80 lg:h-[var(--block-h)] lg:col-span-2 overflow-hidden bg-brand-dark ${
+          className={`group relative h-64 sm:h-80 lg:h-full lg:col-span-2 overflow-hidden bg-brand-dark ${
             photoRight ? "lg:order-2" : "lg:order-1"
           }`}
         >
@@ -180,10 +184,10 @@ function CollectionBlock({
           </div>
         </Link>
 
-        {/* Category list — spans 3 of 5 columns, fixed block height. Rows
-            sit at ROW_H from the top; leftover height stays blank. */}
+        {/* Category list — spans 3 of 5 columns, fills the block height.
+            Rows sit at ROW_H from the top; leftover height stays blank. */}
         <div
-          className={`flex flex-col lg:h-[var(--block-h)] lg:col-span-3 ${
+          className={`flex flex-col lg:h-full lg:overflow-hidden lg:col-span-3 ${
             photoRight ? "lg:order-1" : "lg:order-2"
           }`}
         >
