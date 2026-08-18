@@ -338,9 +338,29 @@ export async function updateOrderStatus(id: string, status: string) {
     .from('profiles').select('role').eq('id', user.id).single();
   if (profile?.role !== 'admin') throw new Error('Unauthorized');
 
+  // Stamp delivered_at the first time an order reaches 'delivered'. This
+  // anchors the customer-facing return window (7 days from delivery). Only
+  // set it when it's currently null so re-flipping to 'delivered' doesn't
+  // reset the clock. Additive — no existing status logic changes.
+  const updates: { status: string; updated_at: string; delivered_at?: string } = {
+    status,
+    updated_at: new Date().toISOString(),
+  };
+
+  if (status === 'delivered') {
+    const { data: existing } = await supabaseAdmin
+      .from('orders')
+      .select('delivered_at')
+      .eq('id', id)
+      .single();
+    if (!existing?.delivered_at) {
+      updates.delivered_at = new Date().toISOString();
+    }
+  }
+
   const { error } = await supabaseAdmin
     .from('orders')
-    .update({ status, updated_at: new Date().toISOString() })
+    .update(updates)
     .eq('id', id);
   if (error) throw new Error('Update failed');
 }
