@@ -128,10 +128,53 @@
   --gold-tint: rgba(236, 48, 19, 0.06); /* soft red wash */
 }
 
+/* ─── Home warm layer — scoped to the re-innovated home page only ──
+   The home page opens WARM (an editorial "front door") and settles into
+   the Modernist system below. `.home-warm` wraps the home page root; it
+   sits INSIDE `.modernist`, so it inherits every Modernist token and adds
+   these warm ones as EXTRA variables. It deliberately does NOT remap the
+   semantic tokens (`--surface`, `--ink`, …) — doing so would recolor the
+   Modernist sections of the home page too. The warm sections consume
+   `--warm-*` (exposed as `bg-warm-*`/`text-warm-*` utilities via
+   `@theme inline`); the Modernist sections keep using `surface`/`ink`/
+   `gold` unchanged. Nothing outside the home page ever gets `.home-warm`,
+   so the rest of the site (and admin) is untouched.
+
+   `--font-hedvig` (self-hosted, see layout.tsx) drives `.font-editorial`,
+   used ONLY on warm-section headings + the Why-Eryx pull-quote — the one
+   warm-serif signal carried down from the hero. */
+.home-warm {
+  --warm-bg: #f4efe6; /* primary warm page band */
+  --warm-bg-deep: #e9e2d6; /* deeper warm band (intro / experience) */
+  --warm-panel: #e3dccd; /* image wells on warm ground */
+  --warm-ink: #2a2622; /* warm primary text */
+  --warm-accent: #c4472a; /* warm terracotta accent (kicker ticks) */
+  --warm-dark: #171310; /* hero / dramatic dark ground */
+  --warm-cream: #f0e9df; /* text on warm-dark */
+  --warm-amber: #d98b4a; /* warm accent on dark grounds (pills) */
+}
+
+.home-warm .font-editorial {
+  font-family: var(--font-hedvig, "Hedvig Letters Serif"), Georgia, serif;
+}
+
 /* `@theme inline` makes every utility emit `var(--…)` directly, so the
    `:root` / `.modernist` cascade above resolves per-scope at runtime.
    Keeping the SAME token names means components need no edits. */
 @theme inline {
+  /* Home warm palette — extra tokens for the home page's warm sections.
+     Only resolve to a value under `.home-warm`; elsewhere the utilities
+     simply aren't used. Kept separate from the semantic token set so the
+     Modernist sections are unaffected. */
+  --color-warm-bg: var(--warm-bg);
+  --color-warm-bg-deep: var(--warm-bg-deep);
+  --color-warm-panel: var(--warm-panel);
+  --color-warm-ink: var(--warm-ink);
+  --color-warm-accent: var(--warm-accent);
+  --color-warm-dark: var(--warm-dark);
+  --color-warm-cream: var(--warm-cream);
+  --color-warm-amber: var(--warm-amber);
+
   /* Fonts */
   --font-sans: var(--app-font-sans);
   --font-serif: var(--app-font-serif);
@@ -189,6 +232,15 @@
 
 html {
   scroll-behavior: smooth;
+  /* Base scale: 110% of the browser default (16px → 17.6px). The design
+     was tuned at 110% browser zoom; setting the root font-size here bakes
+     that scale into every rem-based size/space utility, so the site looks
+     "right" at the user's normal 100% zoom instead of depending on them
+     manually zooming. Hardcoded [Npx] values (borders, a few fixed sizes)
+     do NOT scale with this and stay crisp — intentional for 1px/2px rules.
+     Admin shares this root and also renders ~10% larger, which is fine for
+     a functional dashboard. */
+  font-size: 110%;
 }
 
 body {
@@ -257,6 +309,44 @@ body {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Home Floema hero — vertical scroll-snap track. Each slide snaps to the
+   top as the visitor scrolls inside the hero. `--reduced` (set when the
+   OS prefers reduced motion) drops the snap so the slides scroll normally
+   with no forced stops. */
+.hero-track {
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+}
+.hero-slide {
+  scroll-snap-align: start;
+}
+.hero-track--reduced {
+  scroll-snap-type: none;
+  scroll-behavior: auto;
+}
+
+/* Hero overlay cross-fade / rise — keyed per active slide via React.
+   Collapsed to near-zero by the prefers-reduced-motion block above (the
+   component also omits the inline animation under reduced motion). */
+@keyframes hero-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* range slider + checkbox accent follows the accent token */

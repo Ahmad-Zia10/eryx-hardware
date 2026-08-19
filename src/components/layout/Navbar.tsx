@@ -31,7 +31,8 @@ const NAV_LINKS = [
 // Mirrors react-router's <NavLink isActive> behavior — Next.js has no
 // built-in equivalent, so we compare the current pathname ourselves.
 function navLinkClass(isActive: boolean) {
-  return `px-5 text-[13px] transition duration-200 ease-in-out hover:text-gold ${
+  // 0.8125rem = 13px at the original 16px root; scales with the 110% root.
+  return `px-5 text-[0.8125rem] transition duration-200 ease-in-out hover:text-gold ${
     isActive ? "text-gold font-extrabold" : "text-ink"
   }`;
 }
@@ -115,7 +116,7 @@ export default function Navbar() {
             a 2px rule splitting it from the nav — architectural, boxed. */}
         <Link
           href="/"
-          className="flex items-center shrink-0 px-6 lg:px-[30px] border-r-2 border-line-strong"
+          className="flex items-center shrink-0 px-6 lg:px-[1.875rem] border-r-2 border-line-strong"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/eryx-logo-transparent.png" alt="ERYX" className="h-8.5 object-contain" />
@@ -275,7 +276,7 @@ export default function Navbar() {
               the icons instead of stretching the full bar height. */}
           <button
             onClick={openCartDrawer}
-            className="self-center flex items-center gap-2 h-11 px-5.5 bg-gold hover:bg-gold-bright text-on-gold font-extrabold text-[13px] transition duration-200 ease-in-out"
+            className="self-center flex items-center gap-2 h-11 px-5.5 bg-gold hover:bg-gold-bright text-on-gold font-extrabold text-[0.8125rem] transition duration-200 ease-in-out"
             aria-label="Cart"
           >
             <ShoppingCart size={17} />
