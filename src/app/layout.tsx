@@ -17,6 +17,10 @@ import { ThemeProvider } from "@/context/ThemeContext";
 //   Archivo  → all marketing type (--font-archivo)
 //   Inter    → admin body + UI  (--font-inter)
 //   Fraunces → admin serif roles (--font-fraunces)
+//   Hedvig   → editorial headings on the home page's warm sections only
+//              (--font-hedvig; used via the `.font-editorial` utility under
+//              the home-scoped `.home-warm` layer — see globals.css). Single
+//              weight (400); latin subset.
 //
 // Fonts are SELF-HOSTED (next/font/local) from ./fonts — the woff2
 // files ship in the repo, so the production build never fetches from
@@ -58,6 +62,14 @@ const fraunces = localFont({
   display: "swap",
 });
 
+const hedvig = localFont({
+  src: [
+    { path: "./fonts/hedvig-400.woff2", weight: "400", style: "normal" },
+  ],
+  variable: "--font-hedvig",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Eryx Hardware — Premium Kitchen & Wardrobe Hardware",
   description:
@@ -81,7 +93,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${archivo.variable} ${inter.variable} ${fraunces.variable}`}>
+    <html lang="en" className={`${archivo.variable} ${inter.variable} ${fraunces.variable} ${hedvig.variable}`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: noFlashThemeScript }} />
       </head>
