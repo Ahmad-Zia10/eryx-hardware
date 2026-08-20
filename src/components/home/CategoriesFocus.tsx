@@ -100,9 +100,10 @@ export default function CategoriesFocus({ panels }: { panels: FocusPanel[] }) {
                 <ProductImage
                   src={p.image}
                   alt={p.label}
-                  grayscale={active !== i}
-                  className={`absolute inset-0 h-full w-full transition-transform duration-500 ${
-                    active === i ? "scale-100" : "scale-105"
+                  className={`absolute inset-0 h-full w-full transition-[filter,transform] duration-500 ${
+                    active === i
+                      ? "[filter:none] scale-100"
+                      : "[filter:grayscale(1)_contrast(1.06)] scale-105"
                   }`}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-warm-dark/85 via-warm-dark/10 to-transparent" />

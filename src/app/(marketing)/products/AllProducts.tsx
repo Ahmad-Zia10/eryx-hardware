@@ -60,48 +60,75 @@ export default function AllProducts({ overview }: AllProductsProps) {
   const maxRows = Math.max(1, ...liveLines.map((l) => l.categoryCount));
   const blockHeight = maxRows * ROW_H;
 
+  const [firstLine, ...restLines] = liveLines;
+
   return (
     <div className="bg-surface">
-      {/* Header — Modernist: breadcrumb kicker, oversized Archivo display,
-          left-aligned, with the live SKU/collection stat pinned right.
-          Compact vertical rhythm so it doesn't eat the fold. */}
-      <header className="border-b-2 border-line-strong">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-          <div className="max-w-2xl">
-            <p className="text-[11px] tracking-[0.2em] uppercase text-ink-faint font-bold mb-2.5">
-              <Link href="/" className="hover:text-gold transition-colors">
-                Home
-              </Link>{" "}
-              / <span className="text-ink">Products</span>
-            </p>
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-[0.92] tracking-[-0.03em] text-ink font-display">
-              All products.
-            </h1>
-            <p className="text-sm text-ink-muted mt-3 max-w-md leading-relaxed">
-              Every line across kitchen, wardrobe and hardware fittings — browse a
-              category to see the full range.
-            </p>
+      {/* First fold — header + the first collection block are sized together
+          to fit one viewport (minus the sticky announcement bar + navbar),
+          so the opening collection renders COMPLETE on landing instead of
+          being sliced mid-list. `--chrome` is the sticky chrome height
+          (announcement ~37px + navbar 64px). On mobile the fold constraint
+          is relaxed (max-lg:min-h-0) so blocks stack naturally.
+          The remaining lines + CTA band scroll below as the reward. */}
+      <div
+        className="flex flex-col lg:min-h-[calc(100dvh-var(--chrome))] max-lg:min-h-0"
+        style={{ ["--chrome" as string]: "133px" }}
+      >
+        {/* Header — Modernist: breadcrumb kicker, oversized Archivo display,
+            left-aligned, with the live SKU/collection stat pinned right.
+            Compact vertical rhythm so it doesn't eat the fold. */}
+        <header className="border-b-2 border-line-strong">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+            <div className="max-w-2xl">
+              <p className="text-[11px] tracking-[0.2em] uppercase text-ink-faint font-bold mb-2.5">
+                <Link href="/" className="hover:text-gold transition-colors">
+                  Home
+                </Link>{" "}
+                / <span className="text-ink">Products</span>
+              </p>
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-[0.92] tracking-[-0.03em] text-ink font-display">
+                All products.
+              </h1>
+              <p className="text-sm text-ink-muted mt-3 max-w-md leading-relaxed">
+                Every line across kitchen, wardrobe and hardware fittings — browse
+                a category to see the full range.
+              </p>
+            </div>
+            <div className="shrink-0 md:text-right">
+              <p className="text-4xl sm:text-5xl font-extrabold tracking-[-0.03em] text-ink font-display leading-none">
+                {overview.totalProducts}+
+              </p>
+              <p className="text-[11px] tracking-[0.14em] uppercase text-ink-faint font-bold mt-1.5">
+                SKUs across {overview.collectionCount}{" "}
+                {overview.collectionCount === 1 ? "collection" : "collections"}
+              </p>
+            </div>
           </div>
-          <div className="shrink-0 md:text-right">
-            <p className="text-4xl sm:text-5xl font-extrabold tracking-[-0.03em] text-ink font-display leading-none">
-              {overview.totalProducts}+
-            </p>
-            <p className="text-[11px] tracking-[0.14em] uppercase text-ink-faint font-bold mt-1.5">
-              SKUs across {overview.collectionCount}{" "}
-              {overview.collectionCount === 1 ? "collection" : "collections"}
-            </p>
-          </div>
-        </div>
-      </header>
+        </header>
 
-      {/* Collection blocks — photo side alternates left / right / left.
-          All share blockHeight so the three lines read as equal bands. */}
-      {liveLines.map((line, i) => (
+        {/* First collection block — flex-1 so it fills the rest of the fold.
+            Its inner grid stretches to this height, so the opening block
+            ends at the viewport bottom instead of being cut. */}
+        {firstLine && (
+          <CollectionBlock
+            line={firstLine}
+            index={0}
+            photoRight={false}
+            blockHeight={blockHeight}
+            fillFold
+          />
+        )}
+      </div>
+
+      {/* Remaining collection blocks — natural equal-height bands below the
+          fold. Photo side keeps alternating (block 2 = right, block 3 = left…). */}
+      {restLines.map((line, i) => (
         <CollectionBlock
           key={line.productLine}
           line={line}
-          index={i}
-          photoRight={i % 2 === 1}
+          index={i + 1}
+          photoRight={(i + 1) % 2 === 1}
           blockHeight={blockHeight}
         />
       ))}
@@ -130,28 +157,40 @@ function CollectionBlock({
   index,
   photoRight,
   blockHeight,
+  fillFold = false,
 }: {
   line: LineOverview;
   index: number;
   photoRight: boolean;
   blockHeight: number;
+  // When true (the first block), the block flexes to fill the remaining
+  // first-fold height instead of using the fixed blockHeight — so the
+  // opening collection ends cleanly at the viewport bottom.
+  fillFold?: boolean;
 }) {
   const meta = LINE_META[line.productLine];
   const tag = String(index + 1).padStart(2, "0");
 
   return (
-    // Every block is the SAME fixed height (blockHeight, set from the
-    // most-populated line). Photo cell = 2/5, list = 3/5. The list packs
-    // its rows from the top; lines with fewer categories leave blank space
-    // below rather than stretching rows or resizing the photo.
-    <section className="border-b-2 border-line-strong">
-      {/* Fixed block height on desktop (inline style — the height comes
-          from the most-populated line at render time). max-lg:!h-auto lets
-          the grid stack and size naturally on mobile. Both children use
-          h-full so they fill this exact height. */}
+    // Fixed-height band (blockHeight, from the most-populated line) for the
+    // below-fold blocks; the first block flexes to fill the fold instead.
+    // Photo cell = 2/5, list = 3/5. The list packs its rows from the top;
+    // lines with fewer categories leave blank space below rather than
+    // stretching rows or resizing the photo.
+    <section
+      className={`border-b-2 border-line-strong ${
+        fillFold ? "lg:flex-1 lg:min-h-0 lg:flex lg:flex-col" : ""
+      }`}
+    >
+      {/* Desktop height: the first block fills the fold (grid is lg:flex-1
+          inside the flex-col section); the rest use the fixed blockHeight.
+          max-lg:!h-auto lets the grid stack and size naturally on mobile.
+          Both children use h-full so they fill this height. */}
       <div
-        className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-5 items-stretch max-lg:!h-auto"
-        style={{ height: `${blockHeight}px` }}
+        className={`max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-5 items-stretch max-lg:!h-auto ${
+          fillFold ? "lg:flex-1 lg:min-h-0" : ""
+        }`}
+        style={fillFold ? undefined : { height: `${blockHeight}px` }}
       >
         {/* Photo tile — spans 2 of 5 columns (narrower than the list, per
             the design). h-full fills the block height. order-* flips the
@@ -185,7 +224,9 @@ function CollectionBlock({
         </Link>
 
         {/* Category list — spans 3 of 5 columns, fills the block height.
-            Rows sit at ROW_H from the top; leftover height stays blank. */}
+            Below-fold blocks: rows sit at ROW_H from the top, leftover stays
+            blank. First (fillFold) block: rows flex to share the fold height
+            equally, so every category fits the opening frame without a cut. */}
         <div
           className={`flex flex-col lg:h-full lg:overflow-hidden lg:col-span-3 ${
             photoRight ? "lg:order-1" : "lg:order-2"
@@ -198,6 +239,7 @@ function CollectionBlock({
               index={ci}
               href={`${meta.href}?category=${encodeURIComponent(cat.name)}`}
               ruled={ci > 0}
+              fillFold={fillFold}
             />
           ))}
         </div>
@@ -212,18 +254,24 @@ function CategoryRow({
   index,
   href,
   ruled,
+  fillFold = false,
 }: {
   cat: OverviewCategory;
   index: number;
   href: string;
   ruled: boolean;
+  // First-fold rows flex to share the available height (min 64px) so every
+  // category fits the opening frame; below-fold rows keep the fixed 72px.
+  fillFold?: boolean;
 }) {
   return (
     <Link
       href={href}
-      className={`group flex items-center gap-4 sm:gap-6 px-4 sm:px-6 lg:px-8 py-4 lg:h-[72px] lg:shrink-0 transition-colors duration-200 hover:bg-surface-sunken ${
-        ruled ? "border-t border-line" : ""
-      }`}
+      className={`group flex items-center gap-4 sm:gap-6 px-4 sm:px-6 lg:px-8 transition-colors duration-200 hover:bg-surface-sunken ${
+        fillFold
+          ? "py-4 lg:py-0 lg:flex-1 lg:min-h-[64px]"
+          : "py-4 lg:h-[72px] lg:shrink-0"
+      } ${ruled ? "border-t border-line" : ""}`}
     >
       <span className="text-xs font-bold text-ink-faint tabular-nums w-6 shrink-0">
         {String(index + 1).padStart(2, "0")}
