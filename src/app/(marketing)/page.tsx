@@ -53,7 +53,7 @@ type FocusCard = {
 const FOCUS_CARDS: FocusCard[] = [
   { label: "Basket Systems", category: "Basket", productLine: "kitchen", image: "/products/basket/basket-1.jpg" },
   { label: "Glass Pull Down", category: "Glass Pull Down", productLine: "kitchen", image: "/products/glass-pull-down/glass-pull-down-5-lifestyle.jpg" },
-  { label: "Rolling Shutter", category: "Rolling Shutter", productLine: "kitchen", image: "/products/rolling-shutter/rolling-shutter-2.jpg" },
+  { label: "Rolling Shutter", category: "Rolling Shutter", productLine: "kitchen", image: "/products/rolling-shutter/rolling-shutter-5.jpg" },
   { label: "S-Corner & Carousels", category: "S Corner", productLine: "kitchen", image: "/products/s-corner/s-corner-3-lifestyle-collage.jpg" },
   { label: "GTPT Systems", category: "GTPT", productLine: "kitchen", image: "/products/gtpt/gtpt-3-lifestyle.jpg" },
   { label: "Hinges & Fittings", category: "Hinges", productLine: "hardware", image: "/products/hinges-new/hinges-new-1.jpg" },
