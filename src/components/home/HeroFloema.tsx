@@ -156,11 +156,13 @@ export default function HeroFloema() {
             </Link>
           </div>
 
-          {/* Floating catalogue card */}
+          {/* Floating catalogue card — bottom-right, clear of the dot-nav
+              (now bottom-left). A hairline ring + soft shadow keep its
+              boundary crisp against the photo behind it. */}
           <a
             href={SITE_CONFIG.catalogueUrl}
             download="Eryx-Hardware-Catalogue.pdf"
-            className="pointer-events-auto hidden lg:flex absolute right-4 sm:right-6 lg:right-8 bottom-24 items-center gap-4 bg-warm-cream text-warm-dark p-4 rounded-2xl w-[280px] hover:-translate-y-1 transition-transform"
+            className="pointer-events-auto hidden lg:flex absolute right-4 sm:right-6 lg:right-8 bottom-10 items-center gap-4 bg-warm-cream text-warm-dark p-4 rounded-2xl w-[280px] ring-1 ring-warm-dark/10 shadow-[0_18px_50px_-16px_rgba(23,19,16,0.5)] hover:-translate-y-1 transition-transform"
           >
             <div className="grid place-items-center w-14 h-16 bg-warm-amber rounded-lg">
               <Download size={22} className="text-warm-dark" />
@@ -173,11 +175,11 @@ export default function HeroFloema() {
             </div>
           </a>
 
-          {/* Scroll hint + dot nav */}
-          <div className="absolute left-4 sm:left-6 lg:left-8 bottom-7 text-sm text-warm-cream/80">
-            Scroll to explore ↓
-          </div>
-          <div className="pointer-events-auto absolute right-4 sm:right-6 lg:right-8 bottom-8 flex flex-col gap-2">
+          {/* Dot nav — vertical slide indicators, bottom-left so they never
+              collide with the catalogue card / CTA on the right. The
+              partially-visible next slide already signals scrollability, so
+              no separate "scroll" label is needed. */}
+          <div className="pointer-events-auto absolute left-4 sm:left-6 lg:left-8 bottom-8 flex flex-col gap-2">
             {HERO_SLIDES.map((slide, i) => (
               <button
                 key={slide.n}
