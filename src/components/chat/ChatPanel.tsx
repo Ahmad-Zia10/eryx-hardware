@@ -41,6 +41,10 @@ type FaqTreeResponse = {
 };
 
 const MAX_PRODUCT_RESULTS = 4;
+// v1.1 insights: cap how many misses one visitor can log per session.
+const MAX_LOGGED_MISSES = 15;
+
+type MissKind = "unanswered" | "no_product_match";
 
 async function searchProducts(query: string): Promise<DbProduct[]> {
   const run = async (q: string) => {
@@ -72,6 +76,7 @@ export default function ChatPanel({ open, onClose }: { open: boolean; onClose: (
   const [isSignedIn, setIsSignedIn] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const logRef = useRef<HTMLDivElement>(null);
+  const loggedMisses = useRef(0);
 
   const faqIndex: FaqIndex | null = useMemo(
     () => (faqs.length > 0 ? buildFaqIndex(faqs) : null),
@@ -124,6 +129,20 @@ export default function ChatPanel({ open, onClose }: { open: boolean; onClose: (
   const pushBot = (reply: BotReply, products?: DbProduct[]) =>
     setMessages((m) => [...m, { id: nextId.current++, from: "bot", ...reply, products }]);
 
+  // Fire-and-forget: record a question Ryx couldn't answer so the team
+  // can write the missing FAQ. Never awaited, never surfaces an error —
+  // the customer's reply is identical whether this succeeds or not.
+  const logMiss = (kind: MissKind, query: string) => {
+    if (loggedMisses.current >= MAX_LOGGED_MISSES) return;
+    loggedMisses.current += 1;
+    fetch("/api/chat/unanswered", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ kind, query, page_path: window.location.pathname }),
+      keepalive: true,
+    }).catch(() => {});
+  };
+
   const doFlow = useCallback(
     (flow: Flow) => {
       const { reply, mode: nextMode } = runFlow(flow, ctx);
@@ -150,7 +169,9 @@ export default function ChatPanel({ open, onClose }: { open: boolean; onClose: (
         );
       } else if (fallbackOnEmpty) {
         pushBot(FALLBACK);
+        logMiss("unanswered", query);
       } else {
+        logMiss("no_product_match", query);
         pushBot({
           text: `I couldn't find anything for "${query}". Try a shorter name or the item code, or browse the full range. Need large quantities or something specific? Send us a bulk enquiry.`,
           links: [
@@ -231,6 +252,7 @@ export default function ChatPanel({ open, onClose }: { open: boolean; onClose: (
           await doProductSearch(text, true);
         } else {
           pushBot(FALLBACK);
+          logMiss("unanswered", text);
           setMode("idle");
         }
         return;
@@ -351,6 +373,9 @@ export default function ChatPanel({ open, onClose }: { open: boolean; onClose: (
           <ArrowUp size={18} aria-hidden />
         </button>
       </form>
+      <p className="bg-surface px-4 pb-2.5 -mt-1 text-[11px] leading-snug text-ink-faint">
+        Questions I can&apos;t answer are saved anonymously to help us improve.
+      </p>
     </div>
   );
 }

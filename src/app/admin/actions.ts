@@ -15,6 +15,7 @@ import {
   faqCategoryInputSchema,
   faqInputSchema,
 } from '@/lib/validations/faq';
+import { chatQueryStatusSchema } from '@/lib/validations/chat';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
@@ -786,6 +787,43 @@ export async function cancelStockNotification(
   }
 
   revalidatePath('/admin/notify-me');
+  return { ok: true };
+}
+
+// ─── Chat insights (Ryx v1.1) ─────────────────────────────────────
+
+export async function updateChatQueryStatus(
+  id: string,
+  status: 'new' | 'resolved' | 'ignored'
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  let user;
+  try {
+    user = await requireAdminUser();
+  } catch {
+    return { ok: false, error: 'Unauthorized' };
+  }
+
+  const parsed = chatQueryStatusSchema.safeParse({ id, status });
+  if (!parsed.success) {
+    return { ok: false, error: 'Invalid request' };
+  }
+
+  const reviewed = parsed.data.status !== 'new';
+  const { error } = await supabaseAdmin
+    .from('chat_queries')
+    .update({
+      status: parsed.data.status,
+      reviewed_by: reviewed ? user.id : null,
+      reviewed_at: reviewed ? new Date().toISOString() : null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', parsed.data.id);
+
+  if (error) {
+    return { ok: false, error: 'Failed to update question' };
+  }
+
+  revalidatePath('/admin/chat-insights');
   return { ok: true };
 }
 

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Bell, BookOpen, FileText, Handshake, HelpCircle, LayoutDashboard, Mail, Package, MessageSquare, ShoppingBag, Tag, Star, Users } from 'lucide-react';
+import { Bell, BookOpen, Bot, FileText, Handshake, HelpCircle, LayoutDashboard, Mail, Package, MessageSquare, ShoppingBag, Tag, Star, Users } from 'lucide-react';
 
 export default function AdminNav() {
   const pathname = usePathname();
@@ -22,6 +22,7 @@ export default function AdminNav() {
     { name: 'Blog', href: '/admin/blog', icon: FileText },
     { name: 'About Page', href: '/admin/about', icon: FileText },
     { name: 'FAQs', href: '/admin/faqs', icon: BookOpen },
+    { name: 'Chat Insights', href: '/admin/chat-insights', icon: Bot },
   ];
 
   return (

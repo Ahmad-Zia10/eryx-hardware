@@ -22,6 +22,8 @@
 
 ### Latest session
 
+- **Ryx v1.1 — chat insights** — misses are logged fire-and-forget to `POST /api/chat/unanswered` (always 204; 429 past 20/hour per IP, best-effort). Two kinds: `unanswered` (fallback reply) and `no_product_match` (product search empty). Client caps 15 logs per session. Server scrubs PII (`src/lib/chat/scrub.ts`), normalises with the matcher's `normalise()`, calls `log_chat_query` RPC → `chat_queries` (one row per distinct question, `hit_count`, hourly ceiling of 300 new rows, resolved→new on repeat). pg_cron `prune-chat-queries` deletes rows unseen for 90 days. Admin `/admin/chat-insights` with Resolve / Ignore / Reopen (`updateChatQueryStatus`, `requireAdminUser`, records `reviewed_by`). Reusable `createRateLimiter()` in `src/lib/server/rate-limit.ts`. Spec `.claude/chatbot-v1.1-spec.md`, DEC-012.
+
 - **Ryx chat assistant v1 (rule-based)** — floating launcher in the marketing layout (hidden on `/checkout` + `/cart`, never on admin). Panel is `next/dynamic`-loaded on first click; FAQs come from new read-only `GET /api/faqs` (force-static, 5-min revalidate, also revalidated by `revalidateFaqSurfaces`). Menu flows: product search (existing `/api/products/search`), pincode check (`isServiceablePincode`), track order (link to `/account`), payments, returns, bulk/dealer/showroom, human contact. Free text → `src/lib/chat/matcher.ts` (intents → IDF-weighted FAQ scoring → short-text product search → fallback). All copy in `src/lib/chat/flows.ts`. Kill switch: `NEXT_PUBLIC_CHATBOT_ENABLED=false` + redeploy. Spec: `.claude/chatbot-v1-spec.md`, decision DEC-011.
 - **FAQ accuracy migration** `20261003120000_faq_content_accuracy.sql` — rewrites 4 seeded answers that over-promised (pan-India delivery, emailed tracking links, GST invoices, EMI). Must be applied to the live DB before/with the Ryx deploy, otherwise Ryx repeats the old answers.
 
@@ -64,7 +66,7 @@
 - **No error boundary components.**
 - **No SEO structured data (JSON-LD) on product pages.** Also `FAQPage` schema on `/faqs` would be a mechanical win.
 - **No test coverage.** Manual QA is the only safety net.
-- **No API rate limiting on public form endpoints.**
+- **No real (shared) API rate limiting on public endpoints.** `/api/contact` has an inline in-memory limiter and `src/lib/server/rate-limit.ts` now offers a reusable one, but both are per serverless instance — best-effort only. Moving `/api/contact` onto the shared helper is a small follow-up; true cross-instance limiting (Upstash / Postgres / Vercel Firewall) is unscheduled.
 - **Order status transitions not validated.** `updateOrderStatus` accepts any status → any status.
 - **No admin activity log.** `stock_movements.admin_id` is the pattern to generalize when this ships.
 - **`products.is_active` and `products.is_featured` duplicated on `product_variants`.** Two flags for what admins perceive as "one product" — root cause of "I toggled active and nothing changed" bugs. Cleanup involves auditing every read site, deciding whether the parent-level flag has independent meaning (probably not), and migrating to drop columns or compute-on-read.
@@ -85,7 +87,7 @@ Recorded from the earlier production-readiness audit; safe to defer, none active
 
 ## Do Not Forget
 
-- **Ryx (chat assistant) repeats FAQ answers verbatim.** Any FAQ edit in `/admin/faqs` changes what the bot says. Never add FAQ copy promising features that don't exist (COD, EMI, GST invoices, tracking links, pan-India delivery). Next phases planned in `.claude/chatbot-v1-spec.md` §10.
+- **Ryx (chat assistant) repeats FAQ answers verbatim.** Any FAQ edit in `/admin/faqs` changes what the bot says. Never add FAQ copy promising features that don't exist (COD, EMI, GST invoices, tracking links, pan-India delivery). Next phases planned in `.claude/chatbot-v1-spec.md` §10. Review `/admin/chat-insights` weekly: write FAQs for top unanswered, add synonyms to `matcher.ts` for near-misses.
 
 - Razorpay webhook uses `crypto.timingSafeEqual` for HMAC — never simplify to `!==`.
 - Never trust client pricing or client stock. Re-derive from DB every time.

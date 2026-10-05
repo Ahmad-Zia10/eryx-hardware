@@ -97,3 +97,11 @@ Date | Decision | Context | Options | Chosen | Why | Tradeoffs
 **Chosen:** (C) — "Ryx", see `.claude/chatbot-v1-spec.md`
 **Why:** Every reply is either scripted copy (`src/lib/chat/flows.ts`) or an FAQ an admin wrote, so it cannot invent prices, policies or promises. Read-only: no tables, no write endpoints, no migrations beyond an FAQ copy fix. Zero per-message cost. The launcher/panel shell is reusable — later phases (unanswered-query logging, guest order lookup, LLM + tools, RAG) swap the "brain" in `src/lib/chat/` without touching the UI.
 **Tradeoffs:** Only understands phrasings covered by intents, synonyms and FAQ keywords; Hinglish support is a handful of synonyms. Bot answers are only as accurate as the FAQ table — FAQ copy must stay truthful (it now ships verbatim in chat).
+
+### DEC-012: Chat insights store one row per distinct question, flood-guarded in Postgres
+**Date:** October 5, 2026
+**Context:** Ryx v1.1 logs questions it couldn't answer. First write path from the chat widget; public, anonymous, and on serverless where in-memory rate limits don't hold across instances.
+**Options:** (A) One row per message + IP-based limiter in a shared store (Upstash), (B) One row per distinct normalised question with hit_count, hourly new-row ceiling inside the `log_chat_query` RPC, best-effort in-memory per-IP limit on top
+**Chosen:** (B)
+**Why:** Repeats can't grow the table (spam of the same text = one row); the admin view becomes a ranked list for free; the ceiling is enforced in Postgres so it holds across every instance; no new service or dependency; no IP or user id stored. Query text is PII-scrubbed (`src/lib/chat/scrub.ts`) and rows are pruned by pg_cron after 90 days of silence.
+**Tradeoffs:** Grouping is by exact normalised text, so paraphrases appear as separate rows. Per-IP limiting is still best-effort — real shared rate limiting site-wide remains a known gap.
