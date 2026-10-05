@@ -795,6 +795,7 @@ async function revalidateFaqSurfaces() {
   revalidatePath('/admin/faqs');
   revalidatePath('/faqs');
   revalidatePath('/');
+  revalidatePath('/api/faqs'); // Ryx chat assistant's FAQ feed
 }
 
 export async function addFaqCategory(

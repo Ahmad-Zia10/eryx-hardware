@@ -16,11 +16,14 @@
 
 ## In Progress
 
-- Nothing actively in flight. Last session ended with the nav mega-menu + admin banner deep-link ship (commit `26d2715`).
+- Nothing actively in flight.
 
 ## Recently Completed
 
 ### Latest session
+
+- **Ryx chat assistant v1 (rule-based)** — floating launcher in the marketing layout (hidden on `/checkout` + `/cart`, never on admin). Panel is `next/dynamic`-loaded on first click; FAQs come from new read-only `GET /api/faqs` (force-static, 5-min revalidate, also revalidated by `revalidateFaqSurfaces`). Menu flows: product search (existing `/api/products/search`), pincode check (`isServiceablePincode`), track order (link to `/account`), payments, returns, bulk/dealer/showroom, human contact. Free text → `src/lib/chat/matcher.ts` (intents → IDF-weighted FAQ scoring → short-text product search → fallback). All copy in `src/lib/chat/flows.ts`. Kill switch: `NEXT_PUBLIC_CHATBOT_ENABLED=false` + redeploy. Spec: `.claude/chatbot-v1-spec.md`, decision DEC-011.
+- **FAQ accuracy migration** `20261003120000_faq_content_accuracy.sql` — rewrites 4 seeded answers that over-promised (pan-India delivery, emailed tracking links, GST invoices, EMI). Must be applied to the live DB before/with the Ryx deploy, otherwise Ryx repeats the old answers.
 
 - **Nav mega-menu + admin banner deep-link** — Products dropdown replaced with full-width 3-column mega-menu (Kitchen / Wardrobe / Explore). Data-driven grouping via `getCategoriesByProductLine()` in `src/lib/db/categories.ts` — categories appear under the right line based on their products' `product_line`, no schema change. Empty column state ("Range coming soon → contact us") keeps shape stable when a line has no inventory. 150ms open + 250ms close hover delays with panel-hover forwarding so cursor traversal doesn't flash-close. Marketing layout became async to fetch `categoryGroups` server-side and pass as prop, keeping Navbar a `'use client'` component. Mobile menu regrouped: Kitchen / Wardrobe sections with 2-col grids or a fallback. Nav link `/coming-soon/*` → `/wardrobe`, `/deals` fixed. Admin dashboard's invariant-violation banner: each name now links to `/admin/products?edit=<parent_id>` with a Fix → affordance; ProductsTable reads the param, opens Combined Edit (single-variant) or Parent Edit (multi-variant), clears the param. Committed `26d2715`.
 - **Product-line routing + /deals + /wardrobe + rotating CTA + brand fonts** — `getAllProducts` accepts optional `product_line` filter; `/kitchen` passes `'kitchen'` so wardrobe SKUs don't leak. New `/wardrobe` page: hero + product grid + friendly empty state. New `getDiscountedProducts()` powers `/deals`. Nav `comingSoon` flags dropped from Wardrobe + Deals. Slide-1 outlined CTA cycles `Kitchen Solutions → Modular India → Click Here` every 2s with a 200ms fade, links to `https://www.modularindia.com` in new tab, min-width reserved so layout doesn't shift. Loaded Marcellus + Libre Baskerville + Fraunces alongside existing Prata + Inter (Cormorant Garamond removed). Committed `f05b62c`.
@@ -81,6 +84,8 @@ Recorded from the earlier production-readiness audit; safe to defer, none active
 - **Product images: orphan cleanup** — hard-deleted variants leave Storage objects behind. Needs a cron sweep.
 
 ## Do Not Forget
+
+- **Ryx (chat assistant) repeats FAQ answers verbatim.** Any FAQ edit in `/admin/faqs` changes what the bot says. Never add FAQ copy promising features that don't exist (COD, EMI, GST invoices, tracking links, pan-India delivery). Next phases planned in `.claude/chatbot-v1-spec.md` §10.
 
 - Razorpay webhook uses `crypto.timingSafeEqual` for HMAC — never simplify to `!==`.
 - Never trust client pricing or client stock. Re-derive from DB every time.

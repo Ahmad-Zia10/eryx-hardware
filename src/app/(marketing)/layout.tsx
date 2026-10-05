@@ -7,6 +7,7 @@ import Footer from '@/components/layout/Footer';
 import CartDrawer from '@/components/layout/CartDrawer';
 import EnquiryModal from '@/components/layout/EnquiryModal';
 import Toast from '@/components/layout/Toast';
+import ChatLauncher from '@/components/chat/ChatLauncher';
 
 export default function MarketingLayout({ children } :  {
   children: React.ReactNode;
@@ -27,6 +28,7 @@ export default function MarketingLayout({ children } :  {
             <CartDrawer />
             <EnquiryModal />
             <Toast />
+            <ChatLauncher />
           </div>
         </WishlistProvider>
       </UIProvider>

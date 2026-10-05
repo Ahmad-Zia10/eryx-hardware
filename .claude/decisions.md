@@ -89,3 +89,11 @@ Date | Decision | Context | Options | Chosen | Why | Tradeoffs
 **Chosen:** (B)
 **Why:** Fonts: 5 families → 2 (Inter + Fraunces). The four serif tokens (--font-display/heading/serif/accent) all remap to Fraunces in globals.css, so ~50 files using those utilities needed zero edits. Gold: --color-brand-gold redefined to #D4A017 (muted) with a gold/gold-bright/gold-deep/on-gold ramp; the kit's bright #fec201 stays reserved for logo artwork. Neutrals: semantic theme-adaptive tokens (surface/ink/line families) flip via .dark using Tailwind v4 `@theme inline`, so migrated components drop their dark: prefixes. Radius system: rounded-control/card/pill. Also added global focus-visible gold ring, gold selection color, prefers-reduced-motion support.
 **Tradeoffs:** Until later phases land, old hardcoded hexes coexist with tokens (values match, so no visual drift). Libre Baskerville italics are now synthesized (one prose block on About uses italic — acceptable). New code must use semantic tokens, never hardcoded neutrals.
+
+### DEC-011: Chat assistant v1 is rule-based (no LLM)
+**Date:** October 3, 2026
+**Context:** Customers ask the same pre/post-sale questions repeatedly (delivery, payment, returns, contact). We wanted an on-site assistant without adding hallucination risk, running cost or new write surface to the live store.
+**Options:** (A) LLM with tool calls from day one, (B) RAG over FAQs/blog, (C) Guided menu + keyword/IDF matching over admin-editable FAQs
+**Chosen:** (C) — "Ryx", see `.claude/chatbot-v1-spec.md`
+**Why:** Every reply is either scripted copy (`src/lib/chat/flows.ts`) or an FAQ an admin wrote, so it cannot invent prices, policies or promises. Read-only: no tables, no write endpoints, no migrations beyond an FAQ copy fix. Zero per-message cost. The launcher/panel shell is reusable — later phases (unanswered-query logging, guest order lookup, LLM + tools, RAG) swap the "brain" in `src/lib/chat/` without touching the UI.
+**Tradeoffs:** Only understands phrasings covered by intents, synonyms and FAQ keywords; Hinglish support is a handful of synonyms. Bot answers are only as accurate as the FAQ table — FAQ copy must stay truthful (it now ships verbatim in chat).
