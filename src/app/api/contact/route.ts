@@ -2,10 +2,10 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { sendStoreNotification } from "@/lib/server/notifications";
+import { clientIp, createRateLimiter } from "@/lib/server/rate-limit";
 
-const submissionsByIp = new Map<string, number[]>();
-const WINDOW_MS = 60 * 60 * 1000;
-const LIMIT = 5;
+// Best-effort per-instance limit (see rate-limit.ts): 5 submissions per IP per hour.
+const limiter = createRateLimiter({ limit: 5, windowMs: 60 * 60 * 1000 });
 
 const schema = z.object({
   name: z.string().min(2).max(120),
@@ -17,18 +17,9 @@ const schema = z.object({
   website: z.string().optional(),
 });
 
-function checkRateLimit(req: Request) {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-  const now = Date.now();
-  const previous = submissionsByIp.get(ip)?.filter((timestamp) => now - timestamp < WINDOW_MS) || [];
-  if (previous.length >= LIMIT) return false;
-  submissionsByIp.set(ip, [...previous, now]);
-  return true;
-}
-
 export async function POST(req: Request) {
   try {
-    if (!checkRateLimit(req)) {
+    if (!limiter.check(clientIp(req))) {
       return NextResponse.json({ error: "Too many submissions. Please try again later." }, { status: 429 });
     }
 

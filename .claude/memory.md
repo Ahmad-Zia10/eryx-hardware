@@ -66,7 +66,7 @@
 - **No error boundary components.**
 - **No SEO structured data (JSON-LD) on product pages.** Also `FAQPage` schema on `/faqs` would be a mechanical win.
 - **No test coverage.** Manual QA is the only safety net.
-- **No real (shared) API rate limiting on public endpoints.** `/api/contact` has an inline in-memory limiter and `src/lib/server/rate-limit.ts` now offers a reusable one, but both are per serverless instance — best-effort only. Moving `/api/contact` onto the shared helper is a small follow-up; true cross-instance limiting (Upstash / Postgres / Vercel Firewall) is unscheduled.
+- **No real (shared) API rate limiting on public endpoints.** `/api/contact` (5/hour) and `/api/chat/unanswered` (20/hour) use the shared `createRateLimiter()` in `src/lib/server/rate-limit.ts`, but it is per serverless instance — best-effort only. Other public form routes (bulk, dealer, notify-me, enquiry) have no limit yet. True cross-instance limiting (Upstash / Postgres / Vercel Firewall) is unscheduled.
 - **Order status transitions not validated.** `updateOrderStatus` accepts any status → any status.
 - **No admin activity log.** `stock_movements.admin_id` is the pattern to generalize when this ships.
 - **`products.is_active` and `products.is_featured` duplicated on `product_variants`.** Two flags for what admins perceive as "one product" — root cause of "I toggled active and nothing changed" bugs. Cleanup involves auditing every read site, deciding whether the parent-level flag has independent meaning (probably not), and migrating to drop columns or compute-on-read.
