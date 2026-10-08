@@ -2,9 +2,22 @@ import { NextResponse } from 'next/server';
 import { createClient, supabaseAdmin } from '@/lib/supabase/server';
 import { sendStoreNotification } from '@/lib/server/notifications';
 import { notifyMeSchema } from '@/lib/validations/notify-me';
+import { clientIp, createRateLimiter } from '@/lib/server/rate-limit';
+
+// Best-effort per-instance limit (see rate-limit.ts). Looser than the
+// enquiry forms: a shopper may subscribe to several out-of-stock
+// variants, and repeat clicks are already idempotent. 20 per IP per hour.
+const limiter = createRateLimiter({ limit: 20, windowMs: 60 * 60 * 1000 });
 
 export async function POST(req: Request) {
   try {
+    if (!limiter.check(clientIp(req))) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      );
+    }
+
     const raw = await req.json();
     const parsed = notifyMeSchema.safeParse(raw);
     if (!parsed.success) {

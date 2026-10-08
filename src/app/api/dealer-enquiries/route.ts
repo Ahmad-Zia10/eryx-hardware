@@ -3,6 +3,11 @@ import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { sendStoreNotification } from "@/lib/server/notifications";
 import { UploadError, uploadSharedFile, validateUploadFile } from "@/lib/server/storage";
+import { clientIp, createRateLimiter } from "@/lib/server/rate-limit";
+
+// Best-effort per-instance limit (see rate-limit.ts). Tighter than other
+// forms because each request can carry a file upload: 3 per IP per hour.
+const limiter = createRateLimiter({ limit: 3, windowMs: 60 * 60 * 1000 });
 
 const schema = z.object({
   contact_name: z.string().min(2).max(120),
@@ -25,6 +30,12 @@ function read(formData: FormData, key: string) {
 
 export async function POST(req: Request) {
   try {
+    // Checked before parsing the multipart body so a blocked request
+    // never touches the upload path.
+    if (!limiter.check(clientIp(req))) {
+      return NextResponse.json({ error: "Too many submissions. Please try again later." }, { status: 429 });
+    }
+
     const formData = await req.formData();
     const parsed = schema.safeParse({
       contact_name: read(formData, "contact_name"),

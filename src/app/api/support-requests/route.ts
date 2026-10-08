@@ -3,6 +3,12 @@ import { z } from "zod";
 import { createClient, supabaseAdmin } from "@/lib/supabase/server";
 import { sendStoreNotification } from "@/lib/server/notifications";
 import { UploadError, uploadSharedFile, validateUploadFile } from "@/lib/server/storage";
+import { createRateLimiter } from "@/lib/server/rate-limit";
+
+// Best-effort per-instance limit (see rate-limit.ts). Keyed by user id —
+// this route requires sign-in, so the account is a better key than IP.
+// Requests can carry an image upload: 5 per user per hour.
+const limiter = createRateLimiter({ limit: 5, windowMs: 60 * 60 * 1000 });
 
 const schema = z.object({
   order_id: z.string().uuid(),
@@ -22,6 +28,10 @@ export async function POST(req: Request) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (!limiter.check(user.id)) {
+      return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
     }
 
     const formData = await req.formData();

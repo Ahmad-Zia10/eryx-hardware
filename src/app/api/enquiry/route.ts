@@ -2,8 +2,16 @@ import { NextRequest } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { enquirySchema } from "@/lib/validations/enquiry";
 import { apiSuccess, apiError } from "@/lib/api-response";
+import { clientIp, createRateLimiter } from "@/lib/server/rate-limit";
+
+// Best-effort per-instance limit (see rate-limit.ts): 5 enquiries per IP per hour.
+const limiter = createRateLimiter({ limit: 5, windowMs: 60 * 60 * 1000 });
 
 export async function POST(request: NextRequest) {
+  if (!limiter.check(clientIp(request))) {
+    return apiError("Too many submissions. Please try again later.", 429);
+  }
+
   let body;
   try {
     body = await request.json();

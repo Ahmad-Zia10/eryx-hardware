@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { sendCustomerConfirmation, sendStoreNotification } from "@/lib/server/notifications";
+import { clientIp, createRateLimiter } from "@/lib/server/rate-limit";
+
+// Best-effort per-instance limit (see rate-limit.ts): 5 enquiries per IP per hour.
+const limiter = createRateLimiter({ limit: 5, windowMs: 60 * 60 * 1000 });
 
 const schema = z.object({
   customer_name: z.string().min(2).max(120),
@@ -19,6 +23,10 @@ const schema = z.object({
 
 export async function POST(req: Request) {
   try {
+    if (!limiter.check(clientIp(req))) {
+      return NextResponse.json({ error: "Too many submissions. Please try again later." }, { status: 429 });
+    }
+
     const parsed = schema.safeParse(await req.json());
     if (!parsed.success) {
       return NextResponse.json({ error: "Please check the enquiry details." }, { status: 400 });
