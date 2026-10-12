@@ -46,6 +46,9 @@ const MAX_LOGGED_MISSES = 15;
 
 type MissKind = "unanswered" | "no_product_match";
 
+// Below Tailwind's `sm` breakpoint the panel is a full-screen sheet.
+const isPhone = () => window.matchMedia("(max-width: 639px)").matches;
+
 async function searchProducts(query: string): Promise<DbProduct[]> {
   const run = async (q: string) => {
     const res = await fetch(`/api/products/search?q=${encodeURIComponent(q)}`);
@@ -77,6 +80,10 @@ export default function ChatPanel({ open, onClose }: { open: boolean; onClose: (
   const inputRef = useRef<HTMLInputElement>(null);
   const logRef = useRef<HTMLDivElement>(null);
   const loggedMisses = useRef(0);
+  // Phone sheet geometry, tracked from the visual viewport so the input
+  // stays above the on-screen keyboard (which shrinks the visual
+  // viewport but not the layout viewport fixed elements are laid out in).
+  const [sheet, setSheet] = useState<{ top: number; height: number } | null>(null);
 
   const faqIndex: FaqIndex | null = useMemo(
     () => (faqs.length > 0 ? buildFaqIndex(faqs) : null),
@@ -107,8 +114,43 @@ export default function ChatPanel({ open, onClose }: { open: boolean; onClose: (
       .catch(() => {});
   }, []);
 
+  // Desktop: focus the input straight away. Phones: don't — it would pop
+  // the keyboard over the menu before the shopper has chosen anything.
   useEffect(() => {
-    if (open) inputRef.current?.focus();
+    if (open && !isPhone()) inputRef.current?.focus();
+  }, [open]);
+
+  // Phones: lock page scroll behind the sheet and fit the sheet to the
+  // visible area as the keyboard opens and closes.
+  useEffect(() => {
+    if (!open || !isPhone()) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const vv = window.visualViewport;
+    const fit = () => {
+      setSheet(
+        vv
+          ? { top: vv.offsetTop, height: vv.height }
+          : { top: 0, height: window.innerHeight }
+      );
+      logRef.current?.scrollTo({ top: logRef.current.scrollHeight });
+    };
+    fit();
+    // visualViewport catches the keyboard on iOS Safari and recent Chrome;
+    // window resize covers browsers that resize the layout viewport instead.
+    vv?.addEventListener("resize", fit);
+    vv?.addEventListener("scroll", fit);
+    window.addEventListener("resize", fit);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      vv?.removeEventListener("resize", fit);
+      vv?.removeEventListener("scroll", fit);
+      window.removeEventListener("resize", fit);
+      setSheet(null);
+    };
   }, [open]);
 
   useEffect(() => {
@@ -283,10 +325,15 @@ export default function ChatPanel({ open, onClose }: { open: boolean; onClose: (
       role="dialog"
       aria-label={`Chat with ${BOT_NAME}`}
       hidden={!open}
-      className="fixed z-45 inset-x-3 bottom-22 sm:inset-x-auto sm:right-6 sm:bottom-24 sm:w-95 h-[min(36rem,calc(100dvh-8rem))] bg-surface-raised text-ink border border-line rounded-card shadow-[0_24px_64px_rgba(0,0,0,0.25)] flex flex-col overflow-hidden origin-bottom-right animate-[dropdown_140ms_ease-out]"
+      style={
+        sheet
+          ? ({ "--ryx-top": `${sheet.top}px`, "--ryx-height": `${sheet.height}px` } as React.CSSProperties)
+          : undefined
+      }
+      className="fixed z-55 inset-x-0 top-(--ryx-top,0px) h-(--ryx-height,100dvh) sm:z-45 sm:inset-x-auto sm:top-auto sm:right-6 sm:bottom-24 sm:w-95 sm:h-[min(36rem,calc(100dvh-8rem))] bg-surface-raised text-ink sm:border sm:border-line sm:rounded-card sm:shadow-[0_24px_64px_rgba(0,0,0,0.25)] flex flex-col overflow-hidden origin-bottom-right sm:animate-[dropdown_140ms_ease-out]"
     >
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-line bg-surface">
+      <div className="flex items-center gap-3 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:pt-3 border-b border-line bg-surface">
         <div className="h-9 w-9 shrink-0 rounded-pill bg-gold text-on-gold flex items-center justify-center font-display font-semibold">
           R
         </div>
@@ -298,7 +345,7 @@ export default function ChatPanel({ open, onClose }: { open: boolean; onClose: (
           type="button"
           onClick={onClose}
           aria-label="Close chat"
-          className="p-2 -mr-2 text-ink-muted hover:text-gold-deep transition-colors duration-200"
+          className="p-2.5 -mr-2.5 text-ink-muted hover:text-gold-deep transition-colors duration-200"
         >
           <X size={20} aria-hidden />
         </button>
@@ -309,7 +356,7 @@ export default function ChatPanel({ open, onClose }: { open: boolean; onClose: (
         ref={logRef}
         role="log"
         aria-live="polite"
-        className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-surface-raised"
+        className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 py-4 space-y-3 bg-surface-raised"
       >
         {messages.map((msg) =>
           msg.from === "user" ? (
@@ -362,18 +409,18 @@ export default function ChatPanel({ open, onClose }: { open: boolean; onClose: (
           }
           inputMode={mode === "awaiting_pincode" ? "numeric" : "text"}
           autoComplete="off"
-          className="flex-1 min-w-0 bg-surface-raised border border-line rounded-control px-3 py-2 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:border-gold"
+          className="flex-1 min-w-0 bg-surface-raised border border-line rounded-control px-3 py-2 text-base sm:text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:border-gold"
         />
         <button
           type="submit"
           disabled={!input.trim() || busy}
           aria-label="Send message"
-          className="h-9 w-9 shrink-0 rounded-control bg-gold text-on-gold flex items-center justify-center disabled:opacity-40 hover:bg-gold-bright transition-colors duration-200"
+          className="h-11 w-11 sm:h-9 sm:w-9 shrink-0 rounded-control bg-gold text-on-gold flex items-center justify-center disabled:opacity-40 hover:bg-gold-bright transition-colors duration-200"
         >
           <ArrowUp size={18} aria-hidden />
         </button>
       </form>
-      <p className="bg-surface px-4 pb-2.5 -mt-1 text-[11px] leading-snug text-ink-faint">
+      <p className="bg-surface px-4 pb-[max(0.625rem,env(safe-area-inset-bottom))] sm:pb-2.5 -mt-1 text-[11px] leading-snug text-ink-faint">
         Questions I can&apos;t answer are saved anonymously to help us improve.
       </p>
     </div>

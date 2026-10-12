@@ -37,7 +37,9 @@ export default function ChatLauncher() {
 
   const close = () => {
     setOpen(false);
-    buttonRef.current?.focus();
+    // On phones the launcher is hidden while the sheet is open; wait for
+    // it to render again before moving focus back to it.
+    setTimeout(() => buttonRef.current?.focus(), 0);
   };
 
   return (
@@ -49,7 +51,7 @@ export default function ChatLauncher() {
         onClick={toggle}
         aria-expanded={open}
         aria-label={open ? "Close chat with Ryx" : "Chat with Ryx"}
-        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-45 h-14 w-14 rounded-pill bg-gold text-on-gold flex items-center justify-center shadow-[0_8px_24px_rgba(0,0,0,0.22)] hover:bg-gold-bright transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-deep"
+        className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-45 h-14 w-14 rounded-pill bg-gold text-on-gold ${open ? "hidden sm:flex" : "flex"} items-center justify-center shadow-[0_8px_24px_rgba(0,0,0,0.22)] hover:bg-gold-bright transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-deep`}
       >
         {open ? <X size={24} aria-hidden /> : <MessageCircle size={24} aria-hidden />}
       </button>
